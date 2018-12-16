@@ -10,5 +10,9 @@
     "kill":{
         "brief": "Use this to kill someone!",
         "description": "This command will kill the person named afterward in such a manner. !kill person"
+    },
+    "exit":{
+        "brief": "Stops the bot. Admin channel only.",
+        "description": "This command stops the bot from running. This will stop the werewolf game and loose all progress of the game."
     }
 }
