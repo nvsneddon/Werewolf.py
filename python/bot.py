@@ -22,7 +22,7 @@ bot = commands.Bot(command_prefix = '!')
 
 @bot.event
 async def on_ready():
-    print("The werewolves are howling! I am making a change!")
+    print("The werewolves are howling!")
 
 @bot.command()
 async def exit():
