@@ -3,6 +3,7 @@ config/discord-config.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+python/__pycache__
 *.py[cod]
 *$py.class
 
