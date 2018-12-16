@@ -1,0 +1,14 @@
+{
+    "shoot": {
+        "brief": "This is for the hunter to be able to shoot anyone once the hunter dies.",
+        "description": "The !shoot command will kill the person that the hunter wished before death falls upon the hunter."
+    },
+    "getvotes": {
+        "brief": "Shows how the election is going",
+        "description": "Shows how the election is going. Only available during the election and only useable in the voting room channel."
+    },
+    "kill":{
+        "brief": "Use this to kill someone!",
+        "description": "This command will kill the person named afterward in such a manner. !kill person"
+    }
+}

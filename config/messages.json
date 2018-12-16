@@ -1,0 +1,118 @@
+{
+    "werewolf": {
+        "welcome": [
+            "You are a werewolf.",
+            "Try to blend in with the villagers as you try to secretly eat them.",
+            "Let your feast begin!"
+        ],
+        "killed": "That's weird. The werewolves have turned cannibalistic and have killed one of their own. {} is now dead!",
+        "lynched": "Congratulations villagers. You have killed {}, who was a werewolf\nThat means we can all sleep better at night! At least some of you!",
+        "inlove": "This werewolf {} died because of their love for the other that has died."
+    },
+    "seer":{
+        "welcome": [
+            "You have found favor in the spirits of old.",
+            "They will now serve you in these dangerous times.",
+            "Use them to reveal deep dark secrets of your fellow villagers.",
+            "Maybe you won't like what you find.",
+            "Good luck and don't let the werewolves know of your gifts. And also, don't die!"
+        ],
+        "killed": "Last night, the werewolves have taken your seer {}. I wonder who saw that coming.",
+        "lynched": "You guys killed the seer {}! You guys should have done better!",
+        "inlove": "The seer saw someone to love. Now that that person is gone, so is the seer {}."
+    },
+    "bodyguard":{
+        "welcome": [
+            "You are a skilled person hired to be the personal bodyguard for the town.",
+            "There is one problem. You're the only bodyguard around, so you have to choose who to protect.",
+            "Your good looks and swol body will be great in many ways if you learn to use it for good.",
+            "Choose whom you will protect wisely. Your people might betray you!",
+            "Good luck!"
+        ],
+        "killed": "Our good bodyguard {} has been killed.",
+        "lynched": "You guys killed your last line of defense. The bodyguard {} is nowhere to protect you guys.",
+        "inlove": "The bodyguard {} who could not save their love in time decided to follow their love to the grave."
+    },
+    "cupid":{
+        "welcome":[
+            "Well look at who we have here! It's cupid!",
+            "Your mission is very important. You are here to bring love among the werewolf/villager conflict.",
+            "You can do this with your two arrows that will make two people fall in love.",
+            "Choose these people wisely, because you don't know how love will affect others.",
+            "Good luck!"
+        ],
+        "killed": "Well, cupid was killed. At least {} did the job (I hope)!",
+        "lynched": "You guys killed our cupid {}. All he did was spread love and you respond with death? Shame on you!",
+        "inlove": "Our cupid {} died because even cupid is capable of falling in love."
+    },
+    "villager": {
+        "welcome": [
+            "You are a person living on the outskirts of town. Your greatness is loved by the community.",
+            "You as a villager have to save yourselves from the werewolves.",
+            "Though you are ordinary, that doesn't mean that you have to be an ordinary player.",
+            "Help your team win. Find out which one of your friends can andn can't be trusted.",
+            "Good luck and don't die!"
+        ],
+        "killed": "The nice villager {} has died. This person will surely be missed.",
+        "lynched": "It turns out {} was just nothing more than an ordinary villager. You betrayed your village! Better luck next time.",
+        "inlove": "Our good villager {} decided that life without a loved one is not a life worth living. Love is weird sometimes!"
+    },
+    "hunter": {
+        "welcome":[
+            "Welcome back from your hunting trip hunter! I hope you had a great time!",
+            "You are armed with a sweet rifle that will be able to take anyone down before you go to your grave.",
+            "To use this gift of yours, once you die, you tell the town-square who you're going to shoot with !shoot <person>"
+        ],
+        "killed": "The hunter {} has died. It's now time for his moment to shine and for him to kill someone else.",
+        "lynched": "You just voted to kill the great hunter {}. The hunter's understandably angry and will kill one of you before the hunter dies.",
+        "inlove": "The hunter decided that life without a loved one is not a life worth living. The hunter {} will shoot someone before taking their own life."
+    },
+    "baker": {
+        "welcome":[
+            "Hello there fellow villager. We are glad that you are able to provide the town with food by making crafty bread every morning.",
+            "You may be ordinary, but your skills are needed. If you die, we will all starve to death in a couple of days. So please do everything you can to stay alive.",
+            "Good luck and may you beat the werewolves!"
+        ],
+        "killed": "Our fantastic baker, {}, has died. That's not good at all.",
+        "lynched": "You just killed the baker {}! I don't know why you did that, but great job.", 
+        "inlove": "When the baker lost his buns, he went on a hunger strike. Then {} died grieving his loss!" 
+    },
+    "babywolf": {
+        "welcome":[
+            "You are the baby wolf. You are part of a very caring, but sometimes overprotective family.",
+            "If you die, your family will inact vengance and kill two people at night",
+            "Your family will hate themselves if they let anything happen to you, so make sure you don't stay up past your curfew!"
+        ],
+        "killed": "The baby wolf {} got killed by its own family! In frustration, they will start to kill two people at night!",
+        "lynched": "You just killed the baby wolf, {}. Now its wolf family will start to hunt two people at night!",
+        "inlove": "What do you know! The baby werewolf had a secret love that it kept from its family! Now that its love died, so shall {}."
+    },
+    "mason": {
+        "welcome":[
+            "You are a mason. The people in your secret society are trustworthy members that you can rely on.",
+            "The good news is that you will know who these people are, but you can't make your clan known to the world. If you do, the werewolves will go after you",
+            "If you die, your true identity will not be shown. After all, you are just a villager.",
+            "Whatever you do, be wise in everyting and kill the werewolves and help the villagers."
+        ],
+        "killed": "The nice villager {} has died. This person will surely be missed.",
+        "lynched": "It turns out {} was just nothing more than an ordinary villager. You betrayed your village! Better luck next time.",
+        "inlove": "Our good villager {} decided that life without a loved one is not a life worth living. Love is weird sometimes!"
+    },
+    "lovebird": [
+        "Well well well! It looks like you have an eye for {}. Don't worry, {} kind of likes you as well.",
+        "Love has now bound you two together. When one of you dies, so does the other.",
+        "You two are on the same team now, even if only one of you is a werewolf. If you two are on different sides of the conflict, try to be the last one standing.",
+        "It would be nice to see love prevail amidst this conflict.",
+        "Good luck!"
+    ],
+    "help": [
+        "There are two teams, the werewolves and the villagers. The werewolves try to eat the villagers and the villagers try to kill the werewolves before they eat the villagers.\n",
+        "Among the villagers, there are special characters:",
+        "The Seer has the ability once per day to find out if someone is a werewolf or a villager. The investigation is secret and no one knows about it.",
+        "The Bodyguard gets to protect someone once per day. Once that person is protected, the werewolves cannot kill that person.",
+        "Cupid makes two people fall in love. Those people are up against the world no matter what side of the werewolf/villager conflict they're in.",
+        "If one of the lovebirds die, so does the other.",
+        "The Hunter has the ability to kill someone before dying.",
+        "The Baker has a very important roll. He makes bread for everyone in town. If he dies, so will everyone after a couple of days, depending how far in the game the baker dies."
+    ]
+}
