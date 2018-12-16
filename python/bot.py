@@ -28,4 +28,4 @@ async def on_ready():
 async def exit():
     await bot.logout()
      
-bot.run("NDk4Mjk5MTExOTI2MTM2ODM1.Dp1jKA.5cp7uYRdzEGOUchuP4MlruXAcw8")
+bot.run(config["token"])
