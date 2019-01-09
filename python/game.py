@@ -5,15 +5,14 @@ class Game:
 
     #players is a list of all of the name of people playing
     #roles is a list of numbers of all of the characters that will be playing
-    def __init__(self, players, roles):
+    def __init__(self, players, roles, day=True):
         self.__players = players
         self.__inlove = []
         self.__bakerdead = False
         self.__protected = ""
         self.__hunter = False   #Variable to turn on the hunter's power
         
-        check_time = datetime.now().time()
-        if check_time >= time(7,0) and check_time <= time(21,0):
+        if day:
             self.__voted = False
             self.__killed = True
         else:
