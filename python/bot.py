@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import game
 import asyncio
 import os
 import json
