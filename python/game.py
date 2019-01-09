@@ -5,6 +5,7 @@ class Game:
 
     #players is a list of all of the name of people playing
     #roles is a list of numbers of all of the characters that will be playing
+    #raises ValueError Exception when too many roles are handed out
     def __init__(self, players, roles, day=True):
         self.__players = players
         self.__inlove = []
@@ -42,8 +43,16 @@ class Game:
         random.shuffle(cards)
 
         if len(players) < len(cards):
-            print("Error!!!")
-            print("You gave out too many roles for the number of people.")
+            raise ValueError("You have out too many roles for the number of people.")
         elif len(players) > len(cards):
             for a in range(len(players)-len(cards)):
                 cards.append("villager")
+        self.resettedCharacters = ("bodyguard", "seer")
+
+    def nighttime(self):
+        pass
+
+    def daytime(self):
+        pass
+
+
