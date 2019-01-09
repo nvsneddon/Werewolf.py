@@ -13,6 +13,7 @@ class Game:
         self.__protected = ""
         self.__daysleft = 3
         self.__hunter = False   #Variable to turn on the hunter's power
+        self.__resettedCharacters = ("bodyguard", "seer")
         
         if day:
             self.__voted = False
@@ -48,7 +49,6 @@ class Game:
             for a in range(len(players)-len(cards)):
                 cards.append("villager")
         random.shuffle(cards)
-        self.resettedCharacters = ("bodyguard", "seer")
 
     def nighttime(self):
         self.__killed = False
@@ -57,15 +57,15 @@ class Game:
     def daytime(self):
         if self.__bakerdead:
             self.__daysleft -= 1
-        self.killed = True
+        self.__killed = True
         for x in self.players:
             if x.character == "werewolf":
                 self.usedAbility = True
-            elif x.character in self.resettedCharacters:
+            elif x.character in self.__resettedCharacters:
                 x.usedAbility = False
             x.protected = False
 
     #returns person that was killed
-    def kill(self):
-        pass
+    def kill(self, killer, target):
+        if 
 
