@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, time
+from exceptions import PermissionException
 
 class Game:
 
@@ -69,6 +69,3 @@ class Game:
     def kill(self):
         pass
 
-
-class PermissionException(Exception):
-    pass
