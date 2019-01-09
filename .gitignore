@@ -1,5 +1,6 @@
 # Personal
 config/discord-config.json
+python/test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
