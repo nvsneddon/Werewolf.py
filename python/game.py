@@ -40,13 +40,13 @@ class Game:
         if (len(roles) >= 1):
             for i in range(roles[0]):
                 cards.append("werewolf")
-        random.shuffle(cards)
 
         if len(players) < len(cards):
             raise ValueError("You have out too many roles for the number of people.")
         elif len(players) > len(cards):
             for a in range(len(players)-len(cards)):
                 cards.append("villager")
+        random.shuffle(cards)
         self.resettedCharacters = ("bodyguard", "seer")
 
     def nighttime(self):
