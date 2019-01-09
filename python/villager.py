@@ -1,8 +1,6 @@
 class Villager:
     def __init__(self, name, character, werewolf):
-        __specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
-        self.__discordTag = name
-        self.__name = name.split('#')[0]
+        specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
         self.__character = character 
         self.__werewolf = werewolf
         self.__killer = False 
