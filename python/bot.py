@@ -24,8 +24,12 @@ bot = commands.Bot(command_prefix = '!')
 async def on_ready():
     print("The werewolves are howling!")
 
-@bot.command()
-async def exit():
-    await bot.logout()
+@bot.command(pass_context = True)
+async def exit(ctx):
+    if ctx.message.channel.id == config["channels"]["bot-admin"]:
+        await bot.say("Goodbye!")
+        await bot.logout()
+    else:
+        await bot.say("I'm sorry, but you cannot shut me down!")
      
 bot.run(config["token"])
