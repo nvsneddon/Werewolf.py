@@ -11,6 +11,7 @@ class Game:
         self.__inlove = []
         self.__bakerdead = False
         self.__protected = ""
+        self.__daysleft = 3
         self.__hunter = False   #Variable to turn on the hunter's power
         
         if day:
@@ -41,18 +42,33 @@ class Game:
             for i in range(roles[0]):
                 cards.append("werewolf")
 
-        if len(players) < len(cards):
+        if len(__players) < len(cards):
             raise ValueError("You have out too many roles for the number of people.")
-        elif len(players) > len(cards):
+        elif len(__players) > len(cards):
             for a in range(len(players)-len(cards)):
                 cards.append("villager")
         random.shuffle(cards)
         self.resettedCharacters = ("bodyguard", "seer")
 
     def nighttime(self):
-        pass
+        self.__killed = False
+        self.__voted = True
 
     def daytime(self):
+        if self.__bakerdead:
+            self.__daysleft -= 1
+        self.killed = True
+        for x in self.players:
+            if x.character == "werewolf":
+                self.usedAbility = True
+            elif x.character in self.resettedCharacters:
+                x.usedAbility = False
+            x.protected = False
+
+    #returns person that was killed
+    def kill(self):
         pass
 
 
+class PermissionException(Exception):
+    pass
