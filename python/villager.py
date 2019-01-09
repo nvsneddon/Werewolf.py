@@ -1,6 +1,7 @@
 class Villager:
     def __init__(self, name, character, werewolf):
         specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
+        self.__name = name
         self.__character = character 
         self.__werewolf = werewolf
         self.__killer = False 
@@ -9,6 +10,10 @@ class Villager:
         self.__usedAbility = False
         self.__inSpecialChannel = bool(character in specialChannel)
         self.__inLove = False
+
+
+    def getName(self):
+        return self.__name
         
     def protect(self):
         self.__protected = True

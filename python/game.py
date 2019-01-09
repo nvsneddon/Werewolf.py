@@ -1,4 +1,5 @@
 import random
+from villager import Villager
 from exceptions import PermissionException
 
 class Game:
@@ -7,7 +8,7 @@ class Game:
     #roles is a list of numbers of all of the characters that will be playing
     #raises ValueError Exception when too many roles are handed out
     def __init__(self, players, roles, day=True):
-        self.__players = players
+        self.__players = []
         self.__inlove = []
         self.__bakerdead = False
         self.__protected = ""
@@ -22,6 +23,9 @@ class Game:
             #Night time
             self.__voted = True 
             self.__killed = False 
+
+        for x in players:
+            self.__players.append(Villager(x, "werewolf", False))
 
         cards = []
         if (len(roles) >= 6):
@@ -43,12 +47,13 @@ class Game:
             for i in range(roles[0]):
                 cards.append("werewolf")
 
-        if len(__players) < len(cards):
+        if len(players) < len(cards):
             raise ValueError("You have out too many roles for the number of people.")
-        elif len(__players) > len(cards):
+        elif len(players) > len(cards):
             for a in range(len(players)-len(cards)):
                 cards.append("villager")
         random.shuffle(cards)
+
 
     def nighttime(self):
         self.__killed = False
@@ -58,14 +63,21 @@ class Game:
         if self.__bakerdead:
             self.__daysleft -= 1
         self.__killed = True
-        for x in self.players:
+        for x in self.__players:
             if x.character == "werewolf":
                 self.usedAbility = True
             elif x.character in self.__resettedCharacters:
                 x.usedAbility = False
             x.protected = False
 
+    def findVillager(self, name):
+        for x in self.__players:
+            if x.getName() == name:
+                return x
+        return None
+
     #returns person that was killed
     def kill(self, killer, target):
-        if 
+        pass
+        
 
