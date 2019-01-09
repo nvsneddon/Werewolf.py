@@ -1,3 +1,7 @@
+class WerewolfException(Exception):
+    pass
+class PermissionException(WerewolfException):
+    pass
 
-class PermissionException(Exception):
+class PersonNotFoundException(WerewolfException):
     pass
