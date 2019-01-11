@@ -4,7 +4,7 @@ class Villager:
         self.__name = name
         self.__character = character 
         self.__werewolf = (character == "werewolf")
-        self.__killer = False 
+        self.__killer = (character == "werewolf") 
         self.__alive = True
         self.__protected = False
         self.__usedAbility = False
@@ -14,6 +14,9 @@ class Villager:
 
     def getName(self):
         return self.__name
+
+    def getCharacter(self):
+        return self.__character
         
     def protect(self):
         self.__protected = True
