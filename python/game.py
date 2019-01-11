@@ -86,6 +86,8 @@ class Game:
 
     #returns person that was killed
     def kill(self, killer, target):
-        pass
+        killerVillager = self.findVillager(killer)
+        if killerVillager.iskiller():
+            self.findVillager(target).die()
         
 

@@ -30,5 +30,8 @@ class Villager:
     def iswerewolf(self):
         return self.__werewolf
 
+    def iskiller(self):
+        return self.__killer
+
     def isProtected(self):
         return __self.protected
