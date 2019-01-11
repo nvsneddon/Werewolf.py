@@ -24,8 +24,6 @@ class Game:
             self.__voted = True 
             self.__killed = False 
 
-        for x in players:
-            self.__players.append(Villager(x, "werewolf", False))
 
         cards = []
         if (len(roles) >= 6):
@@ -48,16 +46,23 @@ class Game:
                 cards.append("werewolf")
 
         if len(players) < len(cards):
-            raise ValueError("You have out too many roles for the number of people.")
+            raise ValueError("You have given out too many roles for the number of people playing.")
         elif len(players) > len(cards):
             for a in range(len(players)-len(cards)):
                 cards.append("villager")
         random.shuffle(cards)
 
+        for x in players:
+            self.__players.append(Villager(x, cards[0]))
+            cards.pop(0)
 
     def nighttime(self):
         self.__killed = False
         self.__voted = True
+
+    def iswerewolf(self, person):
+        return self.findVillager(person).iswerewolf()
+
 
     def daytime(self):
         if self.__bakerdead:
