@@ -1,10 +1,10 @@
 class Villager:
-    def __init__(self, name, character, werewolf):
+    def __init__(self, name, character):
         specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
         self.__name = name
         self.__character = character 
-        self.__werewolf = werewolf
-        self.__killer = False 
+        self.__werewolf = (character == "werewolf")
+        self.__killer = (character == "werewolf") 
         self.__alive = True
         self.__protected = False
         self.__usedAbility = False
@@ -14,6 +14,9 @@ class Villager:
 
     def getName(self):
         return self.__name
+
+    def getCharacter(self):
+        return self.__character
         
     def protect(self):
         self.__protected = True
@@ -22,7 +25,13 @@ class Villager:
         self.__alive = False
 
     def isdead(self):
-        return not __self.alive
+        return not self.__alive
+
+    def iswerewolf(self):
+        return self.__werewolf
+
+    def iskiller(self):
+        return self.__killer
 
     def isProtected(self):
         return __self.protected
