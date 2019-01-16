@@ -24,7 +24,6 @@ bot = commands.Bot(command_prefix = '!')
 @bot.event
 async def on_ready():
     print("The werewolves are howling!")
-    print("I made a change")
 
 @bot.command()
 async def echo(*args):
