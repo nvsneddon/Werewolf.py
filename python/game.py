@@ -4,44 +4,45 @@ from exceptions import PermissionException
 
 class Game:
 
-    #players is a list of all of the name of people playing
-    #roles is a list of numbers of all of the characters that will be playing
-    #raises ValueError Exception when too many roles are handed out
+    # players is a list of all of the name of people playing
+    # roles is a list of numbers of all of the characters that will be playing
+    # raises ValueError Exception when too many roles are handed out
+
     def __init__(self, players, roles, day=True, randomshuffle=True):
         self.__players = []
         self.__inlove = []
         self.__bakerdead = False
         self.__protected = ""
         self.__daysleft = 3
-        self.__hunter = False   #Variable to turn on the hunter's power
+        self.__hunter = False   # Variable to turn on the hunter's power
         self.__resettedCharacters = ("bodyguard", "seer")
         
         if day:
             self.__voted = False
             self.__killed = True
         else:
-            #Night time
+            # Night time
             self.__voted = True 
             self.__killed = False 
 
 
         cards = []
-        if (len(roles) >= 6):
+        if len(roles) >= 6:
             for n in range(roles[5]):
                 cards.append("baker")
-        if (len(roles) >= 5):
+        if len(roles) >= 5:
             for m in range(roles[4]):
                 cards.append("hunter")
-        if (len(roles) >= 4):
+        if len(roles) >= 4:
             for l in range(roles[3]):
                 cards.append("cupid")
-        if (len(roles) >= 3):
+        if len(roles) >= 3:
             for k in range(roles[2]):
                 cards.append("bodyguard")
-        if (len(roles) >= 2):
+        if len(roles) >= 2:
             for j in range(roles[1]):
                 cards.append("seer")
-        if (len(roles) >= 1):
+        if len(roles) >= 1:
             for i in range(roles[0]):
                 cards.append("werewolf")
 
@@ -84,7 +85,7 @@ class Game:
                 return x
         return None
 
-    #returns person that was killed
+    # returns person that was killed
     def kill(self, killer, target):
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
