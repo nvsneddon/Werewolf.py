@@ -34,4 +34,4 @@ class Villager:
         return self.__killer
 
     def isProtected(self):
-        return __self.protected
+        return self.__protected
