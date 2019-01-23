@@ -20,6 +20,7 @@ except FileNotFoundError:
     print("File not found")
 
 bot = commands.Bot(command_prefix = '!')
+#adding some sweet code
 
 @bot.event
 async def on_ready():
