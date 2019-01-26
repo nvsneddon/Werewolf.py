@@ -12,10 +12,10 @@ class Villager:
         self.__inLove = False
 
 
-    def getName(self):
+    def getname(self):
         return self.__name
 
-    def getCharacter(self):
+    def getcharacter(self):
         return self.__character
         
     def protect(self):
@@ -34,4 +34,4 @@ class Villager:
         return self.__killer
 
     def isProtected(self):
-        return __self.protected
+        return self.__protected

@@ -81,7 +81,7 @@ class Game:
 
     def findVillager(self, name):
         for x in self.__players:
-            if x.getName() == name:
+            if x.getname() == name:
                 return x
         return None
 
