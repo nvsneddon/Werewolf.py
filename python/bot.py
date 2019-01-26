@@ -5,6 +5,10 @@ import asyncio
 import os
 import json
 
+werewolfGame = None
+werewolfMessages = None
+commandDescriptions = None
+
 dirname = os.path.dirname(__file__)
 try:
     f = open(os.path.join(dirname, '../config/messages.json'))
@@ -32,6 +36,22 @@ async def echo(*args):
         output += x
         output += ' '
     await bot.say(output)
+
+@bot.command(pass_context = True)
+async def startgame(ctx, *args: int):
+    server = ctx.message.server
+    global werewolfGame
+    notplaying_role = discord.utils.get(server.roles, name="Not Playing")
+    #alive_role = discord.utils.get(server.roles, name="Alive")
+
+    players = []
+    for member in server.members:
+        if notplaying_role not in member.roles:
+            players.append(str(member)) 
+    try:
+        werewolfGame = game.Game(players, args)
+    except ValueError:
+        await bot.say("You gave out too many roles for the game!")
 
 @bot.command(pass_context = True)
 async def clear(ctx, number=10):

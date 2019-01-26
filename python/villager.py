@@ -35,3 +35,6 @@ class Villager:
 
     def isProtected(self):
         return self.__protected
+
+    def __str__(self):
+        return "Name: {}\nCharacter: {}\nAlive: {}".format(self.__name, self.__character, self.__alive)
