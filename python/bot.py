@@ -29,11 +29,13 @@ except FileNotFoundError:
     print("The config file was not found. Please make sure the discord-config.py file is in the config folder. Please refer to the README for more information.")
     exit()
 
-bot = commands.Bot(command_prefix = '!')
+bot = commands.Bot(command_prefix='!')
+
 
 @bot.event
 async def on_ready():
     print("The werewolves are howling!")
+
 
 @bot.command()
 async def echo(*args):
@@ -43,7 +45,8 @@ async def echo(*args):
         output += ' '
     await bot.say(output)
 
-@bot.command(pass_context = True)
+
+@bot.command(pass_context=True)
 async def startgame(ctx, *args: int):
     server = ctx.message.server
     global werewolfGame
@@ -53,37 +56,41 @@ async def startgame(ctx, *args: int):
     players = []
     for member in server.members:
         if notplaying_role not in member.roles:
-            players.append(str(member)) 
+            players.append(str(member))
     try:
         werewolfGame = game.Game(players, args)
     except ValueError:
         await bot.say("You gave out too many roles for the game!")
 
-@bot.command(pass_context = True)
+
+@bot.command(pass_context=True)
 async def clear(ctx, number=10):
     if (discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (ctx.message.author != findPerson(ctx, "keyclimber")):
         await bot.say("You don't have permission to do this!")
         return
-    number = int(number+1) #Converting the amount of messages to delete to an integer
+    # Converting the amount of messages to delete to an integer
+    number = int(number+1)
     counter = 0
-    async for x in bot.logs_from(ctx.message.channel, limit = number):
+    async for x in bot.logs_from(ctx.message.channel, limit=number):
         if counter < number:
             if x.pinned:
                 continue
             await bot.delete_message(x)
             counter += 1
 
-@bot.command(pass_context = True)
+
+@bot.command(pass_context=True)
 async def exit(ctx):
     if ctx.message.channel.id == config["channels"]["bot-admin"]:
         await bot.say("Goodbye!")
         await bot.logout()
     else:
         await bot.say("I'm sorry, but you cannot shut me down!")
-        
+
+
 def findPerson(ctx, *args):
     if len(args) == 1:
-        if type(args[0]) is str:   
+        if type(args[0]) is str:
             name = args[0]
         else:
             name = " ".join(args[0])
@@ -91,5 +98,6 @@ def findPerson(ctx, *args):
     else:
         print("Something went very wrong. Args is not of length 1")
         return None
-     
+
+
 bot.run(config["token"])

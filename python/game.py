@@ -2,6 +2,7 @@ import random
 from villager import Villager
 from exceptions import PermissionException
 
+
 class Game:
 
     # players is a list of all of the name of people playing
@@ -16,15 +17,14 @@ class Game:
         self.__daysleft = 3
         self.__hunter = False   # Variable to turn on the hunter's power
         self.__resettedCharacters = ("bodyguard", "seer")
-        
+
         if day:
             self.__voted = False
             self.__killed = True
         else:
             # Night time
-            self.__voted = True 
-            self.__killed = False 
-
+            self.__voted = True
+            self.__killed = False
 
         cards = []
         if len(roles) >= 6:
@@ -47,7 +47,8 @@ class Game:
                 cards.append("werewolf")
 
         if len(players) < len(cards):
-            raise ValueError("You have given out too many roles for the number of people playing.")
+            raise ValueError(
+                "You have given out too many roles for the number of people playing.")
         elif len(players) > len(cards):
             for a in range(len(players)-len(cards)):
                 cards.append("villager")
@@ -90,5 +91,3 @@ class Game:
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()
-        
-
