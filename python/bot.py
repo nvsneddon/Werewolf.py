@@ -30,7 +30,7 @@ except FileNotFoundError:
     exit()
 
 bot = commands.Bot(command_prefix='!')
-
+special_channels = config["channels"]
 
 @bot.event
 async def on_ready():
@@ -77,7 +77,19 @@ async def clear(ctx, number=10):
                 continue
             await bot.delete_message(x)
             counter += 1
-
+            
+async def resetPermissions(ctx, member, channel=""):
+    #alive_role = discord.utils.get(ctx.message.server.roles, name="Alive")
+    #dead_role = discord.utils.get(ctx.message.server.roles, name="Dead")
+    #mayor_role = discord.utils.get(ctx.message.server.roles, name="Mayor")
+    playing_role = discord.utils.get(ctx.message.server.roles, name="Playing")
+    await bot.replace_roles(member, playing_role)
+    await bot.delete_channel_permissions(discord.utils.get(ctx.message.server.channels, name="lovebirds"), member)
+    if channel != "" and channel in special_channels:
+        await bot.delete_channel_permissions(discord.utils.get(ctx.message.server.channels, name=channel), member)
+    """else:
+        for x in special_channels:
+            await bot.delete_channel_permissions(ctx.message.server.get_channel(special_channels[x]), member)"""
 
 @bot.command(pass_context=True)
 async def exit(ctx):
