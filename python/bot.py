@@ -1,9 +1,10 @@
 import discord
 from discord.ext import commands
-import game
+from game import Game
 import asyncio
 import os
 import json
+from cogstest import Test
 
 werewolfGame = None
 werewolfMessages = None
@@ -29,24 +30,30 @@ except FileNotFoundError:
     print("The config file was not found. Please make sure the discord-config.py file is in the config folder. Please refer to the README for more information.")
     exit()
 
-bot = commands.Bot(command_prefix='!')
+client = commands.Bot(command_prefix='!')
 special_channels = config["channels"]
 
-@bot.event
+@client.event
 async def on_ready():
     print("The werewolves are howling!")
 
 
-@bot.command()
-async def echo(*args):
+@client.command()
+async def echo(ctx, *args):
     output = ''
     for x in args:
         output += x
         output += ' '
-    await bot.say(output)
+    await ctx.send(output)
 
 
-@bot.command(pass_context=True)
+@client.command()
+async def ping(ctx):
+    await ctx.send(":ping_pong: Pong!")
+
+
+
+@client.command(pass_context=True)
 async def startgame(ctx, *args: int):
     server = ctx.message.server
     global werewolfGame
@@ -58,24 +65,24 @@ async def startgame(ctx, *args: int):
         if notplaying_role not in member.roles:
             players.append(str(member))
     try:
-        werewolfGame = game.Game(players, args)
+        werewolfGame = Game(players, args)
     except ValueError:
-        await bot.say("You gave out too many roles for the game!")
+        await ctx.send("You gave out too many roles for the game!")
 
 
-@bot.command(pass_context=True)
+@client.command(pass_context=True)
 async def clear(ctx, number=10):
     if (discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (ctx.message.author != findPerson(ctx, "keyclimber")):
-        await bot.say("You don't have permission to do this!")
+        await ctx.send("You don't have permission to do this!")
         return
     # Converting the amount of messages to delete to an integer
     number = int(number+1)
     counter = 0
-    async for x in bot.logs_from(ctx.message.channel, limit=number):
+    async for x in client.logs_from(ctx.message.channel, limit=number):
         if counter < number:
             if x.pinned:
                 continue
-            await bot.delete_message(x)
+            await client.delete_message(x)
             counter += 1
             
 async def resetPermissions(ctx, member, channel=""):
@@ -83,22 +90,21 @@ async def resetPermissions(ctx, member, channel=""):
     #dead_role = discord.utils.get(ctx.message.server.roles, name="Dead")
     #mayor_role = discord.utils.get(ctx.message.server.roles, name="Mayor")
     playing_role = discord.utils.get(ctx.message.server.roles, name="Playing")
-    await bot.replace_roles(member, playing_role)
-    await bot.delete_channel_permissions(discord.utils.get(ctx.message.server.channels, name="lovebirds"), member)
+    await client.replace_roles(member, playing_role)
+    await client.delete_channel_permissions(discord.utils.get(ctx.message.server.channels, name="lovebirds"), member)
     if channel != "" and channel in special_channels:
-        await bot.delete_channel_permissions(discord.utils.get(ctx.message.server.channels, name=channel), member)
+        await client.delete_channel_permissions(discord.utils.get(ctx.message.server.channels, name=channel), member)
     """else:
         for x in special_channels:
-            await bot.delete_channel_permissions(ctx.message.server.get_channel(special_channels[x]), member)"""
+            await client.delete_channel_permissions(ctx.message.server.get_channel(special_channels[x]), member)"""
 
-@bot.command(pass_context=True)
+@client.command()
 async def exit(ctx):
     if ctx.message.channel.id == config["channels"]["bot-admin"]:
-        await bot.say("Goodbye!")
-        await bot.logout()
+        await ctx.send("Goodbye!")
+        await client.logout()
     else:
-        await bot.say("I'm sorry, but you cannot shut me down!")
-
+        await ctx.send("I'm sorry, but you cannot shut me down!")
 
 def findPerson(ctx, *args):
     if len(args) == 1:
@@ -112,4 +118,6 @@ def findPerson(ctx, *args):
         return None
 
 
-bot.run(config["token"])
+
+
+client.run(config["token"])
