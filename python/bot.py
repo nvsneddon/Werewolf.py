@@ -65,15 +65,34 @@ async def exit_error(ctx, error):
 @bot.command()
 @is_admin()
 async def addroles(ctx):
-    permissionObject = discord.Permissions()
-    up = {
-        "read_messages": True,
-        "send_messages": True
-    }
-    permissionObject.update(**up)
+    permissionObject = discord.Permissions.general()
     c = discord.Color.red()
-    await ctx.guild.create_role(name = "Test role", permissions = permissionObject, color = c)
+    role = await ctx.guild.create_role(name = "Test role", permissions = permissionObject, color = c)
+    await role.edit(position=2)
     await ctx.send("I think it worked!")
+
+@bot.command()
+@is_admin()
+async def moveroleposition(ctx, p: int):
+    role = discord.utils.get(ctx.guild.roles, name="Test role")
+    await role.edit(position=p)
+
+@bot.command()
+@is_admin()
+async def testroles(ctx):
+    roles = []
+    roles.append(discord.utils.get(ctx.guild.roles, name="Not Playing"))
+    roles.append(discord.utils.get(ctx.guild.roles, name="Playing"))
+    roles.append(discord.utils.get(ctx.guild.roles, name="Dead"))
+    roles.append(discord.utils.get(ctx.guild.roles, name="Alive"))
+    roles.append(discord.utils.get(ctx.guild.roles, name="Mayor"))
+
+    for i in range(len(roles)):
+        for j in range(i+1, len(roles)):
+            if roles[i].permissions == roles[j].permissions:
+                print("These permissions are equal in these roles:", roles[i], roles[j])
+            else:
+                print("These permissions are not equal in these roles:", roles[i], roles[j])
 
 @bot.command()
 @is_admin()

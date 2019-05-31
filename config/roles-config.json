@@ -1,26 +1,32 @@
 {
-    "Not Playing": {
-        "color": [84,110,122],
-        "permissions":{
-
-        }
+    "general-permissions":{
+        "create_instant_invite": true,
+        "change_nickname": true,
+        "read_messages": true,
+        "mention_everyone": true,
+        "external_emojis": true,
+        "manage_emojis": true
     },
-    "Playing": {
-        "color": [241,196,15],
-        "permissions":{
-
-        }
-    },
-    "Dead": {
-        "color": [231,76,60],
-        "permissions":{
-
-        }
-    },
-    "Alive": {
-        "color": [46,204,113],
-        "permissions":{
-
+    "roles": {
+        "Not Playing": {
+            "color": [84,110,122],
+            "permissions-update": null
+        },
+        "Playing": {
+            "color": [241,196,15],
+            "permissions-update": null
+        },
+        "Dead": {
+            "color": [231,76,60],
+            "permissions-update": null
+        },
+        "Alive": {
+            "color": [46,204,113],
+            "permissions-update": null
+        },
+        "Mayor": {
+            "color": [155,89,182],
+            "permissions-update": null
         }
     }
 }
