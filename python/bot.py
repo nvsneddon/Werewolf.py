@@ -5,39 +5,13 @@ import asyncio
 import os
 import json
 from cogstest import Test
+from files import werewolfMessages, commandDescriptions, config, channels_config
 
 werewolfGame = None
 werewolfMessages = None
 commandDescriptions = None
 
-dirname = os.path.dirname(__file__)
-try:
-    f = open(os.path.join(dirname, '../config/messages.json'))
-    werewolfMessages = json.loads(f.read())
-    f.close()
-    f2 = open(os.path.join(dirname, "../config/command_descriptions.json"))
-    commandDescriptions = json.loads(f2.read())
-    f2.close()
-except FileNotFoundError:
-    print("Please make sure the messages.json and the command_descriptions.json files are in the config folder and try again.")
-    exit()
-try:
-    f3 = open(os.path.join(dirname, "../config/discord-config.json"))
-    config = json.loads(f3.read())
-    f3.close()
-except FileNotFoundError:
-    print("The config file was not found. Please make sure the discord-config.py file is in the config folder. Please refer to the README for more information.")
-    exit()
-try:
-    f4 = open(os.path.join(dirname, "../config/channels-config.json"))
-    channels_config = json.loads(f4.read())
-    f4.close()
-except FileNotFoundError:
-    print("The channels-config.json file was not found and could not be loaded")
-    exit()
-
 bot = commands.Bot(command_prefix='!')
-special_channels = config["channels"]
 
 def is_admin():
     async def predicate(ctx):
@@ -161,6 +135,12 @@ def findPerson(ctx, *args):
     else:
         print("Something went very wrong. Args is not of length 1")
         return None
+    if name[0:3] == "<@!":
+        return ctx.message.server.get_member(name[3:-1])
+    elif name[0:2] == "<@":
+        return ctx.message.server.get_member(name[2:-1])
+    else:
+        return ctx.message.server.get_member_named(name)
 
 
 bot.run(config["token"])
