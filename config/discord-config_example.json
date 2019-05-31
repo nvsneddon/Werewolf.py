@@ -1,15 +1,16 @@
 {
     "token": "Insert token here. Remember to keep the quotation marks.",
+    "comment about the channels" : "Please replace each number with the channel ID of each of the channels.",
     "channels": {
-        "werewolf": "0000000000000000000000000000000",
-        "seer": "0000000000000000000000000000000000",
-        "bodyguard": "0000000000000000000000000000000000000",
-        "cupid": "0000000000000000000000000000000000000",
-        "mason": "000000000000000000000000000000",
-        "lovebirds": "000000000000000000000000000000000000",
-        "afterlife": "000000000000000000000000000000000000",
-        "town-square": "00000000000000000000000000000000",
-        "bot-admin": "000000000000000000000000000000"
+        "werewolf": 0,
+        "seer": 0,
+        "bodyguard": 0,
+        "cupid": 0,
+        "mason": 0,
+        "lovebirds": 0,
+        "afterlife": 0,
+        "town-square": 0,
+        "bot-admin": 0
     },
     "daytime": "7:00",
     "nighttime": "21:00"
