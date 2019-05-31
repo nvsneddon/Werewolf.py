@@ -1,0 +1,71 @@
+{
+    "category-name": "The Town",
+    "default-permissions": {
+        "alive": {
+            "read_messages": false,
+            "send_messages": false,
+            "send_tts_messages": false,
+            "embed_links": false,
+            "attach_files": false,
+            "read_message_history": false,
+            "mention_everyone": false,
+            "external_emojis": false,
+            "add_reactions": false
+        },
+        "dead": {
+            "read_messages": true,
+            "send_messages": false,
+            "send_tts_messages": false,
+            "embed_links": false,
+            "attach_files": false,
+            "read_message_history": true,
+            "mention_everyone": false,
+            "external_emojis": false,
+            "add_reactions": false
+        },
+        "everyone": {
+            "send_messages": false,
+            "send_tts_messages": false,
+            "embed_links": false,
+            "attach_files": false,
+            "mention_everyone": false,
+            "external_emojis": false,
+            "add_reactions": false
+        }
+    },
+    "channel-exceptions":{
+        "afterlife": {
+            "alive": {
+                "read_messages": false,
+                "send_messages": false,
+                "send_tts_messages": false,
+                "embed_links": false,
+                "attach_files": false,
+                "read_message_history": false,
+                "mention_everyone": false,
+                "external_emojis": false,
+                "add_reactions": false
+            },
+            "dead": {
+                "read_messages": true,
+                "send_messages": true,
+                "send_tts_messages": true,
+                "embed_links": true,
+                "attach_files": true,
+                "read_message_history": true,
+                "mention_everyone": true,
+                "external_emojis": true,
+                "add_reactions": true
+            },
+            "everyone": {
+                "send_messages": false,
+                "send_tts_messages": false,
+                "embed_links": false,
+                "attach_files": false,
+                "mention_everyone": false,
+                "external_emojis": false,
+                "add_reactions": false
+            }
+        } 
+    }
+}

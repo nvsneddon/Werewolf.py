@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
-from game import Game
+#from game import Game
 import asyncio
 import os
 import json
-from cogstest import Test
+#from cogstest import Test
 
 werewolfGame = None
 werewolfMessages = None
@@ -65,7 +65,7 @@ async def ping(ctx):
 
 @bot.command(pass_context=True)
 async def startgame(ctx, *args: int):
-    server = ctx.message.server
+    """server = ctx.message.server
     global werewolfGame
     notplaying_role = discord.utils.get(server.roles, name="Not Playing")
     #alive_role = discord.utils.get(server.roles, name="Alive")
@@ -77,7 +77,8 @@ async def startgame(ctx, *args: int):
     try:
         werewolfGame = Game(players, args)
     except ValueError:
-        await ctx.send("You gave out too many roles for the game!")
+        await ctx.send("You gave out too many roles for the game!")"""
+    pass
 
 
 @bot.command(pass_context=True)
