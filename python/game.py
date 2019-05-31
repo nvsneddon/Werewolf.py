@@ -1,15 +1,26 @@
 import random
 from villager import Villager
-from exceptions import PermissionException
+import discord
+import threading
+import schedule
+import time
+import datetime
+from discord.ext import commands
 
 
-class Game:
+class Game(commands.Cog):
 
     # players is a list of all of the name of people playing
     # roles is a list of numbers of all of the characters that will be playing
     # raises ValueError Exception when too many roles are handed out
 
-    def __init__(self, players, roles, day=True, randomshuffle=True):
+    def timer(self):
+        while not self.schedstop.is_set():
+            schedule.run_pending()
+            time.sleep(3)
+
+    def __init__(self, bot, players, roles, randomshuffle=True):
+        self.bot = bot
         self.__players = []
         self.__inlove = []
         self.__bakerdead = False
@@ -17,14 +28,24 @@ class Game:
         self.__daysleft = 3
         self.__hunter = False   # Variable to turn on the hunter's power
         self.__resettedCharacters = ("bodyguard", "seer")
+        self.__running = True
 
-        if day:
-            self.__voted = False
-            self.__killed = True
+        self.schedstop = threading.Event()
+        self.schedthread = threading.Thread(target=self.timer)
+        self.schedthread.start()
+
+        schedule.every().day.at("07:00").do(self.daytime).tag("game")
+        schedule.every().day.at("21:00").do(self.nighttime).tag("game")
+
+
+        check_time = datetime.datetime.now().time()
+        if check_time >= datetime.time(7,0) and check_time <= datetime.time(21,0):
+            self.voted = False
+            self.killed = True
         else:
-            # Night time
-            self.__voted = True
-            self.__killed = False
+            #Night time
+            self.voted = True 
+            self.killed = False 
 
         cards = []
         if len(roles) >= 6:
@@ -46,10 +67,7 @@ class Game:
             for i in range(roles[0]):
                 cards.append("werewolf")
 
-        if len(players) < len(cards):
-            raise ValueError(
-                "You have given out too many roles for the number of people playing.")
-        elif len(players) > len(cards):
+        if len(players) > len(cards):
             for a in range(len(players)-len(cards)):
                 cards.append("villager")
         if randomshuffle:
@@ -59,15 +77,18 @@ class Game:
             self.__players.append(Villager(x, cards[0]))
             cards.pop(0)
 
-    def nighttime(self):
-        self.__killed = False
-        self.__voted = True
+        for i in self.__players:
+            print(i)
 
     def iswerewolf(self, person):
         return self.findVillager(person).iswerewolf()
 
     def getCharacter(self, person):
         return self.findVillager(person).getCharacter()
+
+    def cog_unload(self):
+        schedule.clear("game")
+        return super().cog_unload()
 
     def daytime(self):
         if self.__bakerdead:
@@ -80,6 +101,10 @@ class Game:
                 x.usedAbility = False
             x.protected = False
 
+    def nighttime(self):
+        self.__killed = False
+        self.__voted = True
+
     def findVillager(self, name):
         for x in self.__players:
             if x.getname() == name:
@@ -91,3 +116,8 @@ class Game:
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()
+
+
+    def cog_unload(self):
+        schedule.clear("game")
+        return super().cog_unload()

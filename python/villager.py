@@ -37,3 +37,6 @@ class Villager:
 
     def __str__(self):
         return "Name: {}\nCharacter: {}\nAlive: {}".format(self.__name, self.__character, self.__alive)
+
+    def __eq__(self, other):
+        return self.__name == other.__name

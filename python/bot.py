@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
-#from game import Game
+from game import Game
 import asyncio
 import os
 import json
-#from cogstest import Test
+from cogstest import Test
 
 werewolfGame = None
 werewolfMessages = None
@@ -67,37 +67,20 @@ async def echo(ctx, *args):
 async def ping(ctx):
     await ctx.send(":ping_pong: Pong!")
 
-
-
 @bot.command(pass_context=True)
 async def startgame(ctx, *args: int):
-    """server = ctx.message.server
-    global werewolfGame
-    notplaying_role = discord.utils.get(server.roles, name="Not Playing")
-    #alive_role = discord.utils.get(server.roles, name="Alive")
-
+    notplaying_role = discord.utils.get(ctx.guild.roles, name="Not Playing")
+    if len(args) == 0:
+        ctx.send("Please add game parameters to the game")
+        return
     players = []
-    for member in server.members:
+    for member in ctx.guild.members:
         if notplaying_role not in member.roles:
             players.append(str(member))
-    try:
-        werewolfGame = Game(players, args)
-    except ValueError:
-        await ctx.send("You gave out too many roles for the game!")"""
-    pass
-
-async def resetPermissions(ctx, member, channel=""):
-    #alive_role = discord.utils.get(ctx.message.server.roles, name="Alive")
-    #dead_role = discord.utils.get(ctx.message.server.roles, name="Dead")
-    #mayor_role = discord.utils.get(ctx.message.server.roles, name="Mayor")
-    playing_role = discord.utils.get(ctx.message.server.roles, name="Playing")
-    await bot.replace_roles(member, playing_role)
-    await bot.delete_channel_permissions(discord.utils.get(ctx.message.server.channels, name="lovebirds"), member)
-    if channel != "" and channel in special_channels:
-        await bot.delete_channel_permissions(discord.utils.get(ctx.message.server.channels, name=channel), member)
-    """else:
-        for x in special_channels:
-            await bot.delete_channel_permissions(ctx.message.server.get_channel(special_channels[x]), member)"""
+    if len(players) < sum(args):
+        await ctx.send("You gave out too many roles for the number of people.")
+        return
+    bot.add_cog(Game(bot, players, args))
 
 @bot.command()
 @is_admin()
@@ -130,8 +113,16 @@ async def addcategory(ctx):
     for i, j in channels_config["category-permissions"].items():
         target = discord.utils.get(ctx.guild.roles, name=i)
         await c.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+
     for i in channels_config["channels"]:
         await ctx.guild.create_text_channel(name = i, category = c)
+
+    for i, j in channels_config["channel-permissions"].items():
+        ch = discord.utils.get(c.channels, name=i)
+        for k, l in j.items():
+            target = discord.utils.get(ctx.guild.roles, name=k)
+            await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
+
 
 @bot.command()
 @is_admin()
