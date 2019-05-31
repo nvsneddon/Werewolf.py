@@ -1,7 +1,17 @@
 {
     "category-name": "The Town",
-    "default-permissions": {
-        "alive": {
+    "channels": [
+        "town-square",
+        "werewolves",
+        "seer",
+        "bodyguard",
+        "cupid",
+        "mason",
+        "lovebirds",
+        "afterlife"
+    ],
+    "category-permissions": {
+        "Alive": {
             "read_messages": false,
             "send_messages": false,
             "send_tts_messages": false,
@@ -12,7 +22,7 @@
             "external_emojis": false,
             "add_reactions": false
         },
-        "dead": {
+        "Dead": {
             "read_messages": true,
             "send_messages": false,
             "send_tts_messages": false,
@@ -23,7 +33,7 @@
             "external_emojis": false,
             "add_reactions": false
         },
-        "everyone": {
+        "@everyone": {
             "send_messages": false,
             "send_tts_messages": false,
             "embed_links": false,
@@ -33,9 +43,9 @@
             "add_reactions": false
         }
     },
-    "channel-exceptions":{
+    "channel-permissions":{
         "afterlife": {
-            "alive": {
+            "Alive": {
                 "read_messages": false,
                 "send_messages": false,
                 "send_tts_messages": false,
@@ -46,7 +56,7 @@
                 "external_emojis": false,
                 "add_reactions": false
             },
-            "dead": {
+            "Dead": {
                 "read_messages": true,
                 "send_messages": true,
                 "send_tts_messages": true,
@@ -57,7 +67,7 @@
                 "external_emojis": true,
                 "add_reactions": true
             },
-            "everyone": {
+            "@everyone": {
                 "send_messages": false,
                 "send_tts_messages": false,
                 "embed_links": false,

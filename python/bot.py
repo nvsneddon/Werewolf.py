@@ -21,13 +21,19 @@ try:
 except FileNotFoundError:
     print("Please make sure the messages.json and the command_descriptions.json files are in the config folder and try again.")
     exit()
-
 try:
     f3 = open(os.path.join(dirname, "../config/discord-config.json"))
     config = json.loads(f3.read())
     f3.close()
 except FileNotFoundError:
     print("The config file was not found. Please make sure the discord-config.py file is in the config folder. Please refer to the README for more information.")
+    exit()
+try:
+    f4 = open(os.path.join(dirname, "../config/channels-config.json"))
+    channels_config = json.loads(f4.read())
+    f4.close()
+except FileNotFoundError:
+    print("The channels-config.json file was not found and could not be loaded")
     exit()
 
 bot = commands.Bot(command_prefix='!')
@@ -80,22 +86,6 @@ async def startgame(ctx, *args: int):
         await ctx.send("You gave out too many roles for the game!")"""
     pass
 
-
-@bot.command(pass_context=True)
-async def clear(ctx, number=10):
-    if (discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (ctx.message.author != findPerson(ctx, "keyclimber")):
-        await ctx.send("You don't have permission to do this!")
-        return
-    # Converting the amount of messages to delete to an integer
-    number = int(number+1)
-    counter = 0
-    async for x in bot.logs_from(ctx.message.channel, limit=number):
-        if counter < number:
-            if x.pinned:
-                continue
-            await bot.delete_message(x)
-            counter += 1
-            
 async def resetPermissions(ctx, member, channel=""):
     #alive_role = discord.utils.get(ctx.message.server.roles, name="Alive")
     #dead_role = discord.utils.get(ctx.message.server.roles, name="Dead")
@@ -133,6 +123,43 @@ async def addrole(ctx):
     await ctx.guild.create_role(name = "Test role", permissions = permissionObject, color = c)
     await ctx.send("I think it worked!")
 
+@bot.command()
+@is_admin()
+async def addcategory(ctx):
+    c = await ctx.guild.create_category_channel(channels_config["category-name"])
+    for i, j in channels_config["category-permissions"].items():
+        target = discord.utils.get(ctx.guild.roles, name=i)
+        await c.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+    for i in channels_config["channels"]:
+        await ctx.guild.create_text_channel(name = i, category = c)
+
+@bot.command()
+@is_admin()
+async def removecategory(ctx):
+    c = discord.utils.get(ctx.guild.categories, name=channels_config["category-name"])
+    for i in c.channels:
+        await i.delete()
+    await c.delete()
+
+@commands.is_owner()
+@bot.command()
+async def clear(ctx, number=10):
+    #if (discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (ctx.message.author != findPerson(ctx, "keyclimber")):
+    #    await ctx.send("You don't have permission to do this!")
+    #    return
+    # Converting the amount of messages to delete to an integer
+    number = int(number+1)
+    counter = 0
+    async for x in bot.logs_from(ctx.message.channel, limit=number):
+        if counter < number:
+            if x.pinned:
+                continue
+            await bot.delete_message(x)
+            counter += 1
+            await asyncio.sleep(0.4)
+
+
+
 def findPerson(ctx, *args):
     if len(args) == 1:
         if type(args[0]) is str:
@@ -143,8 +170,6 @@ def findPerson(ctx, *args):
     else:
         print("Something went very wrong. Args is not of length 1")
         return None
-
-
 
 
 bot.run(config["token"])
