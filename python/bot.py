@@ -7,10 +7,6 @@ import json
 from cogstest import Test
 from files import werewolfMessages, commandDescriptions, config, channels_config
 
-werewolfGame = None
-werewolfMessages = None
-commandDescriptions = None
-
 bot = commands.Bot(command_prefix='!')
 
 def is_admin():
@@ -26,7 +22,6 @@ def has_role(r):
 @bot.event
 async def on_ready():
     print("The werewolves are howling!")
-
 
 @bot.command()
 async def echo(ctx, *args):
@@ -69,7 +64,7 @@ async def exit_error(ctx, error):
 
 @bot.command()
 @is_admin()
-async def addrole(ctx):
+async def addroles(ctx):
     permissionObject = discord.Permissions()
     up = {
         "read_messages": True,
@@ -105,25 +100,6 @@ async def removecategory(ctx):
     for i in c.channels:
         await i.delete()
     await c.delete()
-
-@commands.is_owner()
-@bot.command()
-async def clear(ctx, number=10):
-    #if (discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (ctx.message.author != findPerson(ctx, "keyclimber")):
-    #    await ctx.send("You don't have permission to do this!")
-    #    return
-    # Converting the amount of messages to delete to an integer
-    number = int(number+1)
-    counter = 0
-    async for x in bot.logs_from(ctx.message.channel, limit=number):
-        if counter < number:
-            if x.pinned:
-                continue
-            await bot.delete_message(x)
-            counter += 1
-            await asyncio.sleep(0.4)
-
-
 
 def findPerson(ctx, *args):
     if len(args) == 1:
