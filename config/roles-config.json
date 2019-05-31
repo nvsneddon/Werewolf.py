@@ -1,0 +1,26 @@
+{
+    "Not Playing": {
+        "color": [84,110,122],
+        "permissions":{
+
+        }
+    },
+    "Playing": {
+        "color": [241,196,15],
+        "permissions":{
+
+        }
+    },
+    "Dead": {
+        "color": [231,76,60],
+        "permissions":{
+
+        }
+    },
+    "Alive": {
+        "color": [46,204,113],
+        "permissions":{
+
+        }
+    }
+}
