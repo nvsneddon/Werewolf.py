@@ -26,3 +26,10 @@ try:
 except FileNotFoundError:
     print("The channels-config.json file was not found and could not be loaded")
     exit()
+try:
+    f5 = open(os.path.join(dirname, "../config/roles-config.json"))
+    roles_config = json.loads(f5.read())
+    f5.close()
+except FileNotFoundError:
+    print("The roles-config.json file was not found and could not be loaded")
+    exit()

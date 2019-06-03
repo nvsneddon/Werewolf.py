@@ -5,7 +5,7 @@ import asyncio
 import os
 import json
 from cogstest import Test
-from files import werewolfMessages, commandDescriptions, config, channels_config
+from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config
 
 bot = commands.Bot(command_prefix='!')
 
@@ -65,17 +65,34 @@ async def exit_error(ctx, error):
 @bot.command()
 @is_admin()
 async def addroles(ctx):
-    permissionObject = discord.Permissions.general()
-    c = discord.Color.red()
-    role = await ctx.guild.create_role(name = "Test role", permissions = permissionObject, color = c)
-    await role.edit(position=2)
-    await ctx.send("I think it worked!")
+    for i, j in roles_config["roles"].items():
+        if discord.utils.get(ctx.guild.roles, name=i) is not None:
+            continue
+        permissionObject = discord.Permissions().none()
+        permissionObject.update(**roles_config["general-permissions"])
+        if j["permissions-update"] is not None:
+            permissionObject.update(**j["permissions-update"])
+        c = discord.Color.from_rgb(*j["color"])
+        role = await ctx.guild.create_role(name = i, permissions = permissionObject, color = c)
+        message = i + " role created"
+        await ctx.send(message)
 
 @bot.command()
 @is_admin()
-async def moveroleposition(ctx, p: int):
-    role = discord.utils.get(ctx.guild.roles, name="Test role")
-    await role.edit(position=p)
+async def resetrolepermissions(ctx):
+    for i, j in roles_config["roles"].items():
+        role = discord.utils.get(ctx.guild.roles, name=i)
+        if role is None:
+            continue
+        permissionObject = discord.Permissions().none()
+        permissionObject.update(**roles_config["general-permissions"])
+        if j["permissions-update"] is not None:
+            permissionObject.update(**j["permissions-update"])
+        await role.edit(permissions = permissionObject)
+        message = i + " role permissions reset"
+        await ctx.send(message)
+        await ping(ctx)
+
 
 @bot.command()
 @is_admin()
