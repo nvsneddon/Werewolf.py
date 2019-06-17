@@ -29,6 +29,10 @@ async def on_command_error(ctx, error):
 async def on_ready():
     print("The werewolves are howling!")
 
+@bot.event
+async def on_guild_join():
+    pass
+
 @bot.command()
 async def echo(ctx, *args):
     output = ''
@@ -83,6 +87,11 @@ async def addroles(ctx):
         role = await ctx.guild.create_role(name = i, permissions = permissionObject, color = c)
         message = i + " role created"
         await ctx.send(message)
+
+@bot.command()
+@is_admin()
+async def removeroles(ctx):
+    pass
 
 @bot.check
 async def globally_block_dms(ctx):
