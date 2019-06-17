@@ -9,6 +9,7 @@ from files import werewolfMessages, commandDescriptions, config, channels_config
 
 bot = commands.Bot(command_prefix='!')
 
+
 def is_admin():
     async def predicate(ctx):
         return ctx.channel.id == config["channels"]["bot-admin"]
@@ -18,6 +19,11 @@ def has_role(r):
     async def predicate(ctx):
         return r in ctx.author.roles
     return commands.check(predicate)
+@bot.event
+async def on_command_error(ctx, error):
+    if not isinstance(error, commands.CheckFailure):
+        await ctx.send(str(error))
+    #print(error)
 
 @bot.event
 async def on_ready():
@@ -37,6 +43,7 @@ async def ping(ctx):
     await ctx.send(":ping_pong: Pong!")
 
 @bot.command(pass_context=True)
+@is_admin()
 async def startgame(ctx, *args: int):
     notplaying_role = discord.utils.get(ctx.guild.roles, name="Not Playing")
     if len(args) == 0:
@@ -76,6 +83,12 @@ async def addroles(ctx):
         role = await ctx.guild.create_role(name = i, permissions = permissionObject, color = c)
         message = i + " role created"
         await ctx.send(message)
+
+@bot.check
+async def globally_block_dms(ctx):
+    if ctx.guild is None:
+        await ctx.send("Hey! No sending me commands here!")
+    return ctx.guild is not None
 
 @bot.command()
 @is_admin()
