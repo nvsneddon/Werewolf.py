@@ -5,14 +5,15 @@ import asyncio
 import os
 import json
 from cogstest import Test
-from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config
+from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, write_bot_admin
 
 bot = commands.Bot(command_prefix='!')
 
 
 def is_admin():
     async def predicate(ctx):
-        return ctx.channel.id == config["channels"]["bot-admin"]
+        #return ctx.channel.id == config["bot-admin"]
+        return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
     return commands.check(predicate)
 
 def has_role(r):
@@ -30,8 +31,10 @@ async def on_ready():
     print("The werewolves are howling!")
 
 @bot.event
-async def on_guild_join():
-    pass
+async def on_guild_join(guild):
+    if discord.utils.get(guild.channels, name="bot-admin"):
+        await guild.create_text_channel(name = "bot-admin")
+        await guild.send("Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)")
 
 @bot.command()
 async def echo(ctx, *args):
