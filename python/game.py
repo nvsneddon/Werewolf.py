@@ -117,7 +117,6 @@ class Game(commands.Cog):
         if killerVillager.iskiller():
             self.findVillager(target).die()
 
-
     def cog_unload(self):
         schedule.clear("game")
         return super().cog_unload()
