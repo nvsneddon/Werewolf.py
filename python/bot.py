@@ -5,7 +5,8 @@ import asyncio
 import os
 import json
 from cogstest import Test
-from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, write_bot_admin
+#from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, write_bot_admin
+from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config
 
 bot = commands.Bot(command_prefix='!')
 
