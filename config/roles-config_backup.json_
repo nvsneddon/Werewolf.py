@@ -1,0 +1,49 @@
+{
+    "comment": "The general permissions are what you would want to give everyone, feel free to modify them as you wish. If the permission is not listed, it defaults to not give (false).",
+    "general-permissions":{
+        "create_instant_invite": true,
+        "change_nickname": true,
+        "mention_everyone": true,
+        "external_emojis": true,
+        "manage_emojis": true,
+        "read_messages": true,
+        "read_message_history": true,
+        "send_messages": true,
+        "send_tts_messages": true,
+        "embed_links": true,
+        "attach_files": true,
+        "connect": true,
+        "add_reactions": true,
+        "speak": true,
+        "mute_members": true,
+        "deafen_members": true,
+        "use_voice_activation": true
+    },
+    "roles": {
+        "Mayor": {
+            "colour": [155,89,182],
+            "color": [155,89,182],
+            "permissions-update": null 
+        },
+        "Alive": {
+            "colour": [46,204,113],
+            "color": [46,204,113],
+            "permissions-update": null 
+        },
+        "Dead": {
+            "colour": [231,76,60],
+            "color": [231,76,60],
+            "permissions-update": null 
+        },
+        "Playing": {
+            "colour": [241,196,15],
+            "color": [241,196,15],
+            "permissions-update": null
+        },
+        "Not Playing": {
+            "colour": [84,110,122],
+            "color": [84,110,122],
+            "permissions-update": null 
+        }
+    }
+}
