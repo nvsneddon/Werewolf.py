@@ -36,6 +36,7 @@ async def on_guild_join(guild):
     if discord.utils.get(guild.channels, name="bot-admin"):
         await guild.create_text_channel(name = "bot-admin")
         await guild.send("Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)")
+        # TODO make it so that only the owner gets permission to this channel
 
 @bot.command()
 async def echo(ctx, *args):
@@ -91,11 +92,6 @@ async def addroles(ctx):
         role = await ctx.guild.create_role(name = i, permissions = permissionObject, color = c)
         message = i + " role created"
         await ctx.send(message)
-
-@bot.command()
-@is_admin()
-async def removeroles(ctx):
-    pass
 
 @bot.check
 async def globally_block_dms(ctx):
