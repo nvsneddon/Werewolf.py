@@ -56,7 +56,7 @@ async def ping(ctx):
 async def startgame(ctx, *args: int):
     notplaying_role = discord.utils.get(ctx.guild.roles, name="Not Playing")
     if len(args) == 0:
-        ctx.send("Please add game parameters to the game")
+        await ctx.send("Please add game parameters to the game")
         return
     players = []
     for member in ctx.guild.members:

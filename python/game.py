@@ -39,7 +39,7 @@ class Game(commands.Cog):
 
 
         check_time = datetime.datetime.now().time()
-        if check_time >= datetime.time(7,0) and check_time <= datetime.time(21,0):
+        if datetime.time(7,0) <= check_time <= datetime.time(21,0):
             self.voted = False
             self.killed = True
         else:
@@ -49,27 +49,20 @@ class Game(commands.Cog):
 
         cards = []
         if len(roles) >= 6:
-            for n in range(roles[5]):
-                cards.append("baker")
+            cards += roles[5]*["baker"]
         if len(roles) >= 5:
-            for m in range(roles[4]):
-                cards.append("hunter")
+            cards += roles[4]*["hunter"]
         if len(roles) >= 4:
-            for l in range(roles[3]):
-                cards.append("cupid")
+            cards += roles[3]*["cupid"]
         if len(roles) >= 3:
-            for k in range(roles[2]):
-                cards.append("bodyguard")
+            cards += roles[2]*["bodyguard"]
         if len(roles) >= 2:
-            for j in range(roles[1]):
-                cards.append("seer")
+            cards += roles[1]*["seer"]
         if len(roles) >= 1:
-            for i in range(roles[0]):
-                cards.append("werewolf")
+            cards += roles[0]*["werewolf"]
 
         if len(players) > len(cards):
-            for a in range(len(players)-len(cards)):
-                cards.append("villager")
+            cards += (len(players) - len(cards))*["villager"]
         if randomshuffle:
             random.shuffle(cards)
 
@@ -116,7 +109,3 @@ class Game(commands.Cog):
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()
-
-    def cog_unload(self):
-        schedule.clear("game")
-        return super().cog_unload()
