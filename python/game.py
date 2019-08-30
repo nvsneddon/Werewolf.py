@@ -49,27 +49,20 @@ class Game(commands.Cog):
 
         cards = []
         if len(roles) >= 6:
-            for i in range(roles[5]):
-                cards.append("baker")
+            cards += roles[5]*["baker"]
         if len(roles) >= 5:
-            for i in range(roles[4]):
-                cards.append("hunter")
+            cards += roles[4]*["hunter"]
         if len(roles) >= 4:
-            for i in range(roles[3]):
-                cards.append("cupid")
+            cards += roles[3]*["cupid"]
         if len(roles) >= 3:
-            for i in range(roles[2]):
-                cards.append("bodyguard")
+            cards += roles[2]*["bodyguard"]
         if len(roles) >= 2:
-            for i in range(roles[1]):
-                cards.append("seer")
+            cards += roles[1]*["seer"]
         if len(roles) >= 1:
-            for i in range(roles[0]):
-                cards.append("werewolf")
+            cards += roles[0]*["werewolf"]
 
         if len(players) > len(cards):
-            for a in range(len(players)-len(cards)):
-                cards.append("villager")
+            cards += (len(players) - len(cards))*["villager"]
         if randomshuffle:
             random.shuffle(cards)
 
