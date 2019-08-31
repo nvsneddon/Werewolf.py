@@ -37,15 +37,14 @@ class Game(commands.Cog):
         schedule.every().day.at("07:00").do(self.daytime).tag("game")
         schedule.every().day.at("21:00").do(self.nighttime).tag("game")
 
-
         check_time = datetime.datetime.now().time()
-        if datetime.time(7,0) <= check_time <= datetime.time(21,0):
+        if datetime.time(7, 0) <= check_time <= datetime.time(21, 0):
             self.voted = False
             self.killed = True
         else:
-            #Night time
-            self.voted = True 
-            self.killed = False 
+            # Night time
+            self.voted = True
+            self.killed = False
 
         cards = []
         if len(roles) >= 6:

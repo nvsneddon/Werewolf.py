@@ -7,6 +7,7 @@ import json
 from cogstest import Test
 from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config
 
+
 class Bot(commands.Cog):
 
     def __init__(self, bot):
@@ -26,12 +27,12 @@ class Bot(commands.Cog):
     async def on_command_error(self, ctx, error):
         if not isinstance(error, commands.CheckFailure):
             await ctx.send(str(error))
-        #print(error)
+        # print(error)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         if discord.utils.get(guild.channels, name="bot-admin"):
-            await guild.create_text_channel(name = "bot-admin")
+            await guild.create_text_channel(name="bot-admin")
             await guild.send("Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)")
             # TODO make it so that only the owner gets permission to this channel
 
@@ -43,7 +44,6 @@ class Bot(commands.Cog):
             output += ' '
         await ctx.send(output)
 
-
     @commands.command()
     async def ping(self, ctx):
         await ctx.send(":ping_pong: Pong!")
@@ -51,7 +51,8 @@ class Bot(commands.Cog):
     @commands.command(pass_context=True)
     @is_admin()
     async def startgame(self, ctx, *args: int):
-        notplaying_role = discord.utils.get(ctx.guild.roles, name="Not Playing")
+        notplaying_role = discord.utils.get(
+            ctx.guild.roles, name="Not Playing")
         if len(args) == 0:
             await ctx.send("Please add game parameters to the game")
             return
@@ -86,7 +87,7 @@ class Bot(commands.Cog):
             if j["permissions-update"] is not None:
                 permissionObject.update(**j["permissions-update"])
             c = discord.Color.from_rgb(*j["color"])
-            role = await ctx.guild.create_role(name = i, permissions = permissionObject, color = c)
+            role = await ctx.guild.create_role(name=i, permissions=permissionObject, color=c)
             message = i + " role created"
             await ctx.send(message)
 
@@ -107,11 +108,10 @@ class Bot(commands.Cog):
             permissionObject.update(**roles_config["general-permissions"])
             if j["permissions-update"] is not None:
                 permissionObject.update(**j["permissions-update"])
-            await role.edit(permissions = permissionObject)
+            await role.edit(permissions=permissionObject)
             message = i + " role permissions reset"
             await ctx.send(message)
             await ping(ctx)
-
 
     @commands.command()
     @is_admin()
@@ -126,9 +126,11 @@ class Bot(commands.Cog):
         for i in range(len(roles)):
             for j in range(i+1, len(roles)):
                 if roles[i].permissions == roles[j].permissions:
-                    print("These permissions are equal in these roles:", roles[i], roles[j])
+                    print("These permissions are equal in these roles:",
+                          roles[i], roles[j])
                 else:
-                    print("These permissions are not equal in these roles:", roles[i], roles[j])
+                    print("These permissions are not equal in these roles:",
+                          roles[i], roles[j])
 
     @commands.command()
     @is_admin()
@@ -139,7 +141,7 @@ class Bot(commands.Cog):
             await c.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
 
         for i in channels_config["channels"]:
-            await ctx.guild.create_text_channel(name = i, category = c)
+            await ctx.guild.create_text_channel(name=i, category=c)
 
         for i, j in channels_config["channel-permissions"].items():
             ch = discord.utils.get(c.channels, name=i)
@@ -147,11 +149,11 @@ class Bot(commands.Cog):
                 target = discord.utils.get(ctx.guild.roles, name=k)
                 await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
 
-
     @commands.command()
     @is_admin()
     async def removecategory(self, ctx):
-        c = discord.utils.get(ctx.guild.categories, name=channels_config["category-name"])
+        c = discord.utils.get(ctx.guild.categories,
+                              name=channels_config["category-name"])
         for i in c.channels:
             await i.delete()
         await c.delete()
@@ -172,5 +174,3 @@ class Bot(commands.Cog):
             return ctx.message.server.get_member(name[2:-1])
         else:
             return ctx.message.server.get_member_named(name)
-
-
