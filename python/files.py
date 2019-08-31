@@ -27,11 +27,14 @@ except FileNotFoundError:
     config['nighttime'] = str(input())
     print("How many minutes before the voting closes do you want to issue a warning?:")
     minutesbeforewarning = eval(input())
-    warnvotingtime = datetime(1,1,1,eval(config['nighttime'][:2])) - datetime(1,1,1, 0, minutesbeforewarning)
+    warnvotingtime = datetime(1, 1, 1, eval(
+        config['nighttime'][:2])) - datetime(1, 1, 1, 0, minutesbeforewarning)
     config['vote-warning'] = str(warnvotingtime)[:5]
+    config['minutes-before-warning'] = minutesbeforewarning
     print("Voter warning is ", config['vote-warning'])
     f3 = open(os.path.join(dirname, "../config/discord-config.json"), "w")
     f3.write(json.dumps(config))
+    f3.close()
 try:
     f4 = open(os.path.join(dirname, "../config/channels-config.json"))
     channels_config = json.loads(f4.read())
