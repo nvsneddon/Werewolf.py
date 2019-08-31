@@ -14,7 +14,6 @@ class Bot(commands.Cog):
 
     def is_admin():
         async def predicate(ctx):
-            #return ctx.channel.id == config["bot-admin"]
             return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
         return commands.check(predicate)
 
