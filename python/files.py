@@ -17,7 +17,10 @@ try:
     config = json.loads(f3.read())
     f3.close()
 except FileNotFoundError:
-    print("The config file was not found. Please make sure the discord-config.py file is in the config folder. Please refer to the README for more information.")
+    print("Please enter your token")
+    setup['token'] = input()
+    f3 = open(os.path.join(dirname, "../config/discord-config.json"))
+    f3.write(json.dumps(setup))
     exit()
 try:
     f4 = open(os.path.join(dirname, "../config/channels-config.json"))
