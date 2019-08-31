@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime, time
 
 dirname = os.path.dirname(__file__)
 try:
@@ -17,11 +18,20 @@ try:
     config = json.loads(f3.read())
     f3.close()
 except FileNotFoundError:
-    print("Please enter your token")
-    setup['token'] = input()
-    f3 = open(os.path.join(dirname, "../config/discord-config.json"))
-    f3.write(json.dumps(setup))
-    exit()
+    print("Please enter your token:")
+    config = dict()
+    config['token'] = str(input())
+    print("What time should day start? (Format hh:mm in 24h format. 8 pm would be 20:00, and 6 am would be 06:00):")
+    config['daytime'] = str(input())
+    print("What time should night start? (Format hh:mm in 24h format. 8 pm would be 20:00, and 6 am would be 06:00):")
+    config['nighttime'] = str(input())
+    print("How many minutes before the voting closes do you want to issue a warning?:")
+    minutesbeforewarning = eval(input())
+    warnvotingtime = datetime(1,1,1,eval(config['nighttime'][:2])) - datetime(1,1,1, 0, minutesbeforewarning)
+    config['vote-warning'] = str(warnvotingtime)[:5]
+    print("Voter warning is ", config['vote-warning'])
+    f3 = open(os.path.join(dirname, "../config/discord-config.json"), "w")
+    f3.write(json.dumps(config))
 try:
     f4 = open(os.path.join(dirname, "../config/channels-config.json"))
     channels_config = json.loads(f4.read())
