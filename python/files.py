@@ -35,6 +35,7 @@ except FileNotFoundError:
     f3 = open(os.path.join(dirname, "../config/discord-config.json"), "w")
     f3.write(json.dumps(config))
     f3.close()
+    print("You can change these settings later in the discord-config.json file found in the config folder.")
 try:
     f4 = open(os.path.join(dirname, "../config/channels-config.json"))
     channels_config = json.loads(f4.read())
