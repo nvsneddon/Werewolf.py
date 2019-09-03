@@ -102,11 +102,14 @@ class Game(commands.Cog):
     def almostnighttime(self):
         pass
 
-    def findVillager(self, name):
+    def findVillager(self, name: str) -> Villager:
         for x in self.__players:
-            if x.getname() == name:
+            if x.getName() == name:
                 return x
         return None
+
+    def isWerewolf(self, name: str) -> bool:
+        return self.findVillager(name).isWerewolf()
 
     # returns person that was killed
     def kill(self, killer, target):

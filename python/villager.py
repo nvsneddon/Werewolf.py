@@ -11,10 +11,10 @@ class Villager:
         self.__inLove = False
         # self.__inSpecialChannel = bool(character in specialChannel)
 
-    def getname(self):
+    def getName(self):
         return self.__name
 
-    def getcharacter(self):
+    def getCharacter(self):
         return self.__character
 
     def protect(self):
@@ -23,16 +23,16 @@ class Villager:
     def die(self):
         self.__alive = False
 
-    def isdead(self):
+    def isDead(self) -> bool:
         return not self.__alive
 
-    def iswerewolf(self):
+    def isWerewolf(self) -> bool:
         return self.__werewolf
 
-    def iskiller(self):
+    def isKiller(self) -> bool:
         return self.__killer
 
-    def isProtected(self):
+    def isProtected(self) -> bool:
         return self.__protected
 
     def __str__(self):
