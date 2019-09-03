@@ -51,14 +51,14 @@ class Bot(commands.Cog):
     @commands.command(pass_context=True)
     @is_admin()
     async def startgame(self, ctx, *args: int):
-        notplaying_role = discord.utils.get(
-            ctx.guild.roles, name="Not Playing")
+        playing_role = discord.utils.get(
+            ctx.guild.roles, name="Playing")
         if len(args) == 0:
             await ctx.send("Please add game parameters to the game")
             return
         players = []
         for member in ctx.guild.members:
-            if notplaying_role not in member.roles:
+            if playing_role in member.roles:
                 players.append(str(member))
         if len(players) < sum(args):
             await ctx.send("You gave out too many roles for the number of people.")

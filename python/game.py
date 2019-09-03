@@ -100,7 +100,6 @@ class Game(commands.Cog):
         self.__voted = True
     
     def almostnighttime(self):
-        channel = discord.utils.get(ctx.guild.channels, name="bot-admin")
         pass
 
     def findVillager(self, name):
