@@ -139,9 +139,19 @@ class Bot(commands.Cog):
         for i, j in channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
             await c.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
-
+        channel_id_dict = dict()
         for i in channels_config["channels"]:
             await ctx.guild.create_text_channel(name=i, category=c)
+            id = discord.utils.get(ctx.guild.channels, name="bot-admin").id
+            channel_id_dict[i] = id
+
+        try:
+            dirname = os.path.dirname(__file__)
+            f = open(os.path.join(dirname, '../config/channel_id_list.json'), "w")
+            f.write(json.dumps(channel_id_dict))
+        except:
+            print("Something went wrong. Exiting now!")
+            exit()
 
         for i, j in channels_config["channel-permissions"].items():
             ch = discord.utils.get(c.channels, name=i)
@@ -157,6 +167,11 @@ class Bot(commands.Cog):
         for i in c.channels:
             await i.delete()
         await c.delete()
+
+        dirname = os.path.dirname(__file__)
+        path = os.path.join(dirname, '../config/channel_id_list.json')
+        if os.path.exists(path):
+            os.remove(path)
 
     def findPerson(self, ctx, *args):
         if len(args) == 1:

@@ -6,6 +6,7 @@ import schedule
 import time
 import datetime
 from discord.ext import commands
+from files import channels_config
 
 
 class Game(commands.Cog):
@@ -20,7 +21,7 @@ class Game(commands.Cog):
             time.sleep(3)
 
     def __init__(self, bot, players, roles, randomshuffle=True):
-        self.bot = bot
+        self.__bot = bot
         self.__players = []
         self.__inlove = []
         self.__bakerdead = False
@@ -35,6 +36,7 @@ class Game(commands.Cog):
         self.schedthread.start()
 
         schedule.every().day.at("07:00").do(self.daytime).tag("game")
+        schedule.every().day.at("20:55").do(self.almostnighttime).tag("game")
         schedule.every().day.at("21:00").do(self.nighttime).tag("game")
 
         check_time = datetime.datetime.now().time()
@@ -96,6 +98,10 @@ class Game(commands.Cog):
     def nighttime(self):
         self.__killed = False
         self.__voted = True
+    
+    def almostnighttime(self):
+        channel = discord.utils.get(ctx.guild.channels, name="bot-admin")
+        pass
 
     def findVillager(self, name):
         for x in self.__players:
