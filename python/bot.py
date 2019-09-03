@@ -139,9 +139,14 @@ class Bot(commands.Cog):
         for i, j in channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
             await c.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
-
+        channel_id_dict = dict()
         for i in channels_config["channels"]:
             await ctx.guild.create_text_channel(name=i, category=c)
+            id = discord.utils.get(ctx.guild.channels, name="bot-admin").id
+            channel_id_dict[i] = id
+
+        try:
+            f = open()
 
         for i, j in channels_config["channel-permissions"].items():
             ch = discord.utils.get(c.channels, name=i)
