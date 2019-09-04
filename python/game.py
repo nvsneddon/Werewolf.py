@@ -70,7 +70,7 @@ class Game(commands.Cog):
         for x in players:
             self.__players.append(Villager(x, cards[0]))
             cards.pop(0)
-
+    
         for i in self.__players:
             print(i)
 

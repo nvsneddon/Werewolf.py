@@ -20,6 +20,11 @@
         "use_voice_activation": true
     },
     "roles": {
+        "Owner": {
+            "colour": [52,152,219],
+            "color": [52,152,219],
+            "permissions-update": null 
+        },
         "Mayor": {
             "colour": [155,89,182],
             "color": [155,89,182],

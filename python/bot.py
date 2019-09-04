@@ -51,6 +51,8 @@ class Bot(commands.Cog):
     @commands.command(pass_context=True)
     @is_admin()
     async def startgame(self, ctx, *args: int):
+        alive_role = discord.utils.get(
+            ctx.guild.roles, name="Alive")    
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
         if len(args) == 0:
@@ -64,6 +66,26 @@ class Bot(commands.Cog):
             await ctx.send("You gave out too many roles for the number of people.")
             return
         self.__bot.add_cog(Game(self.__bot, players, args))
+        for member in ctx.guild.members:
+            if playing_role in member.roles:
+                await member.edit(roles=[alive_role])
+
+
+    @commands.command()
+    @is_admin()
+    async def endgame(self, ctx):
+        await ctx.send("Ending Game")
+        await self.__finishGame(ctx)
+
+
+    async def __finishGame(self, ctx):
+        playing_role = discord.utils.get(
+            ctx.guild.roles, name="Playing")
+        owner_role = discord.utils.get(
+            ctx.guild.roles, name="Owner")
+        for member in ctx.guild.members:
+            if owner_role not in member.roles:
+                await member.edit(roles=[playing_role])
 
     @commands.command()
     @is_admin()
