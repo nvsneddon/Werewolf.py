@@ -6,6 +6,7 @@ import schedule
 import time
 import datetime
 from discord.ext import commands
+from files import channels_config
 
 
 class Game(commands.Cog):
@@ -20,7 +21,7 @@ class Game(commands.Cog):
             time.sleep(3)
 
     def __init__(self, bot, players, roles, randomshuffle=True):
-        self.bot = bot
+        self.__bot = bot
         self.__players = []
         self.__inlove = []
         self.__bakerdead = False
@@ -35,6 +36,7 @@ class Game(commands.Cog):
         self.schedthread.start()
 
         schedule.every().day.at("07:00").do(self.daytime).tag("game")
+        schedule.every().day.at("20:55").do(self.almostnighttime).tag("game")
         schedule.every().day.at("21:00").do(self.nighttime).tag("game")
 
         check_time = datetime.datetime.now().time()
@@ -68,7 +70,7 @@ class Game(commands.Cog):
         for x in players:
             self.__players.append(Villager(x, cards[0]))
             cards.pop(0)
-
+    
         for i in self.__players:
             print(i)
 
@@ -80,6 +82,7 @@ class Game(commands.Cog):
 
     def cog_unload(self):
         schedule.clear("game")
+        # self.__bot.remove_cog("Election")
         return super().cog_unload()
 
     def daytime(self):
@@ -96,15 +99,21 @@ class Game(commands.Cog):
     def nighttime(self):
         self.__killed = False
         self.__voted = True
+    
+    def almostnighttime(self):
+        pass
 
-    def findVillager(self, name):
+    def findVillager(self, name: str) -> Villager:
         for x in self.__players:
-            if x.getname() == name:
+            if x.getName() == name:
                 return x
         return None
 
+    def isWerewolf(self, name: str) -> bool:
+        return self.findVillager(name).isWerewolf()
+
     # returns person that was killed
-    def kill(self, killer, target):
+    def kill(self, killer, target) -> None:
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()
