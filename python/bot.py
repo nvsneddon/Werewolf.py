@@ -88,6 +88,15 @@ class Bot(commands.Cog):
                 await member.edit(roles=[playing_role])
 
     @commands.command()
+    async def search(self, ctx, *args):
+        user = self.findPerson(ctx, args)
+        if user != None:
+            await ctx.send(user.display_name)
+        else:
+            await ctx.send("That person has not been found")
+
+
+    @commands.command()
     @is_admin()
     async def exit(self, ctx):
         await ctx.send("Goodbye!")
@@ -202,13 +211,12 @@ class Bot(commands.Cog):
                 name = args[0]
             else:
                 name = " ".join(args[0])
-            return name
         else:
             print("Something went very wrong. Args is not of length 1")
             return None
         if name[0:3] == "<@!":
-            return ctx.message.server.get_member(name[3:-1])
+            return ctx.message.guild.get_member(name[3:-1])
         elif name[0:2] == "<@":
-            return ctx.message.server.get_member(name[2:-1])
+            return ctx.message.guild.get_member(name[2:-1])
         else:
-            return ctx.message.server.get_member_named(name)
+            return ctx.message.guild.get_member_named(name)
