@@ -5,6 +5,12 @@ from bot import Bot
 
 bot = commands.Bot(command_prefix='!')
 
+@bot.check
+async def globally_block_dms(ctx):
+    if ctx.guild is None:
+        await ctx.send("Hey! No sending me commands here!")
+    return ctx.guild is not None
+
 
 @bot.event
 async def on_ready():
