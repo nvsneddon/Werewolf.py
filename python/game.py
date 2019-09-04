@@ -70,7 +70,7 @@ class Game(commands.Cog):
         for x in players:
             self.__players.append(Villager(x, cards[0]))
             cards.pop(0)
-
+    
         for i in self.__players:
             print(i)
 
@@ -82,6 +82,7 @@ class Game(commands.Cog):
 
     def cog_unload(self):
         schedule.clear("game")
+        # self.__bot.remove_cog("Election")
         return super().cog_unload()
 
     def daytime(self):
@@ -100,17 +101,19 @@ class Game(commands.Cog):
         self.__voted = True
     
     def almostnighttime(self):
-        channel = discord.utils.get(ctx.guild.channels, name="bot-admin")
         pass
 
-    def findVillager(self, name):
+    def findVillager(self, name: str) -> Villager:
         for x in self.__players:
-            if x.getname() == name:
+            if x.getName() == name:
                 return x
         return None
 
+    def isWerewolf(self, name: str) -> bool:
+        return self.findVillager(name).isWerewolf()
+
     # returns person that was killed
-    def kill(self, killer, target):
+    def kill(self, killer, target) -> None:
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()
