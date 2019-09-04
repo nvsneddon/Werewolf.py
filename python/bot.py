@@ -69,6 +69,7 @@ class Bot(commands.Cog):
     @is_admin()
     async def exit(self, ctx):
         await ctx.send("Goodbye!")
+        self.__bot.remove_cog("Game")
         await self.__bot.logout()
 
     @exit.error

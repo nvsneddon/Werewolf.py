@@ -82,6 +82,7 @@ class Game(commands.Cog):
 
     def cog_unload(self):
         schedule.clear("game")
+        # self.__bot.remove_cog("Election")
         return super().cog_unload()
 
     def daytime(self):
@@ -112,7 +113,7 @@ class Game(commands.Cog):
         return self.findVillager(name).isWerewolf()
 
     # returns person that was killed
-    def kill(self, killer, target):
+    def kill(self, killer, target) -> None:
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()

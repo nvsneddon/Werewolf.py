@@ -20,7 +20,7 @@ class Villager:
     def protect(self):
         self.__protected = True
 
-    def die(self):
+    def die(self) -> None:
         self.__alive = False
 
     def isDead(self) -> bool:
