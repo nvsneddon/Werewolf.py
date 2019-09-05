@@ -161,7 +161,7 @@ class Bot(commands.Cog):
         channel_id_dict = dict()
         for i in channels_config["channels"]:
             await ctx.guild.create_text_channel(name=i, category=c)
-            id = discord.utils.get(ctx.guild.channels, name="bot-admin").id
+            id = discord.utils.get(ctx.guild.channels, name=i).id
             channel_id_dict[i] = id
 
         try:
