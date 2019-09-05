@@ -6,7 +6,7 @@ import schedule
 import time
 import datetime
 from discord.ext import commands
-from files import channels_config
+from files import channels_config, getChannel
 
 
 class Game(commands.Cog):
@@ -73,6 +73,11 @@ class Game(commands.Cog):
     
         for i in self.__players:
             print(i)
+
+    def is_character(character: str):
+        async def predicate(ctx):
+            return ctx.channel == ctx.guild.get_channel(getChannel(character))
+        return commands.check(predicate)
 
     def iswerewolf(self, person):
         return self.findVillager(person).iswerewolf()
