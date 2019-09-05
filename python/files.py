@@ -85,8 +85,8 @@ def fileFoundInConfig(filename: str) -> bool:
 def getChannelsConfig() -> dict:
     try:
         dirname = os.path.dirname(__file__)
-        f = open(os.path.join(dirname, "../config/channels_id_list.json"))
-        readfile = f.read()
+        f = open(os.path.join(dirname, "../config/channel_id_list.json"))
+        readfile = json.loads(f.read())
         f.close()
         return readfile
         
