@@ -76,7 +76,9 @@ class Game(commands.Cog):
 
     def is_from_channel(channelname: str):
         async def predicate(ctx):
-            return ctx.channel == ctx.guild.get_channel(getChannel(channelname))
+            channel1 = ctx.guild.get_channel(getChannel(channelname))
+            channel2 = ctx.channel
+            return channel1 == channel2
         return commands.check(predicate)
 
     def iswerewolf(self, person):
@@ -84,6 +86,11 @@ class Game(commands.Cog):
 
     def getCharacter(self, person):
         return self.findVillager(person).getCharacter()
+
+    @commands.command()
+    @is_from_channel("werewolves")
+    async def kill(self, ctx):
+        await ctx.send("Yay it worked!")
 
     def cog_unload(self):
         schedule.clear("game")
