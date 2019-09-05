@@ -24,7 +24,7 @@ class Game(commands.Cog):
         self.__bot = bot
         self.__players = []
         self.__inlove = []
-        self.__bakerdead = False
+        self.__bakerdead: bool = False
         self.__protected = ""
         self.__daysleft = 3
         self.__hunter = False   # Variable to turn on the hunter's power
@@ -119,7 +119,7 @@ class Game(commands.Cog):
             self.findVillager(target).die()
 
     def findPlayer(self, name: str):
-        for x in self.players:
-            if x.name == name:
+        for x in self.__self.players:
+            if x.getName == name or x.getDiscordTag == name:
                 return x 
         return None

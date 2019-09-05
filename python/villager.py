@@ -21,8 +21,11 @@ class Villager:
     def getCharacter(self):
         return self.__character
 
-    def protect(self):
+    def protect(self) -> None:
         self.__protected = True
+
+    def unprotect(self) -> None:
+        self.__protected = False
 
     def die(self) -> None:
         self.__alive = False
