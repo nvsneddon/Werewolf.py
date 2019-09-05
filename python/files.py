@@ -92,3 +92,7 @@ def getChannelsConfig() -> dict:
         
     except:
         return {}
+    
+def getChannel(channel: str) -> int:
+    config: dict = getChannelsConfig()  
+    return config[channel]
