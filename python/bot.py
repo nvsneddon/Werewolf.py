@@ -72,6 +72,7 @@ class Bot(commands.Cog):
 
 
     async def __finishGame(self, ctx):
+        self.__bot.remove_cog("Game")
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
         owner_role = discord.utils.get(
@@ -93,7 +94,7 @@ class Bot(commands.Cog):
     @is_admin()
     async def exit(self, ctx):
         await ctx.send("Goodbye!")
-        self.__bot.remove_cog("Game")
+        await self.__finishGame(ctx)
         await self.__bot.logout()
 
     @exit.error
@@ -177,6 +178,9 @@ class Bot(commands.Cog):
             for k, l in j.items():
                 target = discord.utils.get(ctx.guild.roles, name=k)
                 await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
+
+    def cog_unload(self):
+        return super().cog_unload()
 
     @commands.command()
     @is_admin()
