@@ -81,3 +81,14 @@ def readJsonFromConfig(filename: str) -> dict:
 def fileFoundInConfig(filename: str) -> bool:
     dirname = os.path.dirname(__file__)
     return os.path.exists(os.path.join(dirname, "../config/" + filename))
+
+def getChannelsConfig() -> dict:
+    try:
+        dirname = os.path.dirname(__file__)
+        f = open(os.path.join(dirname, "../config/channels_id_list.json"))
+        readfile = f.read()
+        f.close()
+        return readfile
+        
+    except:
+        return {}
