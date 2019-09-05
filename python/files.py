@@ -50,3 +50,23 @@ try:
 except FileNotFoundError:
     print("The roles-config.json file was not found and could not be loaded")
     exit()
+
+def writeToConfig(filename: str, file: str) -> None:
+    try:
+        dirname = os.path.dirname(__file__)
+        f = open(os.path.join(dirname, '../config/' + filename), "w")
+        f.write(file)
+        f.close()
+    except:
+        print("Something went wrong with writing the file")
+
+def readFromConfig(filename: str) -> str:
+    try:
+        f = open(os.path.join(dirname, "../config/" + filename))
+        channels_config = json.loads(f.read())
+        f.close()
+    except:
+        print("File " + filename + " not found")
+
+def readJsonFromConfig(filename: str):
+    return json.loads(readFromConfig(filename))
