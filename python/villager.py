@@ -48,10 +48,3 @@ class Villager:
     def __eq__(self, other):
         return self.__name == other.__name
     
-    def findPlayer(self, ctx, name: str):
-        if name[0:3] == "<@!":
-            return ctx.message.server.get_member(name[3:-1])
-        elif name[0:2] == "<@":
-            return ctx.message.server.get_member(name[2:-1])
-        else:
-            return ctx.message.server.get_member_named(name)

@@ -20,13 +20,14 @@ class Werewolf(commands.Cog, Villager):
         if len(args) == 0:
             ctx.send("Please say who you want to kill.")
             return
-        killed_user = self.findPerson(ctx, args)
-        killedPlayer = werewolfGame.findPlayer(str(killed_user))
-        if werewolfGame.findPlayer(str(killed_user)).protected:
-            await bot.say("Nice try, but this person has been protected")
+        target: str = args[0]
+        return
+
+        killedPlayer = self.findPlayer(target)
+        if killedPlayer.isProtected():
+            await ctx.send("Nice try, but this person has been protected")
             # TODO Maybe consider announcing that the werewolves protected the person that night
-            werewolfGame.findPlayer(str(killed_user)).protected = False
-            werewolfGame.killed = True
+            killedPlayer.unprotect()
         elif killedPlayer != None:
             channel = bot.get_channel(special_channels["town-square"])
             await bot.say("You have killed {}".format(killed_user.display_name))
