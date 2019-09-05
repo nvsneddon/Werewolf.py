@@ -122,13 +122,6 @@ class Bot(commands.Cog):
             role = await ctx.guild.create_role(name=i, permissions=permissionObject, color=c)
             message = i + " role created"
             await ctx.send(message)
-
-    @commands.check
-    async def globally_block_dms(self, ctx):
-        if ctx.guild is None:
-            await ctx.send("Hey! No sending me commands here!")
-        return ctx.guild is not None
-
     @commands.command()
     @is_admin()
     async def resetrolepermissions(self, ctx):
