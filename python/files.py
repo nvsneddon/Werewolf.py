@@ -68,8 +68,10 @@ def readFromConfig(filename: str) -> str:
     try:
         dirname = os.path.dirname(__file__)
         f = open(os.path.join(dirname, "../config/" + filename))
-        channels_config = json.loads(f.read())
+        readfile = f.read()
         f.close()
+        return readfile
+        
     except:
         print("File " + filename + " not found")
 
