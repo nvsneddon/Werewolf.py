@@ -117,3 +117,9 @@ class Game(commands.Cog):
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()
+
+    def findPlayer(self, name: str):
+        for x in self.players:
+            if x.name == name:
+                return x 
+        return None

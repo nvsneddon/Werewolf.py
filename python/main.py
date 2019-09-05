@@ -14,7 +14,6 @@ async def on_ready():
 @bot.event
 async def on_guild_join(self, guild):
     writeJsonToConfig("server_config.json", {"server_id": str(guild.id)})
-    
     if not discord.utils.get(guild.channels, name="bot-admin"):
         await guild.create_text_channel(name="bot-admin")
         channel = discord.utils.get(guild.channels, name="bot-admin")
