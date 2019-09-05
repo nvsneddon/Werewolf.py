@@ -29,13 +29,6 @@ class Bot(commands.Cog):
             await ctx.send(str(error))
         # print(error)
 
-    @commands.Cog.listener()
-    async def on_guild_join(self, guild):
-        if discord.utils.get(guild.channels, name="bot-admin"):
-            await guild.create_text_channel(name="bot-admin")
-            await guild.send("Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)")
-            # TODO make it so that only the owner gets permission to this channel
-
     @commands.command()
     async def echo(self, ctx, *args):
         output = ''
@@ -174,6 +167,7 @@ class Bot(commands.Cog):
             dirname = os.path.dirname(__file__)
             f = open(os.path.join(dirname, '../config/channel_id_list.json'), "w")
             f.write(json.dumps(channel_id_dict))
+            f.close()
         except:
             print("Something went wrong. Exiting now!")
             exit()
