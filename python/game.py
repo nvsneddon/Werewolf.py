@@ -74,9 +74,9 @@ class Game(commands.Cog):
         for i in self.__players:
             print(i)
 
-    def is_character(character: str):
+    def is_from_channel(channelname: str):
         async def predicate(ctx):
-            return ctx.channel == ctx.guild.get_channel(getChannel(character))
+            return ctx.channel == ctx.guild.get_channel(getChannel(channelname))
         return commands.check(predicate)
 
     def iswerewolf(self, person):
