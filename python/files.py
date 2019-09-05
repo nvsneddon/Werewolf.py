@@ -67,3 +67,6 @@ def readFromConfig(filename: str) -> str:
         f.close()
     except:
         print("File " + filename + " not found")
+
+def readJsonFromConfig(filename: str):
+    return json.loads(readFromConfig(filename))
