@@ -27,14 +27,7 @@ class Bot(commands.Cog):
     async def on_command_error(self, ctx, error):
         if not isinstance(error, commands.CheckFailure):
             await ctx.send(str(error))
-        # print(error)
-
-    @commands.Cog.listener()
-    async def on_guild_join(self, guild):
-        if discord.utils.get(guild.channels, name="bot-admin"):
-            await guild.create_text_channel(name="bot-admin")
-            await guild.send("Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)")
-            # TODO make it so that only the owner gets permission to this channel
+        print(error)
 
     @commands.command()
     async def echo(self, ctx, *args):
@@ -79,6 +72,7 @@ class Bot(commands.Cog):
 
 
     async def __finishGame(self, ctx):
+        self.__bot.remove_cog("Game")
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
         owner_role = discord.utils.get(
@@ -88,10 +82,19 @@ class Bot(commands.Cog):
                 await member.edit(roles=[playing_role])
 
     @commands.command()
+    async def search(self, ctx, *args):
+        user = self.findPerson(ctx, args)
+        if user != None:
+            await ctx.send(user.display_name)
+        else:
+            await ctx.send("That person has not been found")
+
+
+    @commands.command()
     @is_admin()
     async def exit(self, ctx):
         await ctx.send("Goodbye!")
-        self.__bot.remove_cog("Game")
+        await self.__finishGame(ctx)
         await self.__bot.logout()
 
     @exit.error
@@ -113,13 +116,6 @@ class Bot(commands.Cog):
             role = await ctx.guild.create_role(name=i, permissions=permissionObject, color=c)
             message = i + " role created"
             await ctx.send(message)
-
-    @commands.check
-    async def globally_block_dms(self, ctx):
-        if ctx.guild is None:
-            await ctx.send("Hey! No sending me commands here!")
-        return ctx.guild is not None
-
     @commands.command()
     @is_admin()
     async def resetrolepermissions(self, ctx):
@@ -165,13 +161,14 @@ class Bot(commands.Cog):
         channel_id_dict = dict()
         for i in channels_config["channels"]:
             await ctx.guild.create_text_channel(name=i, category=c)
-            id = discord.utils.get(ctx.guild.channels, name="bot-admin").id
+            id = discord.utils.get(ctx.guild.channels, name=i).id
             channel_id_dict[i] = id
 
         try:
             dirname = os.path.dirname(__file__)
             f = open(os.path.join(dirname, '../config/channel_id_list.json'), "w")
             f.write(json.dumps(channel_id_dict))
+            f.close()
         except:
             print("Something went wrong. Exiting now!")
             exit()
@@ -181,6 +178,9 @@ class Bot(commands.Cog):
             for k, l in j.items():
                 target = discord.utils.get(ctx.guild.roles, name=k)
                 await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
+
+    def cog_unload(self):
+        return super().cog_unload()
 
     @commands.command()
     @is_admin()
@@ -202,13 +202,12 @@ class Bot(commands.Cog):
                 name = args[0]
             else:
                 name = " ".join(args[0])
-            return name
         else:
             print("Something went very wrong. Args is not of length 1")
             return None
         if name[0:3] == "<@!":
-            return ctx.message.server.get_member(name[3:-1])
+            return ctx.message.guild.get_member(name[3:-1])
         elif name[0:2] == "<@":
-            return ctx.message.server.get_member(name[2:-1])
+            return ctx.message.guild.get_member(name[2:-1])
         else:
-            return ctx.message.server.get_member_named(name)
+            return ctx.message.guild.get_member_named(name)
