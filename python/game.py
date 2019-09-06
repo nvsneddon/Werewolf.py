@@ -89,8 +89,13 @@ class Game(commands.Cog):
 
     @commands.command()
     @is_from_channel("werewolves")
-    async def kill(self, ctx):
-        await ctx.send("Yay it worked!")
+    async def kill(self, ctx, *args):
+        if len(args) > 1:
+            await ctx.send("You can only kill one person at a time. Please try again")
+            return
+        if len(args) == 0:
+            await ctx.send("Please tell us who you are planning on killing")
+    
 
     def cog_unload(self):
         schedule.clear("game")
@@ -131,6 +136,10 @@ class Game(commands.Cog):
             self.findVillager(target).die()
 
     def findPlayer(self, name: str):
+        if name[0:3] == "<@!": # in case the user that is passed in has been mentioned with @
+            name = name[3:-1]
+        elif name[0:2] == "<@":
+            name = name[2:-1]
         for x in self.__self.players:
             if x.getName == name or x.getDiscordTag == name:
                 return x 
