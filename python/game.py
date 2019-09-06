@@ -6,7 +6,7 @@ import schedule
 import time
 import datetime
 from discord.ext import commands
-from files import channels_config, getChannel
+from files import channels_config, getChannelId, werewolfMessages
 
 
 class Game(commands.Cog):
@@ -25,7 +25,7 @@ class Game(commands.Cog):
         self.__players = []
         self.__inlove = []
         self.__bakerdead: bool = False
-        self.__protected = ""
+        self.__protected: Villager = None
         self.__daysleft = 3
         self.__hunter = False   # Variable to turn on the hunter's power
         self.__resettedCharacters = ("bodyguard", "seer")
@@ -76,16 +76,10 @@ class Game(commands.Cog):
 
     def is_from_channel(channelname: str):
         async def predicate(ctx):
-            channel1 = ctx.guild.get_channel(getChannel(channelname))
+            channel1 = ctx.guild.get_channel(getChannelId(channelname))
             channel2 = ctx.channel
             return channel1 == channel2
         return commands.check(predicate)
-
-    def iswerewolf(self, person):
-        return self.findVillager(person).iswerewolf()
-
-    def getCharacter(self, person):
-        return self.findVillager(person).getCharacter()
 
     @commands.command()
     @is_from_channel("werewolves")
@@ -93,9 +87,28 @@ class Game(commands.Cog):
         if len(args) > 1:
             await ctx.send("You can only kill one person at a time. Please try again")
             return
-        if len(args) == 0:
+        elif len(args) == 0:
             await ctx.send("Please tell us who you are planning on killing")
-    
+            return
+        print(args[0])
+        target = self.findPlayer(args[0])
+        print(args[0], "another time")
+        if self.__protected == target:
+            await ctx.send("That person has been protected. You just wasted your kill!")
+            print("We are here")
+        else:
+            print("We are now here")
+            await ctx.send("Killing {}".format(target.getName()))
+            target.die()
+            dead_role = discord.utils.get(ctx.guild.roles, name="Dead")    
+            await target.edit(roles=[dead_role])
+            town_square_id = getChannelId("town-square")
+            town_square_channel = ctx.guild.get_channel(town_square_id)
+            await town_square_channel.send(werewolfMessages[target.getCharacter()]["killed"])
+
+    @commands.command()
+    async def testingthis(self, ctx):
+        await ctx.send(self.findPlayer("picksupchickens").getDiscordTag())
 
     def cog_unload(self):
         schedule.clear("game")
@@ -120,27 +133,24 @@ class Game(commands.Cog):
     def almostnighttime(self):
         pass
 
-    def findVillager(self, name: str) -> Villager:
-        for x in self.__players:
-            if x.getName() == name:
-                return x
-        return None
-
-    def isWerewolf(self, name: str) -> bool:
-        return self.findVillager(name).isWerewolf()
-
     # returns person that was killed
-    def kill(self, killer, target) -> None:
-        killerVillager = self.findVillager(killer)
+    def killmaybe(self, killer, target) -> None:
+        killerVillager = self.findPlayer(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()
 
-    def findPlayer(self, name: str):
+    def findPlayer(self, name: str) -> Villager:
+        print("jaiwephfuaio")
         if name[0:3] == "<@!": # in case the user that is passed in has been mentioned with @
+            print("io")
             name = name[3:-1]
+            print("ifohaw")
         elif name[0:2] == "<@":
             name = name[2:-1]
-        for x in self.__self.players:
+            print("no no no no")
+        for x in self.__players:
+            print("no")
             if x.getName == name or x.getDiscordTag == name:
+                print("huaoeh fauwieof aho")
                 return x 
         return None
