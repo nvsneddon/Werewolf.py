@@ -7,7 +7,6 @@ class Villager:
         self.__werewolf = (character == "werewolf")
         self.__killer = (character == "werewolf")
         self.__alive = True
-        self.__protected = False
         self.__usedAbility = False
         self.__inLove = False
         # self.__inSpecialChannel = bool(character in specialChannel)
@@ -21,12 +20,6 @@ class Villager:
     def getCharacter(self):
         return self.__character
 
-    def protect(self) -> None:
-        self.__protected = True
-
-    def unprotect(self) -> None:
-        self.__protected = False
-
     def die(self) -> None:
         self.__alive = False
 
@@ -39,12 +32,11 @@ class Villager:
     def isKiller(self) -> bool:
         return self.__killer
 
-    def isProtected(self) -> bool:
-        return self.__protected
-
     def __str__(self):
         return "Name: {}\nTag: {}\nCharacter: {}\nAlive: {}".format(self.__name, self.__discordTag, self.__character, self.__alive)
 
     def __eq__(self, other):
+        if self is None or other is None:
+            return False
         return self.__name == other.__name
     

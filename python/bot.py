@@ -27,7 +27,7 @@ class Bot(commands.Cog):
     async def on_command_error(self, ctx, error):
         if not isinstance(error, commands.CheckFailure):
             await ctx.send(str(error))
-        # print(error)
+        print(error)
 
     @commands.command()
     async def echo(self, ctx, *args):
