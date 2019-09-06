@@ -90,14 +90,10 @@ class Game(commands.Cog):
         elif len(args) == 0:
             await ctx.send("Please tell us who you are planning on killing")
             return
-        print(args[0])
         target = self.findPlayer(args[0])
-        print(args[0], "another time")
         if self.__protected == target:
             await ctx.send("That person has been protected. You just wasted your kill!")
-            print("We are here")
         else:
-            print("We are now here")
             await ctx.send("Killing {}".format(target.getName()))
             target.die()
             dead_role = discord.utils.get(ctx.guild.roles, name="Dead")    
@@ -140,17 +136,11 @@ class Game(commands.Cog):
             self.findVillager(target).die()
 
     def findPlayer(self, name: str) -> Villager:
-        print("jaiwephfuaio")
         if name[0:3] == "<@!": # in case the user that is passed in has been mentioned with @
-            print("io")
             name = name[3:-1]
-            print("ifohaw")
         elif name[0:2] == "<@":
             name = name[2:-1]
-            print("no no no no")
         for x in self.__players:
-            print("no")
             if x.getName == name or x.getDiscordTag == name:
-                print("huaoeh fauwieof aho")
                 return x 
         return None
