@@ -62,6 +62,11 @@ class Bot(commands.Cog):
         for member in ctx.guild.members:
             if playing_role in member.roles:
                 await member.edit(roles=[alive_role])
+                
+        if x.character in special_channels:
+            channel = bot.get_channel(special_channels[x.character])
+            overwrite = permissionlist.read_write()
+            await bot.edit_channel_permissions(channel, server.get_member_named(x.name), overwrite)
 
 
     @commands.command()
