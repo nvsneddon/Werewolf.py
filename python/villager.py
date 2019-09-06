@@ -36,5 +36,7 @@ class Villager:
         return "Name: {}\nTag: {}\nCharacter: {}\nAlive: {}".format(self.__name, self.__discordTag, self.__character, self.__alive)
 
     def __eq__(self, other):
+        if self is None or other is None:
+            return False
         return self.__name == other.__name
     

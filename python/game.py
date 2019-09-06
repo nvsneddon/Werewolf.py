@@ -91,16 +91,18 @@ class Game(commands.Cog):
             await ctx.send("Please tell us who you are planning on killing")
             return
         target = self.findPlayer(args[0])
+        print("The target is", target.getName())
         if self.__protected == target:
             await ctx.send("That person has been protected. You just wasted your kill!")
         else:
             await ctx.send("Killing {}".format(target.getName()))
             target.die()
             dead_role = discord.utils.get(ctx.guild.roles, name="Dead")    
-            await target.edit(roles=[dead_role])
+            target_user = ctx.message.guild.get_member_named(target.getDiscordTag())
+            await target_user.edit(roles=[dead_role])
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(werewolfMessages[target.getCharacter()]["killed"])
+            await town_square_channel.send(werewolfMessages[target.getCharacter()]["killed"].format(target.getName()))
 
     @commands.command()
     async def testingthis(self, ctx):
@@ -141,6 +143,6 @@ class Game(commands.Cog):
         elif name[0:2] == "<@":
             name = name[2:-1]
         for x in self.__players:
-            if x.getName == name or x.getDiscordTag == name:
+            if x.getName().lower() == name.lower() or x.getDiscordTag().lower() == name.lower():
                 return x 
         return None
