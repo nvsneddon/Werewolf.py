@@ -5,7 +5,7 @@ import asyncio
 import os
 import json
 from cogstest import Test
-from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config
+from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
 
 
 class Bot(commands.Cog):
@@ -61,9 +61,15 @@ class Bot(commands.Cog):
             return
         game_cog = Game(self.__bot, players, args)
         self.__bot.add_cog(game_cog)
+        read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
         for x in ctx.guild.members:
             if playing_role in x.roles:
                 await x.edit(roles=[alive_role])
+                character = game_cog.getVillagerByID(x.id).getCharacter()
+                if character in channels_config["character-to-channel"]:
+                    channel = channels_config["character-to-channel"][character]
+                    # await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+
                 
 
     @commands.command()
