@@ -54,20 +54,17 @@ class Bot(commands.Cog):
         players = []
         for member in ctx.guild.members:
             if playing_role in member.roles:
-                players.append(str(member))
+                players.append(member)
+                await member.edit(roles=[alive_role])
         if len(players) < sum(args):
             await ctx.send("You gave out too many roles for the number of people.")
             return
-        self.__bot.add_cog(Game(self.__bot, players, args))
-        for member in ctx.guild.members:
-            if playing_role in member.roles:
-                await member.edit(roles=[alive_role])
+        game_cog = Game(self.__bot, players, args)
+        self.__bot.add_cog(game_cog)
+        for x in ctx.guild.members:
+            if playing_role in x.roles:
+                await x.edit(roles=[alive_role])
                 
-        if x.character in special_channels:
-            channel = bot.get_channel(special_channels[x.character])
-            overwrite = permissionlist.read_write()
-            await bot.edit_channel_permissions(channel, server.get_member_named(x.name), overwrite)
-
 
     @commands.command()
     @is_admin()
@@ -121,6 +118,7 @@ class Bot(commands.Cog):
             role = await ctx.guild.create_role(name=i, permissions=permissionObject, color=c)
             message = i + " role created"
             await ctx.send(message)
+
     @commands.command()
     @is_admin()
     async def resetrolepermissions(self, ctx):

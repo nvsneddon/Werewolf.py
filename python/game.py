@@ -68,7 +68,8 @@ class Game(commands.Cog):
             random.shuffle(cards)
 
         for x in players:
-            self.__players.append(Villager(x, cards[0]))
+            y = Villager(str(x), cards[0], x.id)
+            self.__players.append(y)
             cards.pop(0)
     
         for i in self.__players:
@@ -131,6 +132,12 @@ class Game(commands.Cog):
     def almostnighttime(self):
         pass
 
+    def getVillagerByID(self, id: int) -> Villager:
+        for x in self.__players:
+            if id == x.getUserID():
+                return x
+        return None
+
     # returns person that was killed
     def killmaybe(self, killer, target) -> None:
         killerVillager = self.findPlayer(killer)
@@ -146,3 +153,4 @@ class Game(commands.Cog):
             if x.getName().lower() == name.lower() or x.getDiscordTag().lower() == name.lower():
                 return x 
         return None
+
