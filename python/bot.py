@@ -8,16 +8,17 @@ from cogstest import Test
 from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
 
 
+def is_admin():
+    async def predicate(ctx):
+        return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
+
+    return commands.check(predicate)
+
+
 class Bot(commands.Cog):
 
     def __init__(self, bot):
         self.__bot = bot
-
-    def is_admin():
-        async def predicate(ctx):
-            return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
-
-        return commands.check(predicate)
 
     def has_role(self, r):
         async def predicate(ctx):
@@ -91,7 +92,7 @@ class Bot(commands.Cog):
     @commands.command()
     async def search(self, ctx, *args):
         user = self.findPerson(ctx, args)
-        if user != None:
+        if user is not None:
             await ctx.send(user.display_name)
         else:
             await ctx.send("That person has not been found")
@@ -114,12 +115,12 @@ class Bot(commands.Cog):
         for i, j in roles_config["roles"].items():
             if discord.utils.get(ctx.guild.roles, name=i) is not None:
                 continue
-            permissionObject = discord.Permissions().none()
-            permissionObject.update(**roles_config["general-permissions"])
+            permission_object = discord.Permissions().none()
+            permission_object.update(**roles_config["general-permissions"])
             if j["permissions-update"] is not None:
-                permissionObject.update(**j["permissions-update"])
+                permission_object.update(**j["permissions-update"])
             c = discord.Color.from_rgb(*j["color"])
-            role = await ctx.guild.create_role(name=i, permissions=permissionObject, color=c)
+            role = await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
             message = i + " role created"
             await ctx.send(message)
 
@@ -137,17 +138,13 @@ class Bot(commands.Cog):
             await role.edit(permissions=permissionObject)
             message = i + " role permissions reset"
             await ctx.send(message)
-            await ping(ctx)
 
     @commands.command()
     @is_admin()
     async def testroles(self, ctx):
-        roles = []
-        roles.append(discord.utils.get(ctx.guild.roles, name="Not Playing"))
-        roles.append(discord.utils.get(ctx.guild.roles, name="Playing"))
-        roles.append(discord.utils.get(ctx.guild.roles, name="Dead"))
-        roles.append(discord.utils.get(ctx.guild.roles, name="Alive"))
-        roles.append(discord.utils.get(ctx.guild.roles, name="Mayor"))
+        roles = [discord.utils.get(ctx.guild.roles, name="Not Playing"),
+                 discord.utils.get(ctx.guild.roles, name="Playing"), discord.utils.get(ctx.guild.roles, name="Dead"),
+                 discord.utils.get(ctx.guild.roles, name="Alive"), discord.utils.get(ctx.guild.roles, name="Mayor")]
 
         for i in range(len(roles)):
             for j in range(i + 1, len(roles)):
