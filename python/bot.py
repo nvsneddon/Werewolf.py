@@ -200,7 +200,8 @@ class Bot(commands.Cog):
         if os.path.exists(path):
             os.remove(path)
 
-    def findPerson(self, ctx, *args):
+    @staticmethod
+    def findPerson(ctx, *args):
         if len(args) == 1:
             if type(args[0]) is str:
                 name = args[0]
