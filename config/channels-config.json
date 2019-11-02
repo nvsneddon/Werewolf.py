@@ -43,7 +43,7 @@
             "add_reactions": false
         }
     },
-    "channel-permissions":{
+    "channel-permissions": {
         "afterlife": {
             "Alive": {
                 "read_messages": false,
@@ -76,6 +76,13 @@
                 "external_emojis": false,
                 "add_reactions": false
             }
-        } 
+        }
+    },
+    "character-to-channel":{
+        "werewolf": "werewolves",
+        "seer": "seer",
+        "bodyguard": "bodyguard",
+        "cupid": "cupid",
+        "mason": "mason"
     }
 }
