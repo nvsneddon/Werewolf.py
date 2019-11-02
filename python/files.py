@@ -1,6 +1,6 @@
-import os
 import json
-from datetime import datetime, time
+import os
+from datetime import datetime
 
 dirname = os.path.dirname(__file__)
 try:
@@ -28,7 +28,7 @@ except FileNotFoundError:
     print("How many minutes before the voting closes do you want to issue a warning?:")
     minutesbeforewarning = eval(input())
     warnvotingtime = datetime(1, 1, 1, eval(
-        config['nighttime'][:2])) - datetime(1, 1, 1, 0, minutesbeforewarning)
+    config['nighttime'][:2])) - datetime(1, 1, 1, 0, minutesbeforewarning)
     config['vote-warning'] = str(warnvotingtime)[:5]
     config['minutes-before-warning'] = minutesbeforewarning
     print("Voter warning is ", config['vote-warning'])

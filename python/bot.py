@@ -5,7 +5,14 @@ import asyncio
 import os
 import json
 from cogstest import Test
-from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config
+from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
+
+
+def is_admin():
+    async def predicate(ctx):
+        return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
+
+    return commands.check(predicate)
 
 
 class Bot(commands.Cog):
@@ -13,14 +20,10 @@ class Bot(commands.Cog):
     def __init__(self, bot):
         self.__bot = bot
 
-    def is_admin():
-        async def predicate(ctx):
-            return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
-        return commands.check(predicate)
-
     def has_role(self, r):
         async def predicate(ctx):
             return r in ctx.author.roles
+
         return commands.check(predicate)
 
     @commands.Cog.listener()
@@ -45,7 +48,7 @@ class Bot(commands.Cog):
     @is_admin()
     async def startgame(self, ctx, *args: int):
         alive_role = discord.utils.get(
-            ctx.guild.roles, name="Alive")    
+            ctx.guild.roles, name="Alive")
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
         if len(args) == 0:
@@ -54,22 +57,27 @@ class Bot(commands.Cog):
         players = []
         for member in ctx.guild.members:
             if playing_role in member.roles:
-                players.append(str(member))
+                players.append(member)
+                await member.edit(roles=[alive_role])
         if len(players) < sum(args):
             await ctx.send("You gave out too many roles for the number of people.")
             return
-        self.__bot.add_cog(Game(self.__bot, players, args))
-        for member in ctx.guild.members:
-            if playing_role in member.roles:
-                await member.edit(roles=[alive_role])
-
+        game_cog = Game(self.__bot, players, args)
+        self.__bot.add_cog(game_cog)
+        read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
+        for x in ctx.guild.members:
+            if playing_role in x.roles:
+                await x.edit(roles=[alive_role])
+                character = game_cog.getVillagerByID(x.id).getCharacter()
+                if character in channels_config["character-to-channel"]:
+                    channel = channels_config["character-to-channel"][character]
+                    # await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
     @commands.command()
     @is_admin()
     async def endgame(self, ctx):
         await ctx.send("Ending Game")
         await self.__finishGame(ctx)
-
 
     async def __finishGame(self, ctx):
         self.__bot.remove_cog("Game")
@@ -84,11 +92,10 @@ class Bot(commands.Cog):
     @commands.command()
     async def search(self, ctx, *args):
         user = self.findPerson(ctx, args)
-        if user != None:
+        if user is not None:
             await ctx.send(user.display_name)
         else:
             await ctx.send("That person has not been found")
-
 
     @commands.command()
     @is_admin()
@@ -108,14 +115,15 @@ class Bot(commands.Cog):
         for i, j in roles_config["roles"].items():
             if discord.utils.get(ctx.guild.roles, name=i) is not None:
                 continue
-            permissionObject = discord.Permissions().none()
-            permissionObject.update(**roles_config["general-permissions"])
+            permission_object = discord.Permissions().none()
+            permission_object.update(**roles_config["general-permissions"])
             if j["permissions-update"] is not None:
-                permissionObject.update(**j["permissions-update"])
+                permission_object.update(**j["permissions-update"])
             c = discord.Color.from_rgb(*j["color"])
-            role = await ctx.guild.create_role(name=i, permissions=permissionObject, color=c)
+            role = await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
             message = i + " role created"
             await ctx.send(message)
+
     @commands.command()
     @is_admin()
     async def resetrolepermissions(self, ctx):
@@ -130,20 +138,16 @@ class Bot(commands.Cog):
             await role.edit(permissions=permissionObject)
             message = i + " role permissions reset"
             await ctx.send(message)
-            await ping(ctx)
 
     @commands.command()
     @is_admin()
     async def testroles(self, ctx):
-        roles = []
-        roles.append(discord.utils.get(ctx.guild.roles, name="Not Playing"))
-        roles.append(discord.utils.get(ctx.guild.roles, name="Playing"))
-        roles.append(discord.utils.get(ctx.guild.roles, name="Dead"))
-        roles.append(discord.utils.get(ctx.guild.roles, name="Alive"))
-        roles.append(discord.utils.get(ctx.guild.roles, name="Mayor"))
+        roles = [discord.utils.get(ctx.guild.roles, name="Not Playing"),
+                 discord.utils.get(ctx.guild.roles, name="Playing"), discord.utils.get(ctx.guild.roles, name="Dead"),
+                 discord.utils.get(ctx.guild.roles, name="Alive"), discord.utils.get(ctx.guild.roles, name="Mayor")]
 
         for i in range(len(roles)):
-            for j in range(i+1, len(roles)):
+            for j in range(i + 1, len(roles)):
                 if roles[i].permissions == roles[j].permissions:
                     print("These permissions are equal in these roles:",
                           roles[i], roles[j])
@@ -196,7 +200,8 @@ class Bot(commands.Cog):
         if os.path.exists(path):
             os.remove(path)
 
-    def findPerson(self, ctx, *args):
+    @staticmethod
+    def findPerson(ctx, *args):
         if len(args) == 1:
             if type(args[0]) is str:
                 name = args[0]
