@@ -92,7 +92,6 @@ class Game(commands.Cog):
         for i in self.__players:
             print(i)
 
-
     @commands.command()
     @is_from_channel("werewolves")
     async def kill(self, ctx, *args):
@@ -100,11 +99,14 @@ class Game(commands.Cog):
             await ctx.send("You can only kill one person at a time. Please try again")
             return
         elif len(args) == 0:
-            await ctx.send("Please tell us who you are planning on killing")
+            await ctx.send("I need to know who you're killing. Please try running the command again.")
+            await ctx.send("Don't forget to follow the command with the name of the person you want to kill")
             return
         target = self.findPlayer(args[0])
-        print("The target is", target.getName())
-        if self.__protected == target:
+        if target is None:
+            await ctx.send("That person could not be found. Please try again.")
+            return
+        if self.__protected.getUserID() == target.getUserID():
             await ctx.send("That person has been protected. You just wasted your kill!")
         else:
             await ctx.send("Killing {}".format(target.getName()))
@@ -114,11 +116,25 @@ class Game(commands.Cog):
             await target_user.edit(roles=[dead_role])
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(werewolfMessages[target.getCharacter()]["killed"].format(target.getName()))
+            await town_square_channel.send(werewolfMessages[target.getCharacter()]["killed"].format(target.getName()))\
 
-    @commands.command()
-    async def testingthis(self, ctx):
-        await ctx.send(self.findPlayer("picksupchickens").getDiscordTag())
+    @commands.command
+    @is_from_channel("seer")
+    async def investigate(self, ctx, *args):
+        if len(args) > 1:
+            await ctx.send("You can only investigate one person at a time. Please try again")
+            return
+        elif len(args) == 0:
+            await ctx.send("I need to know who you're investigating. Run the command followed by the name of whom you "
+                           "want to investigate")
+            return
+        target = self.findPlayer(args[0])
+        seer = self.findPlayer(ctx.messasge.author.)
+        if target is None:
+            await ctx.send("That person could not be found. Please try again.")
+            return
+        await ctx.send("That person is {} a werewolf".format("" if target.isWerewolf() else "not"))
+
 
     def cog_unload(self):
         schedule.clear("game")

@@ -15,6 +15,9 @@ class Villager:
     def getUserID(self) -> int:
         return self.__userID
 
+    def getUsedAbility(self):
+        return self.__usedAbility
+
     def getName(self):
         return self.__name
     
