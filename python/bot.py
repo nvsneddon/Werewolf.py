@@ -72,9 +72,7 @@ class Bot(commands.Cog):
         for x in ctx.guild.members:
             if alive_role in x.roles:
                 character = game_cog.getVillagerByID(x.id).getCharacter()
-                print("Caught in a landslide!")
                 if character in channels_config["character-to-channel"]:
-                    print("whefiuhweiufohwiuefhiuo")
                     channel_name = channels_config["character-to-channel"][character]
                     channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                     await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
@@ -95,6 +93,9 @@ class Bot(commands.Cog):
         for member in ctx.guild.members:
             if owner_role not in member.roles:
                 await member.edit(roles=[playing_role])
+            for x in channels_config["channels"]:
+                channel = discord.utils.get(ctx.guild.channels, name=x)
+                await channel.set_permissions(member, overwrite=None)
 
     @commands.command()
     async def search(self, ctx, *args):
