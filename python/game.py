@@ -129,7 +129,7 @@ class Game(commands.Cog):
                            "want to investigate")
             return
         target = self.findPlayer(args[0])
-        seer = self.findPlayer(ctx.messasge.author.)
+        # seer = self.findPlayer(ctx.messasge.author.)
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
