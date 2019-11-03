@@ -26,7 +26,7 @@ class Werewolf(commands.Cog, Villager):
         killedPlayer = self.findPlayer(target)
         if killedPlayer.isProtected():
             await ctx.send("Nice try, but this person has been protected")
-            # TODO Maybe consider announcing that the werewolves protected the person that night
+            # TODO Maybe consider announcing that the werewolves tried to kill someone that was protected
             killedPlayer.unprotect()
         elif killedPlayer != None:
             channel = bot.get_channel(special_channels["town-square"])

@@ -66,9 +66,7 @@ class Bot(commands.Cog):
             await player.edit(roles=roles_assignment)
         game_cog = Game(self.__bot, players, args)
         self.__bot.add_cog(game_cog)
-        print("Is this the real life")
         read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
-        print("Is this just fantasy")
         for x in ctx.guild.members:
             if alive_role in x.roles:
                 character = game_cog.getVillagerByID(x.id).getCharacter()

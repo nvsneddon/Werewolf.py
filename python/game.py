@@ -1,12 +1,29 @@
-import random
-from villager import Villager
-import discord
-import threading
-import schedule
-import time
 import datetime
+import random
+import threading
+import time
+from typing import Optional
+
+import discord
+import schedule
 from discord.ext import commands
-from files import channels_config, getChannelId, werewolfMessages
+
+from files import getChannelId, werewolfMessages
+from villager import Villager
+
+
+def is_from_channel(channel_name: str):
+    async def predicate(ctx):
+        channel1 = ctx.guild.get_channel(getChannelId(channel_name))
+        channel2 = ctx.channel
+
+        channel_check = channel1 == channel2
+        if not channel_check:
+            await ctx.send("I'm sorry, but you can't do that!")
+            await ctx.send("To do that, you must be in the {} channel".format(str(channel1)))
+        return channel_check
+
+    return commands.check(predicate)
 
 
 class Game(commands.Cog):
@@ -25,7 +42,7 @@ class Game(commands.Cog):
         self.__players = []
         self.__inlove = []
         self.__bakerdead: bool = False
-        self.__protected: Villager = None
+        self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__resettedCharacters = ("bodyguard", "seer")
@@ -75,13 +92,6 @@ class Game(commands.Cog):
         for i in self.__players:
             print(i)
 
-    def is_from_channel(channelname: str):
-        async def predicate(ctx):
-            channel1 = ctx.guild.get_channel(getChannelId(channelname))
-            channel2 = ctx.channel
-            return channel1 == channel2
-
-        return commands.check(predicate)
 
     @commands.command()
     @is_from_channel("werewolves")
@@ -120,9 +130,9 @@ class Game(commands.Cog):
             self.__daysleft -= 1
         self.__killed = True
         for x in self.__players:
-            if x.character == "werewolf":
+            if x.getCharacter() == "werewolf":
                 self.usedAbility = True
-            elif x.character in self.__resettedCharacters:
+            elif x.getCharacter() in self.__resettedCharacters:
                 x.usedAbility = False
             x.protected = False
 
@@ -133,9 +143,9 @@ class Game(commands.Cog):
     def almostnighttime(self):
         pass
 
-    def getVillagerByID(self, id: int) -> Villager:
+    def getVillagerByID(self, player_id: int) -> Optional[Villager]:
         for x in self.__players:
-            if id == x.getUserID():
+            if player_id == x.getUserID():
                 return x
         return None
 
@@ -145,8 +155,7 @@ class Game(commands.Cog):
         if killerVillager.iskiller():
             self.findVillager(target).die()
 
-    def findPlayer(self, name: str) -> Villager:
-        print(name, "is the string")
+    def findPlayer(self, name: str) -> Optional[Villager]:
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
             name = name[3:-1]
         elif name[0:2] == "<@":
