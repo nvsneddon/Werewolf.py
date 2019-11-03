@@ -51,6 +51,7 @@ class Bot(commands.Cog):
             ctx.guild.roles, name="Alive")
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
+        roles_assignment = [alive_role]
         if len(args) == 0:
             await ctx.send("Please add game parameters to the game")
             return
@@ -58,20 +59,24 @@ class Bot(commands.Cog):
         for member in ctx.guild.members:
             if playing_role in member.roles:
                 players.append(member)
-                await member.edit(roles=[alive_role])
         if len(players) < sum(args):
             await ctx.send("You gave out too many roles for the number of people.")
             return
+        for player in players:
+            await player.edit(roles=roles_assignment)
         game_cog = Game(self.__bot, players, args)
         self.__bot.add_cog(game_cog)
+        print("Is this the real life")
         read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
+        print("Is this just fantasy")
         for x in ctx.guild.members:
-            if playing_role in x.roles:
-                await x.edit(roles=[alive_role])
+            if alive_role in x.roles:
                 character = game_cog.getVillagerByID(x.id).getCharacter()
                 if character in channels_config["character-to-channel"]:
-                    channel = channels_config["character-to-channel"][character]
-                    # await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+                    channel_name = channels_config["character-to-channel"][character]
+                    channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+                    await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+        await ctx.send("Let the games begin!")
 
     @commands.command()
     @is_admin()
@@ -88,6 +93,9 @@ class Bot(commands.Cog):
         for member in ctx.guild.members:
             if owner_role not in member.roles:
                 await member.edit(roles=[playing_role])
+            for x in channels_config["channels"]:
+                channel = discord.utils.get(ctx.guild.channels, name=x)
+                await channel.set_permissions(member, overwrite=None)
 
     @commands.command()
     async def search(self, ctx, *args):
@@ -211,8 +219,8 @@ class Bot(commands.Cog):
             print("Something went very wrong. Args is not of length 1")
             return None
         if name[0:3] == "<@!":
-            return ctx.message.guild.get_member(name[3:-1])
+            return ctx.guild.get_member(int(name[3:-1]))
         elif name[0:2] == "<@":
-            return ctx.message.guild.get_member(name[2:-1])
+            return ctx.guild.get_member(int(name[2:-1]))
         else:
-            return ctx.message.guild.get_member_named(name)
+            return ctx.guild.get_member_named(name)

@@ -27,7 +27,7 @@ class Game(commands.Cog):
         self.__bakerdead: bool = False
         self.__protected: Villager = None
         self.__daysleft = 3
-        self.__hunter = False   # Variable to turn on the hunter's power
+        self.__hunter = False  # Variable to turn on the hunter's power
         self.__resettedCharacters = ("bodyguard", "seer")
         self.__running = True
 
@@ -50,20 +50,20 @@ class Game(commands.Cog):
 
         cards = []
         if len(roles) >= 6:
-            cards += roles[5]*["baker"]
+            cards += roles[5] * ["baker"]
         if len(roles) >= 5:
-            cards += roles[4]*["hunter"]
+            cards += roles[4] * ["hunter"]
         if len(roles) >= 4:
-            cards += roles[3]*["cupid"]
+            cards += roles[3] * ["cupid"]
         if len(roles) >= 3:
-            cards += roles[2]*["bodyguard"]
+            cards += roles[2] * ["bodyguard"]
         if len(roles) >= 2:
-            cards += roles[1]*["seer"]
+            cards += roles[1] * ["seer"]
         if len(roles) >= 1:
-            cards += roles[0]*["werewolf"]
+            cards += roles[0] * ["werewolf"]
 
         if len(players) > len(cards):
-            cards += (len(players) - len(cards))*["villager"]
+            cards += (len(players) - len(cards)) * ["villager"]
         if randomshuffle:
             random.shuffle(cards)
 
@@ -71,7 +71,7 @@ class Game(commands.Cog):
             y = Villager(str(x), cards[0], x.id)
             self.__players.append(y)
             cards.pop(0)
-    
+
         for i in self.__players:
             print(i)
 
@@ -80,6 +80,7 @@ class Game(commands.Cog):
             channel1 = ctx.guild.get_channel(getChannelId(channelname))
             channel2 = ctx.channel
             return channel1 == channel2
+
         return commands.check(predicate)
 
     @commands.command()
@@ -98,7 +99,7 @@ class Game(commands.Cog):
         else:
             await ctx.send("Killing {}".format(target.getName()))
             target.die()
-            dead_role = discord.utils.get(ctx.guild.roles, name="Dead")    
+            dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
             target_user = ctx.message.guild.get_member_named(target.getDiscordTag())
             await target_user.edit(roles=[dead_role])
             town_square_id = getChannelId("town-square")
@@ -128,7 +129,7 @@ class Game(commands.Cog):
     def nighttime(self):
         self.__killed = False
         self.__voted = True
-    
+
     def almostnighttime(self):
         pass
 
@@ -145,12 +146,12 @@ class Game(commands.Cog):
             self.findVillager(target).die()
 
     def findPlayer(self, name: str) -> Villager:
-        if name[0:3] == "<@!": # in case the user that is passed in has been mentioned with @
+        print(name, "is the string")
+        if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
             name = name[3:-1]
         elif name[0:2] == "<@":
             name = name[2:-1]
         for x in self.__players:
             if x.getName().lower() == name.lower() or x.getDiscordTag().lower() == name.lower():
-                return x 
+                return x
         return None
-
