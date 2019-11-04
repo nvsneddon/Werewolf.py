@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+from decorators import is_admin
 from election import Election
 from game import Game
 import asyncio
@@ -8,12 +9,6 @@ import os
 import json
 from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
 
-
-def is_admin():
-    async def predicate(ctx):
-        return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
-
-    return commands.check(predicate)
 
 
 class Bot(commands.Cog):
@@ -161,17 +156,6 @@ class Bot(commands.Cog):
                 else:
                     print("These permissions are not equal in these roles:",
                           roles[i], roles[j])
-
-    @commands.command()
-    @is_admin()
-    async def testasync(self, ctx):
-        future = self.__bot.loop.create_future()
-        election_cog = Election(self.__bot, future)
-        self.__bot.add_cog(election_cog)
-        await future
-        await ctx.send("The result is {}".format(future.result()))
-        self.__bot.remove_cog("Election")
-
 
     @commands.command()
     @is_admin()

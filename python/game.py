@@ -8,23 +8,20 @@ import discord
 import schedule
 from discord.ext import commands
 
+from decorators import is_from_channel, is_admin
+from election import Election
 from files import getChannelId, werewolfMessages, config
 from villager import Villager
 
 
-def is_from_channel(channel_name: str):
-    async def predicate(ctx):
-        channel1 = ctx.guild.get_channel(getChannelId(channel_name))
-        channel2 = ctx.channel
-        channel_check = channel1 == channel2
-        return channel_check
 
-    return commands.check(predicate)
+
 
 
 class Game(commands.Cog):
-
-    __resettedCharacters: Tuple[str, str, str]
+    __daysleft: int
+    __bakerdead: bool
+    __characters_to_reset: Tuple[str, str, str]
     __inlove: List[Villager]
     __players: List[Villager]
 
@@ -41,18 +38,16 @@ class Game(commands.Cog):
         self.__bot = bot
         self.__players = []
         self.__inlove = []
-        self.__bakerdead: bool = False
+        self.__bakerdead = False
         # self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
-        self.__resettedCharacters = ("bodyguard", "seer", "werewolf")
+        self.__characters_to_reset = ("bodyguard", "seer", "werewolf")
         self.__running = True
 
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
         self.schedthread.start()
-
-
 
         schedule.every().day.at(config["daytime"]).do(self.daytime).tag("game")
         schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
@@ -92,9 +87,9 @@ class Game(commands.Cog):
         for i in self.__players:
             print(i)
 
-    @commands.command()
+    @commands.command(aliases=["murder"])
     @is_from_channel("werewolves")
-    async def kill(self, ctx, person_name:str):
+    async def kill(self, ctx, person_name: str):
         target = self.findVillager(person_name)
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
@@ -109,7 +104,7 @@ class Game(commands.Cog):
             await target_user.edit(roles=[dead_role])
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Name))\
+            await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Name))
 
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
@@ -127,7 +122,17 @@ class Game(commands.Cog):
         if self.useAbility(seer):
             await ctx.send("{} is {} a werewolf".format(person_name, "" if target.IsWerewolf else "not"))
         else:
-            await ctx.send("You already used your ability tonight.")
+            await ctx.send("You already used your ability. You can use it soon though.")
+
+    @commands.command()
+    @is_admin()
+    async def startvote(self, ctx):
+        future = self.__bot.loop.create_future()
+        election_cog = Election(self.__bot, future, self.__players)
+        self.__bot.add_cog(election_cog)
+        await future
+        await ctx.send("The result is {}".format(future.result()))
+        self.__bot.remove_cog("Election")
 
     def useAbility(self, v: Villager) -> bool:
         if v.UsedAbility:
@@ -145,7 +150,7 @@ class Game(commands.Cog):
             self.__daysleft -= 1
         self.__killed = True
         for x in self.__players:
-            if x.Character in self.__resettedCharacters:
+            if x.Character in self.__characters_to_reset:
                 x.UsedAbility = False
             x.protected = False
 
@@ -162,7 +167,7 @@ class Game(commands.Cog):
         return None
 
     # returns person that was killed
-    #TODO Do we need to have this really?
+    # TODO Do we need to have this really?
     def killmaybe(self, killer, target) -> None:
         killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
