@@ -69,7 +69,7 @@ class Bot(commands.Cog):
         read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
         for x in ctx.guild.members:
             if alive_role in x.roles:
-                character = game_cog.getVillagerByID(x.id).getCharacter()
+                character = game_cog.getVillagerByID(x.id).Character
                 if character in channels_config["character-to-channel"]:
                     channel_name = channels_config["character-to-channel"][character]
                     channel = discord.utils.get(ctx.guild.channels, name=channel_name)

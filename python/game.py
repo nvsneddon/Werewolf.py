@@ -102,21 +102,21 @@ class Game(commands.Cog):
             await ctx.send("I need to know who you're killing. Please try running the command again.")
             await ctx.send("Don't forget to follow the command with the name of the person you want to kill")
             return
-        target = self.findPlayer(args[0])
+        target = self.findVillager(args[0])
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
-        if self.__protected.getUserID() == target.getUserID():
+        if self.__protected.UserID == target.UserID:
             await ctx.send("That person has been protected. You just wasted your kill!")
         else:
-            await ctx.send("Killing {}".format(target.getName()))
+            await ctx.send("Killing {}".format(target.Name))
             target.die()
             dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
-            target_user = ctx.message.guild.get_member_named(target.getDiscordTag())
+            target_user = ctx.message.guild.get_member_named(target.DiscordTag)
             await target_user.edit(roles=[dead_role])
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(werewolfMessages[target.getCharacter()]["killed"].format(target.getName()))\
+            await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Name))\
 
     @commands.command
     @is_from_channel("seer")
@@ -128,13 +128,23 @@ class Game(commands.Cog):
             await ctx.send("I need to know who you're investigating. Run the command followed by the name of whom you "
                            "want to investigate")
             return
-        target = self.findPlayer(args[0])
-        # seer = self.findPlayer(ctx.messasge.author.)
+        target = self.findVillager(args[0])
+        seer: Villager = self.findVillager(ctx.message.author.name)
+        if seer is None:
+            message = "Seer is None. This should never happen"
+            print(message)
+            ctx.send(message)
+            return
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
-        await ctx.send("That person is {} a werewolf".format("" if target.isWerewolf() else "not"))
+        # if seer.UsedAbility:
+        #     await ctx.send("You already used your ability. You cannot use it again")
+        #     return
+        await ctx.send("That person is {} a werewolf".format("" if target.IsWerewolf else "not"))
 
+    def use_ability(self):
+        pass
 
     def cog_unload(self):
         schedule.clear("game")
@@ -146,9 +156,9 @@ class Game(commands.Cog):
             self.__daysleft -= 1
         self.__killed = True
         for x in self.__players:
-            if x.getCharacter() == "werewolf":
+            if x.Character == "werewolf":
                 self.usedAbility = True
-            elif x.getCharacter() in self.__resettedCharacters:
+            elif x.Character in self.__resettedCharacters:
                 x.usedAbility = False
             x.protected = False
 
@@ -161,22 +171,23 @@ class Game(commands.Cog):
 
     def getVillagerByID(self, player_id: int) -> Optional[Villager]:
         for x in self.__players:
-            if player_id == x.getUserID():
+            if player_id == x.UserID:
                 return x
         return None
 
     # returns person that was killed
+    #TODO Do we need to have this really?
     def killmaybe(self, killer, target) -> None:
-        killerVillager = self.findPlayer(killer)
+        killerVillager = self.findVillager(killer)
         if killerVillager.iskiller():
             self.findVillager(target).die()
 
-    def findPlayer(self, name: str) -> Optional[Villager]:
+    def findVillager(self, name: str) -> Optional[Villager]:
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
             name = name[3:-1]
         elif name[0:2] == "<@":
             name = name[2:-1]
         for x in self.__players:
-            if x.getName().lower() == name.lower() or x.getDiscordTag().lower() == name.lower():
+            if x.Name.lower() == name.lower() or x.DiscordTag.lower() == name.lower():
                 return x
         return None

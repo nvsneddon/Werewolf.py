@@ -23,7 +23,7 @@ class Werewolf(commands.Cog, Villager):
         target: str = args[0]
         return
 
-        killedPlayer = self.findPlayer(target)
+        killedPlayer = self.findVillager(target)
         if killedPlayer.isProtected():
             await ctx.send("Nice try, but this person has been protected")
             # TODO Maybe consider announcing that the werewolves tried to kill someone that was protected
