@@ -122,7 +122,7 @@ class Game(commands.Cog):
             town_square_channel = ctx.guild.get_channel(town_square_id)
             await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Name))\
 
-    @commands.command()
+    @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
     async def investigate(self, ctx, *args):
         if len(args) > 1:
