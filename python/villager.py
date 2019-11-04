@@ -1,5 +1,6 @@
 class Villager:
 
+
     def __init__(self, discordtag: str, character: str, id: int):
         # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
         self.__name: str = discordtag.split("#")[0]
@@ -11,6 +12,8 @@ class Villager:
         self.__usedAbility = False
         self.__inLove: bool = False
         self.__userID = id
+        self.protected = False
+
         # self.__inSpecialChannel = bool(character in specialChannel)
 
     @property
@@ -45,14 +48,15 @@ class Villager:
     def IsWerewolf(self) -> bool:
         return self.__is_werewolf
 
-    def useAbility(self):
-        self.__usedAbility = False
+    @UsedAbility.setter
+    def UsedAbility(self, value):
+        self.__usedAbility = value
 
     def die(self) -> None:
         self.__alive = False
 
     def __str__(self):
-        return "Name: {}\nTag: {}\nID: {}\nCharacter: {}\nAlive: {}".format(self.__name, self.__discordTag, str(self.__userID), self.__character, self.__alive)
+        return "Name: {}\nTag: {}\nID: {}\nCharacter: {}\nAlive: {}\n".format(self.__name, self.__discordTag, str(self.__userID), self.__character, self.__alive)
 
     def __eq__(self, other):
         if self is None or other is None:

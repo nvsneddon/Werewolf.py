@@ -2,13 +2,13 @@ import datetime
 import random
 import threading
 import time
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import discord
 import schedule
 from discord.ext import commands
 
-from files import getChannelId, werewolfMessages
+from files import getChannelId, werewolfMessages, config
 from villager import Villager
 
 
@@ -28,6 +28,10 @@ def is_from_channel(channel_name: str):
 
 class Game(commands.Cog):
 
+    __resettedCharacters: Tuple[str, str, str]
+    __inlove: List[Villager]
+    __players: List[Villager]
+
     # players is a list of all of the name of people playing
     # roles is a list of numbers of all of the characters that will be playing
     # raises ValueError Exception when too many roles are handed out
@@ -42,28 +46,28 @@ class Game(commands.Cog):
         self.__players = []
         self.__inlove = []
         self.__bakerdead: bool = False
-        self.__protected = None
+        # self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
-        self.__resettedCharacters = ("bodyguard", "seer")
+        self.__resettedCharacters = ("bodyguard", "seer", "werewolf")
         self.__running = True
 
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
         self.schedthread.start()
 
-        schedule.every().day.at("07:00").do(self.daytime).tag("game")
-        schedule.every().day.at("20:55").do(self.almostnighttime).tag("game")
-        schedule.every().day.at("21:00").do(self.nighttime).tag("game")
+
+
+        schedule.every().day.at(config["daytime"]).do(self.daytime).tag("game")
+        schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
+        schedule.every().day.at(config["nighttime"]).do(self.nighttime).tag("game")
 
         check_time = datetime.datetime.now().time()
         if datetime.time(7, 0) <= check_time <= datetime.time(21, 0):
-            self.voted = False
-            self.killed = True
+            self.__killed = False
         else:
             # Night time
-            self.voted = True
-            self.killed = False
+            self.__killed = True
 
         cards = []
         if len(roles) >= 6:
@@ -106,7 +110,7 @@ class Game(commands.Cog):
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
-        if self.__protected.UserID == target.UserID:
+        if target.protected:
             await ctx.send("That person has been protected. You just wasted your kill!")
         else:
             await ctx.send("Killing {}".format(target.Name))
@@ -118,7 +122,7 @@ class Game(commands.Cog):
             town_square_channel = ctx.guild.get_channel(town_square_id)
             await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Name))\
 
-    @commands.command
+    @commands.command()
     @is_from_channel("seer")
     async def investigate(self, ctx, *args):
         if len(args) > 1:
@@ -138,13 +142,16 @@ class Game(commands.Cog):
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
-        # if seer.UsedAbility:
-        #     await ctx.send("You already used your ability. You cannot use it again")
-        #     return
-        await ctx.send("That person is {} a werewolf".format("" if target.IsWerewolf else "not"))
+        if self.useAbility(seer):
+            await ctx.send("That person is {} a werewolf".format("" if target.IsWerewolf else "not"))
+        else:
+            await ctx.send("You already used your ability tonight.")
 
-    def use_ability(self):
-        pass
+    def useAbility(self, v: Villager) -> bool:
+        if v.UsedAbility:
+            return False
+        v.UsedAbility = True
+        return True
 
     def cog_unload(self):
         schedule.clear("game")
@@ -156,15 +163,12 @@ class Game(commands.Cog):
             self.__daysleft -= 1
         self.__killed = True
         for x in self.__players:
-            if x.Character == "werewolf":
-                self.usedAbility = True
-            elif x.Character in self.__resettedCharacters:
-                x.usedAbility = False
+            if x.Character in self.__resettedCharacters:
+                x.UsedAbility = False
             x.protected = False
 
     def nighttime(self):
         self.__killed = False
-        self.__voted = True
 
     def almostnighttime(self):
         pass
