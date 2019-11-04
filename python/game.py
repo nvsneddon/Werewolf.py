@@ -94,8 +94,8 @@ class Game(commands.Cog):
 
     @commands.command()
     @is_from_channel("werewolves")
-    async def kill(self, ctx, personname):
-        target = self.findVillager(personname)
+    async def kill(self, ctx, person_name:str):
+        target = self.findVillager(person_name)
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
@@ -113,8 +113,8 @@ class Game(commands.Cog):
 
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
-    async def investigate(self, ctx, personname):
-        target = self.findVillager(personname)
+    async def investigate(self, ctx, person_name: str):
+        target = self.findVillager(person_name)
         seer: Villager = self.findVillager(ctx.message.author.name)
         if seer is None:
             message = "Seer is None. This should never happen"
@@ -125,7 +125,7 @@ class Game(commands.Cog):
             await ctx.send("That person could not be found. Please try again.")
             return
         if self.useAbility(seer):
-            await ctx.send("{} is {} a werewolf".format(personname, "" if target.IsWerewolf else "not"))
+            await ctx.send("{} is {} a werewolf".format(person_name, "" if target.IsWerewolf else "not"))
         else:
             await ctx.send("You already used your ability tonight.")
 
