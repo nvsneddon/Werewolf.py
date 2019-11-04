@@ -16,11 +16,7 @@ def is_from_channel(channel_name: str):
     async def predicate(ctx):
         channel1 = ctx.guild.get_channel(getChannelId(channel_name))
         channel2 = ctx.channel
-
         channel_check = channel1 == channel2
-        if not channel_check:
-            await ctx.send("I'm sorry, but you can't do that!")
-            await ctx.send("To do that, you must be in the {} channel".format(str(channel1)))
         return channel_check
 
     return commands.check(predicate)
@@ -98,15 +94,8 @@ class Game(commands.Cog):
 
     @commands.command()
     @is_from_channel("werewolves")
-    async def kill(self, ctx, *args):
-        if len(args) > 1:
-            await ctx.send("You can only kill one person at a time. Please try again")
-            return
-        elif len(args) == 0:
-            await ctx.send("I need to know who you're killing. Please try running the command again.")
-            await ctx.send("Don't forget to follow the command with the name of the person you want to kill")
-            return
-        target = self.findVillager(args[0])
+    async def kill(self, ctx, personname):
+        target = self.findVillager(personname)
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
@@ -124,15 +113,8 @@ class Game(commands.Cog):
 
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
-    async def investigate(self, ctx, *args):
-        if len(args) > 1:
-            await ctx.send("You can only investigate one person at a time. Please try again")
-            return
-        elif len(args) == 0:
-            await ctx.send("I need to know who you're investigating. Run the command followed by the name of whom you "
-                           "want to investigate")
-            return
-        target = self.findVillager(args[0])
+    async def investigate(self, ctx, personname):
+        target = self.findVillager(personname)
         seer: Villager = self.findVillager(ctx.message.author.name)
         if seer is None:
             message = "Seer is None. This should never happen"
@@ -143,7 +125,7 @@ class Game(commands.Cog):
             await ctx.send("That person could not be found. Please try again.")
             return
         if self.useAbility(seer):
-            await ctx.send("That person is {} a werewolf".format("" if target.IsWerewolf else "not"))
+            await ctx.send("{} is {} a werewolf".format(personname, "" if target.IsWerewolf else "not"))
         else:
             await ctx.send("You already used your ability tonight.")
 
