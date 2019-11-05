@@ -126,13 +126,17 @@ class Game(commands.Cog):
 
     @commands.command()
     @is_admin()
-    async def startvote(self, ctx):
+    async def startwerewolfvote(self, ctx):
         future = self.__bot.loop.create_future()
         election_cog = Election(self.__bot, future, self.__players)
         self.__bot.add_cog(election_cog)
         await future
-        await ctx.send("The result is {}".format(future.result()))
         self.__bot.remove_cog("Election")
+        if future.result() == "cancel":
+            await ctx.send("The election has been cancelled")
+            return
+        await ctx.send("The result is {}".format(future.result()))
+
 
     def useAbility(self, v: Villager) -> bool:
         if v.UsedAbility:

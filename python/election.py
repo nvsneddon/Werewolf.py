@@ -1,3 +1,6 @@
+from typing import Optional
+
+from decorators import is_admin
 from villager import Villager
 
 import discord
@@ -7,18 +10,22 @@ from discord.ext import commands
 
 class Election(commands.Cog):
 
-
     def __init__(self, bot, future, people):
         self.__bot = bot
+        self.__people = people
         self.__casted_votes = {}
-        self.__voted = ()
+        self.__voted = {}
         self.__future = future
         self.__result = None
         for x in people:
-            self.__casted_votes[x] = 0
+            self.__casted_votes[x.Name] = 0
 
+    @commands.command()
     async def endvote(self, ctx):
-        self.__future.set_result("filler")
+        self.stop_vote()
+
+    def stop_vote(self):
+        self.__future.set_result(self.__Leading)
 
     @property
     def __Leading(self):
@@ -36,18 +43,42 @@ class Election(commands.Cog):
     def __VoteNumber(self):
         return len(self.__voted)
 
-    @property
-    def __Sorted(self):
-        return sorted(self.__casted_votes, key=self.__casted_votes.get, reverse=True)
+    @commands.command()
+    @is_admin()
+    async def cancelvote(self, ctx):
+        self.__future.set_result("cancel")
 
     @commands.command(alias=["castvote"])
-    async def vote(self, ctx, person: str):
-        if person in self.__casted_votes:
-            pass
+    async def vote(self, ctx, voteestring: str):
+        votee = self.findCandidate(voteestring)
+        if votee is None:
+            await ctx.send("Couldn't find the candidate's name. Please make sure there was no typo with your answer.")
+            return
+        if votee.Name in self.__casted_votes:
+            voter_name = ctx.message.author.name
+            if voter_name in self.__voted:
+                self.__casted_votes[self.__voted[voter_name]] -= 1
+            self.__casted_votes[votee.Name] += 1
+            self.__voted[voter_name] = votee.Name
         else:
             await ctx.send("You can't vote for that person. Please try again.")
 
-    @commands.command(alias=["leading"])
-    async def leaders(self):
-        return self.__Leading
+    @commands.command(alias=["show_score"])
+    async def showscore(self, ctx):
+        sorted_people = ""
+        for x in sorted(self.__casted_votes, key=self.__casted_votes.get, reverse=True):
+            sorted_people += "{}: {}\n".format(x, self.__casted_votes[x])
+        await ctx.send(sorted_people)
+
+    def findCandidate(self, name: str) -> Optional[Villager]:
+        print(name)
+        if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
+            name = name[3:-1]
+        elif name[0:2] == "<@":
+            name = name[2:-1]
+        for x in self.__people:
+            print(x)
+            if x.Name.lower() == name.lower() or str(x.UserID) == name.lower():
+                return x
+        return None
 
