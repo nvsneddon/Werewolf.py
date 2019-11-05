@@ -11,14 +11,17 @@ async def on_ready():
     bot.add_cog(Bot(bot))
     print("The werewolves are howling!")
 
+
 @bot.event
 async def on_guild_join(self, guild):
     writeJsonToConfig("server_config.json", {"server_id": str(guild.id)})
     if not discord.utils.get(guild.channels, name="bot-admin"):
         await guild.create_text_channel(name="bot-admin")
         channel = discord.utils.get(guild.channels, name="bot-admin")
-        await channel.send("Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)")
+        await channel.send(
+            "Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)")
         # TODO make it so that only the owner gets permission to this channel
+
 
 @bot.event
 async def on_message(message):
@@ -33,6 +36,7 @@ async def on_message(message):
             await bot.get_guild(523892810319921157).get_member(352141925635063818).send(question)
     else:
         await bot.process_commands(message)
+
 
 if __name__ == "__main__":
     bot.run(config["token"])
