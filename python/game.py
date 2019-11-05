@@ -8,23 +8,20 @@ import discord
 import schedule
 from discord.ext import commands
 
+from decorators import is_from_channel, is_admin
+from election import Election
 from files import getChannelId, werewolfMessages, config
 from villager import Villager
 
 
-def is_from_channel(channel_name: str):
-    async def predicate(ctx):
-        channel1 = ctx.guild.get_channel(getChannelId(channel_name))
-        channel2 = ctx.channel
-        channel_check = channel1 == channel2
-        return channel_check
 
-    return commands.check(predicate)
+
 
 
 class Game(commands.Cog):
-
-    __resettedCharacters: Tuple[str, str, str]
+    __daysleft: int
+    __bakerdead: bool
+    __characters_to_reset: Tuple[str, str, str]
     __inlove: List[Villager]
     __players: List[Villager]
 
@@ -41,18 +38,16 @@ class Game(commands.Cog):
         self.__bot = bot
         self.__players = []
         self.__inlove = []
-        self.__bakerdead: bool = False
+        self.__bakerdead = False
         # self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
-        self.__resettedCharacters = ("bodyguard", "seer", "werewolf")
+        self.__characters_to_reset = ("bodyguard", "seer", "werewolf")
         self.__running = True
 
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
         self.schedthread.start()
-
-
 
         schedule.every().day.at(config["daytime"]).do(self.daytime).tag("game")
         schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
@@ -92,10 +87,10 @@ class Game(commands.Cog):
         for i in self.__players:
             print(i)
 
-    @commands.command()
+    @commands.command(aliases=["murder"])
     @is_from_channel("werewolves")
-    async def kill(self, ctx, personname):
-        target = self.findVillager(personname)
+    async def kill(self, ctx, person_name: str):
+        target = self.findVillager(person_name)
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
@@ -104,17 +99,20 @@ class Game(commands.Cog):
         else:
             await ctx.send("Killing {}".format(target.Name))
             target.die()
-            dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
-            target_user = ctx.message.guild.get_member_named(target.DiscordTag)
-            await target_user.edit(roles=[dead_role])
+            await self.die(ctx, target)
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Name))\
+            await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Mention))
+
+    async def die(self, ctx, target: Villager):
+        dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
+        target_user = ctx.message.guild.get_member_named(target.DiscordTag)
+        await target_user.edit(roles=[dead_role])
 
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
-    async def investigate(self, ctx, personname):
-        target = self.findVillager(personname)
+    async def investigate(self, ctx, person_name: str):
+        target = self.findVillager(person_name)
         seer: Villager = self.findVillager(ctx.message.author.name)
         if seer is None:
             message = "Seer is None. This should never happen"
@@ -125,9 +123,33 @@ class Game(commands.Cog):
             await ctx.send("That person could not be found. Please try again.")
             return
         if self.useAbility(seer):
-            await ctx.send("{} is {} a werewolf".format(personname, "" if target.IsWerewolf else "not"))
+            await ctx.send("{} is {} a werewolf".format(person_name, "" if target.IsWerewolf else "not"))
         else:
-            await ctx.send("You already used your ability tonight.")
+            await ctx.send("You already used your ability. You can use it soon though.")
+
+    @commands.command(alias=["startwerewolfvote"])
+    @is_admin()
+    async def startvote(self, ctx):
+        town_square_id = getChannelId("town-square")
+        town_square_channel = ctx.guild.get_channel(town_square_id)
+        future = self.__bot.loop.create_future()
+        election_cog = Election(self.__bot, future, self.__players)
+        self.__bot.add_cog(election_cog)
+        await town_square_channel.send("The lynching vote has now begun.")
+        await future
+        self.__bot.remove_cog("Election")
+        result = future.result()
+        if result == "cancel":
+            await town_square_channel.send("The lynching vote has been cancelled")
+            return
+        await town_square_channel.send("The voting has closed.")
+        for x in result:
+            dead_villager = self.findVillager(x)
+            await self.die(ctx, dead_villager)
+            lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
+            await town_square_channel.send(lynched_message)
+        if len(result) > 1:
+            await town_square_channel.send("We had a bloodbath because we had a tie.")
 
     def useAbility(self, v: Villager) -> bool:
         if v.UsedAbility:
@@ -145,7 +167,7 @@ class Game(commands.Cog):
             self.__daysleft -= 1
         self.__killed = True
         for x in self.__players:
-            if x.Character in self.__resettedCharacters:
+            if x.Character in self.__characters_to_reset:
                 x.UsedAbility = False
             x.protected = False
 
@@ -161,12 +183,12 @@ class Game(commands.Cog):
                 return x
         return None
 
-    # returns person that was killed
-    #TODO Do we need to have this really?
-    def killmaybe(self, killer, target) -> None:
-        killerVillager = self.findVillager(killer)
-        if killerVillager.iskiller():
-            self.findVillager(target).die()
+    # TODO remove when content at not having this piece of code
+    # # returns person that was killed
+    # def killmaybe(self, killer, target) -> None:
+    #     killerVillager = self.findVillager(killer)
+    #     if killerVillager.iskiller():
+    #         self.findVillager(target).die()
 
     def findVillager(self, name: str) -> Optional[Villager]:
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @

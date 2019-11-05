@@ -1,18 +1,14 @@
 import discord
 from discord.ext import commands
+
+from decorators import is_admin
+from election import Election
 from game import Game
 import asyncio
 import os
 import json
-from cogstest import Test
 from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
 
-
-def is_admin():
-    async def predicate(ctx):
-        return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
-
-    return commands.check(predicate)
 
 
 class Bot(commands.Cog):
@@ -38,6 +34,7 @@ class Bot(commands.Cog):
         for x in args:
             output += x
             output += ' '
+        print(output)
         await ctx.send(output)
 
     @commands.command()
