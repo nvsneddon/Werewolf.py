@@ -1,5 +1,6 @@
 class Villager:
 
+    # TODO Refactor this class to include the member object and use properties to access instead of having all of these attributes
     def __init__(self, discordtag: str, character: str, id: int):
         # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
         self.__name: str = discordtag.split("#")[0]

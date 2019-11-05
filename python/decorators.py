@@ -14,3 +14,10 @@ def is_from_channel(channel_name: str):
         return ctx.channel == discord.utils.get(ctx.guild.channels, name=channel_name)
 
     return commands.check(predicate)
+
+
+def on_condition(cond: bool):
+    async def predicate(ctx):
+        return cond
+
+    return commands.check(predicate)

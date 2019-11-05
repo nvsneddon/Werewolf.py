@@ -8,7 +8,7 @@ import discord
 import schedule
 from discord.ext import commands
 
-from decorators import is_from_channel, is_admin
+from decorators import is_from_channel, is_admin, on_condition
 from election import Election
 from files import getChannelId, werewolfMessages, config
 from villager import Villager
@@ -18,7 +18,6 @@ class Game(commands.Cog):
     __protected: str
     __daysleft: int
     __bakerdead: bool
-    __characters_to_reset: Tuple[str, str, str]
     __inlove: List[Villager]
     __players: List[Villager]
 
@@ -39,7 +38,6 @@ class Game(commands.Cog):
         self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
-        self.__characters_to_reset = ("bodyguard", "seer", "werewolf")
         self.__running = True
 
         self.schedstop = threading.Event()
@@ -148,6 +146,12 @@ class Game(commands.Cog):
         protected_member = ctx.guild.get_member_named(person_name)
         await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
+
+    @commands.command()
+    async def shootarrow(self, ctx, person1: str, person2: str):
+        await ctx.send("{} and {} are in love now".format(person1, person2))
+        self.__bot.remove_command("shootarrow")
+
     @commands.command(alias=["startwerewolfvote"])
     @is_admin()
     async def startvote(self, ctx):
@@ -182,8 +186,7 @@ class Game(commands.Cog):
             self.__daysleft -= 1
         self.__killed = True
         for x in self.__players:
-            if x.Character in self.__characters_to_reset:
-                x.UsedAbility = False
+            x.UsedAbility = False
             x.Protected = False
 
     def nighttime(self):
