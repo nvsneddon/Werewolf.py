@@ -102,7 +102,7 @@ class Game(commands.Cog):
             await self.die(ctx, target)
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Name))
+            await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Mention))
 
     async def die(self, ctx, target: Villager):
         dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
@@ -142,18 +142,14 @@ class Game(commands.Cog):
         if result == "cancel":
             await town_square_channel.send("The lynching vote has been cancelled")
             return
+        await town_square_channel.send("The voting has closed.")
+        for x in result:
+            dead_villager = self.findVillager(x)
+            await self.die(ctx, dead_villager)
+            lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
+            await town_square_channel.send(lynched_message)
         if len(result) > 1:
-            tie_message = "It looks like we have a tie between "
-            for x in range(len(result)-1):
-                tie_message += "{}, ".format(result[x])
-            tie_message += "and {}".format(result[-1])
-            await town_square_channel.send(tie_message)
-            await town_square_channel.send("All of these people will be killed")
-            for x in result:
-                await self.die(ctx, self.findVillager(x))
-        else:
-            await town_square_channel.send("{} will be lynched".format(result[0]))
-            await self.die(ctx, self.findVillager(result[0]))
+            await town_square_channel.send("We had a bloodbath because we had a tie.")
 
     def useAbility(self, v: Villager) -> bool:
         if v.UsedAbility:

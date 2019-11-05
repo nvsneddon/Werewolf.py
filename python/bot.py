@@ -34,6 +34,7 @@ class Bot(commands.Cog):
         for x in args:
             output += x
             output += ' '
+        print(output)
         await ctx.send(output)
 
     @commands.command()
