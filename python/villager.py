@@ -1,6 +1,5 @@
 class Villager:
 
-
     def __init__(self, discordtag: str, character: str, id: int):
         # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
         self.__name: str = discordtag.split("#")[0]
@@ -12,7 +11,7 @@ class Villager:
         self.__usedAbility = False
         self.__inLove: bool = False
         self.__userID = id
-        self.protected = False
+        self.__protected = False
 
         # self.__inSpecialChannel = bool(character in specialChannel)
 
@@ -21,13 +20,13 @@ class Villager:
         return self.__userID
 
     @property
-    def UsedAbility(self):
-        return self.__usedAbility
-
-    @property
     def Name(self):
         return self.__name
-    
+
+    @property
+    def Protected(self):
+        return self.__protected
+
     @property
     def DiscordTag(self):
         return self.__discordTag
@@ -37,7 +36,7 @@ class Villager:
         return self.__character
 
     @property
-    def isDead(self) -> bool:
+    def Dead(self) -> bool:
         return not self.__alive
 
     @property
@@ -52,18 +51,33 @@ class Villager:
     def IsWerewolf(self) -> bool:
         return self.__is_werewolf
 
+    @property
+    def UsedAbility(self):
+        return self.__usedAbility
+
+    def useAbility(self):
+        if self.__usedAbility:
+            return False
+        self.__usedAbility = True
+        return True
+
     @UsedAbility.setter
     def UsedAbility(self, value):
-        self.__usedAbility = value
+        self._UsedAbility = value
+
+    @Protected.setter
+    def Protected(self, value):
+        self.__protected = value
 
     def die(self) -> None:
         self.__alive = False
 
     def __str__(self):
-        return "Name: {}\nTag: {}\nID: {}\nCharacter: {}\nAlive: {}\n".format(self.__name, self.__discordTag, str(self.__userID), self.__character, self.__alive)
+        return "Name: {}\nTag: {}\nID: {}\nCharacter: {}\nAlive: {}\n".format(self.__name, self.__discordTag,
+                                                                              str(self.__userID), self.__character,
+                                                                              self.__alive)
 
     def __eq__(self, other):
         if self is None or other is None:
             return False
         return self.__name == other.__name
-    
