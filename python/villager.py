@@ -63,7 +63,7 @@ class Villager:
 
     @UsedAbility.setter
     def UsedAbility(self, value):
-        self._UsedAbility = value
+        self.__usedAbility = value
 
     @Protected.setter
     def Protected(self, value):
