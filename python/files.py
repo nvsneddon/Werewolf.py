@@ -89,7 +89,7 @@ def fileFoundInConfig(filename: str) -> bool:
     return os.path.exists(os.path.join(dirname, "../config/" + filename))
 
 
-def getChannelsConfig() -> dict:
+def get_channel_ids() -> dict:
     try:
         dirname = os.path.dirname(__file__)
         f = open(os.path.join(dirname, "../config/channel_id_list.json"))
@@ -102,5 +102,5 @@ def getChannelsConfig() -> dict:
 
 
 def getChannelId(channel: str) -> int:
-    config: dict = getChannelsConfig()
-    return config[channel]
+    return get_channel_ids()[channel]
+    # return config[channel]
