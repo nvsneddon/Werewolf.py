@@ -1,18 +1,14 @@
 import discord
 from discord.ext import commands
+
+from decorators import is_admin
+from election import Election
 from game import Game
 import asyncio
 import os
 import json
-from cogstest import Test
 from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
 
-
-def is_admin():
-    async def predicate(ctx):
-        return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")
-
-    return commands.check(predicate)
 
 
 class Bot(commands.Cog):
@@ -38,6 +34,7 @@ class Bot(commands.Cog):
         for x in args:
             output += x
             output += ' '
+        print(output)
         await ctx.send(output)
 
     @commands.command()
@@ -51,6 +48,7 @@ class Bot(commands.Cog):
             ctx.guild.roles, name="Alive")
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
+        roles_assignment = [alive_role]
         if len(args) == 0:
             await ctx.send("Please add game parameters to the game")
             return
@@ -58,20 +56,22 @@ class Bot(commands.Cog):
         for member in ctx.guild.members:
             if playing_role in member.roles:
                 players.append(member)
-                await member.edit(roles=[alive_role])
         if len(players) < sum(args):
             await ctx.send("You gave out too many roles for the number of people.")
             return
+        for player in players:
+            await player.edit(roles=roles_assignment)
         game_cog = Game(self.__bot, players, args)
         self.__bot.add_cog(game_cog)
         read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
         for x in ctx.guild.members:
-            if playing_role in x.roles:
-                await x.edit(roles=[alive_role])
-                character = game_cog.getVillagerByID(x.id).getCharacter()
+            if alive_role in x.roles:
+                character = game_cog.getVillagerByID(x.id).Character
                 if character in channels_config["character-to-channel"]:
-                    channel = channels_config["character-to-channel"][character]
-                    # await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+                    channel_name = channels_config["character-to-channel"][character]
+                    channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+                    await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+        await ctx.send("Let the games begin!")
 
     @commands.command()
     @is_admin()
@@ -88,10 +88,13 @@ class Bot(commands.Cog):
         for member in ctx.guild.members:
             if owner_role not in member.roles:
                 await member.edit(roles=[playing_role])
+            for x in channels_config["channels"]:
+                channel = discord.utils.get(ctx.guild.channels, name=x)
+                await channel.set_permissions(member, overwrite=None)
 
     @commands.command()
     async def search(self, ctx, *args):
-        user = self.findPerson(ctx, args)
+        user = findPerson(ctx, args)
         if user is not None:
             await ctx.send(user.display_name)
         else:
@@ -200,19 +203,19 @@ class Bot(commands.Cog):
         if os.path.exists(path):
             os.remove(path)
 
-    @staticmethod
-    def findPerson(ctx, *args):
-        if len(args) == 1:
-            if type(args[0]) is str:
-                name = args[0]
-            else:
-                name = " ".join(args[0])
+
+def findPerson(ctx, *args):
+    if len(args) == 1:
+        if type(args[0]) is str:
+            name = args[0]
         else:
-            print("Something went very wrong. Args is not of length 1")
-            return None
-        if name[0:3] == "<@!":
-            return ctx.message.guild.get_member(name[3:-1])
-        elif name[0:2] == "<@":
-            return ctx.message.guild.get_member(name[2:-1])
-        else:
-            return ctx.message.guild.get_member_named(name)
+            name = " ".join(args[0])
+    else:
+        print("Something went very wrong. Args is not of length 1")
+        return None
+    if name[0:3] == "<@!":
+        return ctx.guild.get_member(int(name[3:-1]))
+    elif name[0:2] == "<@":
+        return ctx.guild.get_member(int(name[2:-1]))
+    else:
+        return ctx.guild.get_member_named(name)

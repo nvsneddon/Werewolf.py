@@ -11,7 +11,9 @@ try:
     commandDescriptions = json.loads(f2.read())
     f2.close()
 except FileNotFoundError:
-    print("Please make sure the messages.json and the command_descriptions.json files are in the config folder and try again.")
+    print(
+        "Please make sure the messages.json and the command_descriptions.json files are in the config folder and try "
+        "again.")
     exit()
 try:
     f3 = open(os.path.join(dirname, "../config/discord-config.json"))
@@ -28,7 +30,7 @@ except FileNotFoundError:
     print("How many minutes before the voting closes do you want to issue a warning?:")
     minutesbeforewarning = eval(input())
     warnvotingtime = datetime(1, 1, 1, eval(
-    config['nighttime'][:2])) - datetime(1, 1, 1, 0, minutesbeforewarning)
+        config['nighttime'][:2])) - datetime(1, 1, 1, 0, minutesbeforewarning)
     config['vote-warning'] = str(warnvotingtime)[:5]
     config['minutes-before-warning'] = minutesbeforewarning
     print("Voter warning is ", config['vote-warning'])
@@ -55,6 +57,7 @@ except FileNotFoundError:
 def writeJsonToConfig(filename: str, file: dict) -> None:
     writeToConfig(filename, json.dumps(file))
 
+
 def writeToConfig(filename: str, file: str) -> None:
     try:
         dirname = os.path.dirname(__file__)
@@ -64,6 +67,7 @@ def writeToConfig(filename: str, file: str) -> None:
     except:
         print("Something went wrong with writing the file")
 
+
 def readFromConfig(filename: str) -> str:
     try:
         dirname = os.path.dirname(__file__)
@@ -71,16 +75,19 @@ def readFromConfig(filename: str) -> str:
         readfile = f.read()
         f.close()
         return readfile
-        
+
     except:
         print("File " + filename + " not found")
+
 
 def readJsonFromConfig(filename: str) -> dict:
     return json.loads(readFromConfig(filename))
 
+
 def fileFoundInConfig(filename: str) -> bool:
     dirname = os.path.dirname(__file__)
     return os.path.exists(os.path.join(dirname, "../config/" + filename))
+
 
 def getChannelsConfig() -> dict:
     try:
@@ -89,10 +96,11 @@ def getChannelsConfig() -> dict:
         readfile = json.loads(f.read())
         f.close()
         return readfile
-        
+
     except:
         return {}
-    
+
+
 def getChannelId(channel: str) -> int:
-    config: dict = getChannelsConfig()  
+    config: dict = getChannelsConfig()
     return config[channel]
