@@ -45,6 +45,10 @@ class Villager:
         return self.__killer
 
     @property
+    def Mention(self) -> str:
+        return "<@" + str(self.__userID) + ">"
+
+    @property
     def IsWerewolf(self) -> bool:
         return self.__is_werewolf
 
