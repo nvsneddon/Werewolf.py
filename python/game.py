@@ -2,15 +2,15 @@ import datetime
 import random
 import threading
 import time
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 import discord
 import schedule
 from discord.ext import commands
 
-from decorators import is_from_channel, is_admin, on_condition
+from decorators import is_from_channel, is_admin
 from election import Election
-from files import getChannelId, werewolfMessages, config
+from files import getChannelId, werewolfMessages, config, readJsonFromConfig
 from villager import Villager
 
 
@@ -93,13 +93,22 @@ class Game(commands.Cog):
             await ctx.send("That person has been protected. You just wasted your kill!")
         else:
             await ctx.send("Killing {}".format(target.Name))
-            target.die()
-            await self.die(ctx, target)
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
             await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Mention))
+            await self.die(ctx, target)
 
     async def die(self, ctx, target: Villager):
+        target.die()
+        if target in self.__inlove:
+            self.__inlove.remove(target)
+            other = self.__inlove[0]
+            self.__inlove.remove(other)
+            town_square_id = getChannelId("town-square")
+            town_square_channel = ctx.guild.get_channel(town_square_id)
+            #TODO Change the message to support both names of dead people
+            await town_square_channel.send(werewolfMessages[target.Character]["inlove"].format(other.Mention))
+            await self.die(ctx, other)
         dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
@@ -146,11 +155,28 @@ class Game(commands.Cog):
         protected_member = ctx.guild.get_member_named(person_name)
         await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
-
-    @commands.command()
+    @commands.command(aliases=["shoot", "makeinlove"])
+    @is_from_channel("cupid")
     async def shootarrow(self, ctx, person1: str, person2: str):
+        villager1 = self.findVillager(person1)
+        villager2 = self.findVillager(person2)
+        if villager1 is None:
+            await ctx.send("The first person could not be found. Try again.")
+            return
+        if villager2 is None:
+            await ctx.send("The second villager could not be found. Try again.")
+            return
+        self.__inlove.append(villager1)
+        self.__inlove.append(villager2)
         await ctx.send("{} and {} are in love now".format(person1, person2))
         self.__bot.remove_command("shootarrow")
+        read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
+        love_channel = ctx.guild.get_channel(getChannelId("lovebirds"))
+        for x in self.__inlove:
+            await love_channel.set_permissions(ctx.guild.get_member_named(x.DiscordTag),
+                                               overwrite=discord.PermissionOverwrite(**read_write_permission))
+        await love_channel.send("Welcome {} and {}. "
+                                "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
 
     @commands.command(alias=["startwerewolfvote"])
     @is_admin()

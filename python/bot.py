@@ -10,7 +10,7 @@ import json
 from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
 
 
-class Bot(commands.Cog):
+class Bot (commands.Cog):
 
     def __init__(self, bot):
         self.__bot = bot
