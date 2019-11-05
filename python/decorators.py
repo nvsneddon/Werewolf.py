@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+
 def is_admin():
     async def predicate(ctx):
         return ctx.channel == discord.utils.get(ctx.guild.channels, name="bot-admin")

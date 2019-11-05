@@ -14,8 +14,6 @@ from files import getChannelId, werewolfMessages, config
 from villager import Villager
 
 
-
-
 class Game(commands.Cog):
     __protected: str
     __daysleft: int
