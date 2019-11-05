@@ -99,12 +99,15 @@ class Game(commands.Cog):
         else:
             await ctx.send("Killing {}".format(target.Name))
             target.die()
-            dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
-            target_user = ctx.message.guild.get_member_named(target.DiscordTag)
-            await target_user.edit(roles=[dead_role])
+            await self.die(ctx, target)
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
             await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Name))
+
+    async def die(self, ctx, target: Villager):
+        dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
+        target_user = ctx.message.guild.get_member_named(target.DiscordTag)
+        await target_user.edit(roles=[dead_role])
 
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
@@ -124,19 +127,33 @@ class Game(commands.Cog):
         else:
             await ctx.send("You already used your ability. You can use it soon though.")
 
-    @commands.command()
+    @commands.command(alias=["startwerewolfvote"])
     @is_admin()
-    async def startwerewolfvote(self, ctx):
+    async def startvote(self, ctx):
+        town_square_id = getChannelId("town-square")
+        town_square_channel = ctx.guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
         election_cog = Election(self.__bot, future, self.__players)
         self.__bot.add_cog(election_cog)
+        await town_square_channel.send("The lynching vote has now begun.")
         await future
         self.__bot.remove_cog("Election")
-        if future.result() == "cancel":
-            await ctx.send("The election has been cancelled")
+        result = future.result()
+        if result == "cancel":
+            await town_square_channel.send("The lynching vote has been cancelled")
             return
-        await ctx.send("The result is {}".format(future.result()))
-
+        if len(result) > 1:
+            tie_message = "It looks like we have a tie between "
+            for x in range(len(result)-1):
+                tie_message += "{}, ".format(result[x])
+            tie_message += "and {}".format(result[-1])
+            await town_square_channel.send(tie_message)
+            await town_square_channel.send("All of these people will be killed")
+            for x in result:
+                await self.die(ctx, self.findVillager(x))
+        else:
+            await town_square_channel.send("{} will be lynched".format(result[0]))
+            await self.die(ctx, self.findVillager(result[0]))
 
     def useAbility(self, v: Villager) -> bool:
         if v.UsedAbility:
@@ -170,12 +187,12 @@ class Game(commands.Cog):
                 return x
         return None
 
-    # returns person that was killed
-    # TODO Do we need to have this really?
-    def killmaybe(self, killer, target) -> None:
-        killerVillager = self.findVillager(killer)
-        if killerVillager.iskiller():
-            self.findVillager(target).die()
+    # TODO remove when content at not having this piece of code
+    # # returns person that was killed
+    # def killmaybe(self, killer, target) -> None:
+    #     killerVillager = self.findVillager(killer)
+    #     if killerVillager.iskiller():
+    #         self.findVillager(target).die()
 
     def findVillager(self, name: str) -> Optional[Villager]:
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
