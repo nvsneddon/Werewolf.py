@@ -48,7 +48,7 @@ class Election(commands.Cog):
     async def cancelvote(self, ctx):
         self.__future.set_result("cancel")
 
-    @commands.command(alias=["castvote"])
+    @commands.command(aliases=["castvote"])
     async def vote(self, ctx, voteestring: str):
         votee = self.findCandidate(voteestring)
         if votee is None:
@@ -64,7 +64,7 @@ class Election(commands.Cog):
         else:
             await ctx.send("You can't vote for that person. Please try again.")
 
-    @commands.command(alias=["show_score"])
+    @commands.command(aliases=["show_score"])
     async def showscore(self, ctx):
         sorted_people = ""
         for x in sorted(self.__casted_votes, key=self.__casted_votes.get, reverse=True):

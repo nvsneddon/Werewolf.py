@@ -16,9 +16,8 @@ from villager import Villager
 
 
 
-
-
 class Game(commands.Cog):
+    __protected: str
     __daysleft: int
     __bakerdead: bool
     __characters_to_reset: Tuple[str, str, str]
@@ -39,7 +38,7 @@ class Game(commands.Cog):
         self.__players = []
         self.__inlove = []
         self.__bakerdead = False
-        # self.__protected = None
+        self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__characters_to_reset = ("bodyguard", "seer", "werewolf")
@@ -94,7 +93,7 @@ class Game(commands.Cog):
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
-        if target.protected:
+        if target.Protected:
             await ctx.send("That person has been protected. You just wasted your kill!")
         else:
             await ctx.send("Killing {}".format(target.Name))
@@ -122,10 +121,34 @@ class Game(commands.Cog):
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
-        if self.useAbility(seer):
+        if seer.UsedAbility:
             await ctx.send("{} is {} a werewolf".format(person_name, "" if target.IsWerewolf else "not"))
         else:
             await ctx.send("You already used your ability. You can use it soon though.")
+
+    @commands.command()
+    @is_from_channel("bodyguard")
+    async def protect(self, ctx, person_name: str):
+        protector: Villager = self.findVillager(ctx.message.author.name)
+        the_protected_one = self.findVillager(person_name)
+        if the_protected_one is None:
+            await ctx.send("I couldn't find that person!")
+            return
+        if the_protected_one.Dead:
+            await ctx.send("You should have protected that person sooner")
+            return
+        if self.__protected == person_name:
+            ctx.send("You protected that person recently. Try someone new.")
+            return
+        if protector.UsedAbility:
+            await ctx.send("You already protected someone today. You're tired! Get some rest")
+            return
+        await ctx.send("You've protected {}".format(the_protected_one.Name))
+        the_protected_one.Protected = True
+        self.__protected = person_name
+        protector.UsedAbility = True
+        protected_member = ctx.guild.get_member_named(person_name)
+        await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
     @commands.command(alias=["startwerewolfvote"])
     @is_admin()
@@ -151,12 +174,6 @@ class Game(commands.Cog):
         if len(result) > 1:
             await town_square_channel.send("We had a bloodbath because we had a tie.")
 
-    def useAbility(self, v: Villager) -> bool:
-        if v.UsedAbility:
-            return False
-        v.UsedAbility = True
-        return True
-
     def cog_unload(self):
         schedule.clear("game")
         # self.__bot.remove_cog("Election")
@@ -169,7 +186,7 @@ class Game(commands.Cog):
         for x in self.__players:
             if x.Character in self.__characters_to_reset:
                 x.UsedAbility = False
-            x.protected = False
+            x.Protected = False
 
     def nighttime(self):
         self.__killed = False
