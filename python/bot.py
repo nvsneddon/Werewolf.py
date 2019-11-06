@@ -10,7 +10,15 @@ import json
 from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
 
 
-class Bot (commands.Cog):
+def can_clear():
+    async def predicate(ctx):
+        return not ((discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (
+                ctx.message.author != findPerson(ctx, "keyclimber")))
+
+    return commands.check(predicate)
+
+
+class Bot(commands.Cog):
 
     def __init__(self, bot):
         self.__bot = bot
@@ -35,6 +43,21 @@ class Bot (commands.Cog):
             output += ' '
         print(output)
         await ctx.send(output)
+
+    @commands.command()
+    @can_clear()
+    async def clear(self, ctx, number=10):
+        # Converting the amount of messages to delete to an integer
+        number = int(number + 1)
+        counter = 0
+        delete_channel = ctx.message.channel
+        async for x in (delete_channel.history(limit=number)):
+            if counter < number:
+                if x.pinned:
+                    continue
+                await x.delete()
+                counter += 1
+                await asyncio.sleep(0.4)
 
     @commands.command()
     async def ping(self, ctx):
