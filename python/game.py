@@ -30,11 +30,21 @@ class Game(commands.Cog):
             schedule.run_pending()
             time.sleep(3)
 
+
+    def hunter():
+        def predicate(ctx):
+            return ctx.bot.get_cog("Game").Hunter
+
+        return commands.check(predicate)
+
+
     def __init__(self, bot, players, roles, randomshuffle=True):
         self.__bot = bot
+        self.__hunter_future = None
         self.__players = []
         self.__inlove = []
         self.__bakerdead = False
+        self.test = "Yahoo"
         self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
@@ -109,9 +119,20 @@ class Game(commands.Cog):
             #TODO Change the message to support both names of dead people
             await town_square_channel.send(werewolfMessages[target.Character]["inlove"].format(other.Mention))
             await self.die(ctx, other)
+        if target.Character == "hunter":
+            self.__hunter = True
+            self.__hunter_future = self.__bot.loop.create_future()
+            await self.__hunter_future
         dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
+
+    @commands.command()
+    @hunter()
+    async def shoot(self, ctx, victim: str):
+        dead_villager = self.findVillager(victim)
+        await self.die(ctx, dead_villager)
+        self.__hunter_future.set_result("dead")
 
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
@@ -155,9 +176,10 @@ class Game(commands.Cog):
         protected_member = ctx.guild.get_member_named(person_name)
         await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
-    @commands.command(aliases=["shoot", "makeinlove"])
+
+    @commands.command(aliases=["matchlove", "makeinlove"])
     @is_from_channel("cupid")
-    async def shootarrow(self, ctx, person1: str, person2: str):
+    async def match(self, ctx, person1: str, person2: str):
         villager1 = self.findVillager(person1)
         villager2 = self.findVillager(person2)
         if villager1 is None:
@@ -202,6 +224,10 @@ class Game(commands.Cog):
         if len(result) > 1:
             await town_square_channel.send("We had a bloodbath because we had a tie.")
 
+    @property
+    def Hunter(self):
+        return self.__hunter
+
     def cog_unload(self):
         schedule.clear("game")
         # self.__bot.remove_cog("Election")
@@ -243,3 +269,4 @@ class Game(commands.Cog):
             if x.Name.lower() == name.lower() or x.DiscordTag.lower() == name.lower():
                 return x
         return None
+
