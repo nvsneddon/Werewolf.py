@@ -69,6 +69,8 @@ class Game(commands.Cog):
             self.__killed = True
 
         cards = []
+        if len(roles) >= 7:
+            cards += roles[6] * ["mason"]
         if len(roles) >= 6:
             cards += roles[5] * ["baker"]
         if len(roles) >= 5:
