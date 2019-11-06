@@ -33,16 +33,19 @@ class Game(commands.Cog):
 
     def hunter():
         def predicate(ctx):
-            return ctx.bot.get_cog("Game").Hunter
+            cog = ctx.bot.get_cog("Game")
+            return cog.Hunter and cog.AlmostDead == str(ctx.message.author)
 
         return commands.check(predicate)
 
 
-    def __init__(self, bot, players, roles, randomshuffle=True):
+    def __init__(self, bot, members, roles, randomshuffle=True):
         self.__bot = bot
         self.__hunter_future = None
         self.__players = []
+        self.__members = members
         self.__inlove = []
+        self.__pending_death = None
         self.__bakerdead = False
         self.test = "Yahoo"
         self.__protected = None
@@ -79,12 +82,12 @@ class Game(commands.Cog):
         if len(roles) >= 1:
             cards += roles[0] * ["werewolf"]
 
-        if len(players) > len(cards):
-            cards += (len(players) - len(cards)) * ["villager"]
+        if len(members) > len(cards):
+            cards += (len(members) - len(cards)) * ["villager"]
         if randomshuffle:
             random.shuffle(cards)
 
-        for x in players:
+        for x in members:
             y = Villager(str(x), cards[0], x.id)
             self.__players.append(y)
             cards.pop(0)
@@ -110,6 +113,11 @@ class Game(commands.Cog):
 
     async def die(self, ctx, target: Villager):
         target.die()
+        if target.Character == "hunter":
+            self.__hunter = True
+            self.__pending_death = target.DiscordTag
+            self.__hunter_future = self.__bot.loop.create_future()
+            await self.__hunter_future
         if target in self.__inlove:
             self.__inlove.remove(target)
             other = self.__inlove[0]
@@ -119,10 +127,6 @@ class Game(commands.Cog):
             #TODO Change the message to support both names of dead people
             await town_square_channel.send(werewolfMessages[target.Character]["inlove"].format(other.Mention))
             await self.die(ctx, other)
-        if target.Character == "hunter":
-            self.__hunter = True
-            self.__hunter_future = self.__bot.loop.create_future()
-            await self.__hunter_future
         dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
@@ -131,8 +135,16 @@ class Game(commands.Cog):
     @hunter()
     async def shoot(self, ctx, victim: str):
         dead_villager = self.findVillager(victim)
+        if deadl_villager is None:
+            ctx.send("Please try again. That person wasn't able to be found.")
+            return
+        lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
+        town_square_channel = ctx.guild.get_channel(town_square_id)
+        await town_square_channel.send(lynched_message)
         await self.die(ctx, dead_villager)
         self.__hunter_future.set_result("dead")
+        self.__bot.remove_command("shoot")
+
 
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
@@ -191,7 +203,7 @@ class Game(commands.Cog):
         self.__inlove.append(villager1)
         self.__inlove.append(villager2)
         await ctx.send("{} and {} are in love now".format(person1, person2))
-        self.__bot.remove_command("shootarrow")
+        self.__bot.remove_command("match")
         read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
         love_channel = ctx.guild.get_channel(getChannelId("lovebirds"))
         for x in self.__inlove:
@@ -227,6 +239,10 @@ class Game(commands.Cog):
     @property
     def Hunter(self):
         return self.__hunter
+
+    @property
+    def AlmostDead(self):
+        return self.__pending_death
 
     def cog_unload(self):
         schedule.clear("game")
