@@ -30,15 +30,16 @@ class Cipher:
 
     def __removeLetters(self):
         lst = list(self.__message)
+        count = 0
         for i in range(len(lst)):
             if random.randint(1, 4) == 1:
                 lst[i] = self.RandCharacter
+                count += 1
         self.__hint = "Some letters are lost forever"
-        returnstring = ''.join(lst)
-        if returnstring == self.__message:
+        if count < (len(lst) / 4):
             self.__removeLetters()
         else:
-            self.__jumbled_message = returnstring
+            self.__jumbled_message = ''.join(lst)
 
     @property
     def RandCharacter(self):

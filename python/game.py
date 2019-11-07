@@ -195,6 +195,10 @@ class Game(commands.Cog):
     @commands.command()
     @is_from_channel("afterlife")
     async def sendmessage(self, ctx, word: str):
+        a = word.split(" ")
+        if len(a) > 1:
+            await ctx.send("You can only send one word at a time")
+            return
         if findPerson(ctx, word) is not None:
             await ctx.send("You cannot use the name as the actual word.")
             return
