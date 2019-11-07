@@ -8,13 +8,15 @@ import discord
 import schedule
 from discord.ext import commands
 
-from decorators import is_from_channel, is_admin
+from decorators import is_from_channel, is_admin, findPerson, is_not_character
 from election import Election
 from files import getChannelId, werewolfMessages, config, readJsonFromConfig
 from villager import Villager
+from cipher import Cipher
 
 
 class Game(commands.Cog):
+    __cipher: Optional[Cipher]
     __protected: str
     __daysleft: int
     __bakerdead: bool
@@ -42,12 +44,12 @@ class Game(commands.Cog):
     def __init__(self, bot, members, roles, randomshuffle=True):
         self.__bot = bot
         self.__hunter_future = None
+        self.__cipher = None
         self.__players = []
         self.__members = members
         self.__inlove = []
         self.__pending_death = None
         self.__bakerdead = False
-        self.test = "Yahoo"
         self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
@@ -190,6 +192,32 @@ class Game(commands.Cog):
         protected_member = ctx.guild.get_member_named(person_name)
         await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
+    @commands.command()
+    @is_from_channel("afterlife")
+    @is_not_character("werewolf")
+    async def sendmessage(self, ctx, word: str):
+        a = word.split(" ")
+        if len(a) > 1:
+            await ctx.send("You can only send one word at a time")
+            return
+        if findPerson(ctx, word) is not None:
+            await ctx.send("You cannot use the name as the actual word.")
+            return
+        self.__cipher = Cipher(word)
+        channel = ctx.guild.get_channel(getChannelId("mason"))
+        await channel.send("You have received a message from above.")
+        await channel.send(self.__cipher.Decode)
+
+    @commands.command()
+    @is_from_channel("afterlife")
+    @is_not_character("werewolf")
+    async def sendhint(self, ctx):
+        if self.__cipher == None:
+            await ctx.send("There is no cipher that you can give out.")
+            return
+        channel = ctx.guild.get_channel(getChannelId("mason"))
+        await channel.send("You have received a hint from above. Hopefully this will help you decipher the code.")
+        await channel.send(self.__cipher.Hint)
 
     @commands.command(aliases=["matchlove", "makeinlove"])
     @is_from_channel("cupid")

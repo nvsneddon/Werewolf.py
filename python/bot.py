@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from decorators import is_admin
+from decorators import is_admin, findPerson
 from election import Election
 from game import Game
 import asyncio
@@ -226,18 +226,4 @@ class Bot(commands.Cog):
             os.remove(path)
 
 
-def findPerson(ctx, *args):
-    if len(args) == 1:
-        if type(args[0]) is str:
-            name = args[0]
-        else:
-            name = " ".join(args[0])
-    else:
-        print("Something went very wrong. Args is not of length 1")
-        return None
-    if name[0:3] == "<@!":
-        return ctx.guild.get_member(int(name[3:-1]))
-    elif name[0:2] == "<@":
-        return ctx.guild.get_member(int(name[2:-1]))
-    else:
-        return ctx.guild.get_member_named(name)
+
