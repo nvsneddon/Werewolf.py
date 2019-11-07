@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+from villager import Villager
+
 
 def is_admin():
     async def predicate(ctx):
@@ -12,6 +14,24 @@ def is_admin():
 def is_from_channel(channel_name: str):
     async def predicate(ctx):
         return ctx.channel == discord.utils.get(ctx.guild.channels, name=channel_name)
+
+    return commands.check(predicate)
+
+
+def is_character(character_name: str):
+    async def predicate(ctx):
+        cog = ctx.bot.get_cog("Game")
+        v: Villager = cog.findVillager(str(ctx.author))
+        return v.Character == character_name
+
+    return commands.check(predicate)
+
+
+def is_not_character(character_name: str):
+    async def predicate(ctx):
+        cog = ctx.bot.get_cog("Game")
+        v: Villager = cog.findVillager(str(ctx.author))
+        return v.Character != character_name
 
     return commands.check(predicate)
 

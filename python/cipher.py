@@ -20,7 +20,7 @@ class Cipher:
     def __caesarCipher(self, ):
         i = random.randint(1, 25)
         self.__jumbled_message = CaesarCipher(self.__message, offset=i).decoded
-        self.__hint = "Caeser Cypher {}".format(i)
+        self.__hint = "Caesar Cypher {}".format(i)
 
     def __swapLetters(self):
         lst = list(self.__message)
@@ -32,7 +32,7 @@ class Cipher:
         lst = list(self.__message)
         count = 0
         for i in range(len(lst)):
-            if random.randint(1, 4) == 1:
+            if random.randint(1, 43) == 1:
                 lst[i] = self.RandCharacter
                 count += 1
         self.__hint = "Some letters are lost forever"

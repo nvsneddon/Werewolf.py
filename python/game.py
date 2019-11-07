@@ -8,7 +8,7 @@ import discord
 import schedule
 from discord.ext import commands
 
-from decorators import is_from_channel, is_admin, findPerson
+from decorators import is_from_channel, is_admin, findPerson, is_not_character
 from election import Election
 from files import getChannelId, werewolfMessages, config, readJsonFromConfig
 from villager import Villager
@@ -194,6 +194,7 @@ class Game(commands.Cog):
 
     @commands.command()
     @is_from_channel("afterlife")
+    @is_not_character("werewolf")
     async def sendmessage(self, ctx, word: str):
         a = word.split(" ")
         if len(a) > 1:
@@ -209,6 +210,7 @@ class Game(commands.Cog):
 
     @commands.command()
     @is_from_channel("afterlife")
+    @is_not_character("werewolf")
     async def sendhint(self, ctx):
         if self.__cipher == None:
             await ctx.send("There is no cipher that you can give out.")
