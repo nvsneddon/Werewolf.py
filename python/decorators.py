@@ -14,3 +14,20 @@ def is_from_channel(channel_name: str):
         return ctx.channel == discord.utils.get(ctx.guild.channels, name=channel_name)
 
     return commands.check(predicate)
+
+
+def findPerson(ctx, *args):
+    if len(args) == 1:
+        if type(args[0]) is str:
+            name = args[0]
+        else:
+            name = " ".join(args[0])
+    else:
+        print("Something went very wrong. Args is not of length 1")
+        return None
+    if name[0:3] == "<@!":
+        return ctx.guild.get_member(int(name[3:-1]))
+    elif name[0:2] == "<@":
+        return ctx.guild.get_member(int(name[2:-1]))
+    else:
+        return ctx.guild.get_member_named(name)
