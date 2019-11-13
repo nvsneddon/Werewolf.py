@@ -54,6 +54,8 @@ class Game(commands.Cog):
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__running = True
+        self.__numWerewolves = 0
+        self.__numVillagers= 0
 
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
@@ -93,6 +95,10 @@ class Game(commands.Cog):
 
         for x in members:
             y = Villager(str(x), cards[0], x.id)
+            if cards[0] in ("werewolf"):
+                self.__numWerewolves += 1;
+            else:
+                self.__numVillagers += 1;
             self.__players.append(y)
             cards.pop(0)
 
@@ -116,7 +122,10 @@ class Game(commands.Cog):
             await self.die(ctx, target)
 
     async def die(self, ctx, target: Villager):
-        target.die()
+        if target.die():
+            self.__numWerewolves -= 1
+        else:
+            self.__numVillagers -= 1
         if target.Character == "hunter":
             self.__hunter = True
             self.__pending_death = target.DiscordTag
@@ -130,10 +139,16 @@ class Game(commands.Cog):
             town_square_channel = ctx.guild.get_channel(town_square_id)
             #TODO Change the message to support both names of dead people
             await town_square_channel.send(werewolfMessages[target.Character]["inlove"].format(other.Mention))
-            await self.die(ctx, other)
+            await self.die(ctx, target)
+
         dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
+
+    @commands.command()
+    @is_admin()
+    async def countpeople(self, ctx):
+        await ctx.send("Villagers: {}\nWerewolves: {}".format(self.__numVillagers, self.__numWerewolves))
 
     @commands.command()
     @hunter()
@@ -145,7 +160,7 @@ class Game(commands.Cog):
         lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
         town_square_channel = ctx.guild.get_channel(town_square_id)
         await town_square_channel.send(lynched_message)
-        await self.die(ctx, dead_villager)
+        await self.die(ctx, target)
         self.__hunter_future.set_result("dead")
         self.__bot.remove_command("shoot")
 
@@ -260,7 +275,7 @@ class Game(commands.Cog):
         await town_square_channel.send("The voting has closed.")
         for x in result:
             dead_villager = self.findVillager(x)
-            await self.die(ctx, dead_villager)
+            await self.die(ctx, target)
             lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await town_square_channel.send(lynched_message)
         if len(result) > 1:
