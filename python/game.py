@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from decorators import is_from_channel, is_admin, findPerson, is_not_character
 from election import Election
-from files import getChannelId, werewolfMessages, config, readJsonFromConfig
+from files import getChannelId, werewolfMessages, config, readJsonFromConfig, channels_config
 from villager import Villager
 from cipher import Cipher
 
@@ -54,6 +54,8 @@ class Game(commands.Cog):
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__running = True
+        self.__numWerewolves = 0
+        self.__numVillagers= 0
 
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
@@ -93,11 +95,22 @@ class Game(commands.Cog):
 
         for x in members:
             y = Villager(str(x), cards[0], x.id)
+            if cards[0] in ("werewolf"):
+                self.__numWerewolves += 1;
+            else:
+                self.__numVillagers += 1;
             self.__players.append(y)
             cards.pop(0)
 
         for i in self.__players:
             print(i)
+
+    @property
+    def GameStats(self):
+        return {
+            "werewolves": self.__numWerewolves,
+            "villagers": self.__numVillagers
+        }
 
     @commands.command(aliases=["murder"])
     @is_from_channel("werewolves")
@@ -116,7 +129,10 @@ class Game(commands.Cog):
             await self.die(ctx, target)
 
     async def die(self, ctx, target: Villager):
-        target.die()
+        if target.die():
+            self.__numWerewolves -= 1
+        else:
+            self.__numVillagers -= 1
         if target.Character == "hunter":
             self.__hunter = True
             self.__pending_death = target.DiscordTag
@@ -130,10 +146,23 @@ class Game(commands.Cog):
             town_square_channel = ctx.guild.get_channel(town_square_id)
             #TODO Change the message to support both names of dead people
             await town_square_channel.send(werewolfMessages[target.Character]["inlove"].format(other.Mention))
-            await self.die(ctx, other)
+            await self.die(ctx, target)
+
         dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
+        # await channel.set_permissions(member, overwrite=None)
+
+        for x in channels_config["channels"]:
+            channel = ctx.guild.get_channel(getChannelId(x))
+            member = ctx.guild.get_member_named(target.DiscordTag)
+            await channel.set_permissions(member, overwrite=None)
+
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
+
+    @commands.command()
+    @is_admin()
+    async def countpeople(self, ctx):
+        await ctx.send("Villagers: {}\nWerewolves: {}".format(self.__numVillagers, self.__numWerewolves))
 
     @commands.command()
     @hunter()
@@ -145,7 +174,7 @@ class Game(commands.Cog):
         lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
         town_square_channel = ctx.guild.get_channel(town_square_id)
         await town_square_channel.send(lynched_message)
-        await self.die(ctx, dead_villager)
+        await self.die(ctx, target)
         self.__hunter_future.set_result("dead")
         self.__bot.remove_command("shoot")
 
@@ -219,6 +248,23 @@ class Game(commands.Cog):
         await channel.send("You have received a hint from above. Hopefully this will help you decipher the code.")
         await channel.send(self.__cipher.Hint)
 
+    def cupidWinner(self):
+        for x in self.__players:
+            if not x.Dead and not x.InLove:
+                return False
+        return True
+
+    def findWinner(self):
+        if self.cupidWinner():
+            return "lovers"
+        stats = self.gameStats()
+        if stats["werewolves"] >= stats["villagers"]:
+            return "werewolves"
+        elif stats["werewolves"] == 0:
+            return "villagers"
+        else:
+            return
+
     @commands.command(aliases=["matchlove", "makeinlove"])
     @is_from_channel("cupid")
     async def match(self, ctx, person1: str, person2: str):
@@ -260,7 +306,7 @@ class Game(commands.Cog):
         await town_square_channel.send("The voting has closed.")
         for x in result:
             dead_villager = self.findVillager(x)
-            await self.die(ctx, dead_villager)
+            await self.die(ctx, target)
             lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await town_square_channel.send(lynched_message)
         if len(result) > 1:
@@ -307,12 +353,15 @@ class Game(commands.Cog):
     #         self.findVillager(target).die()
 
     def findVillager(self, name: str) -> Optional[Villager]:
+        id = 0
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
-            name = name[3:-1]
+            id = name[3:-1]
         elif name[0:2] == "<@":
-            name = name[2:-1]
+            id = name[2:-1]
+        print(name, "is the mention")
         for x in self.__players:
-            if x.Name.lower() == name.lower() or x.DiscordTag.lower() == name.lower():
+            print("We are comparing:", name, x.Mention)
+            if x.UserID == id or x.Name.lower() == name.lower() or x.DiscordTag.lower() == name.lower():
                 return x
         return None
 
