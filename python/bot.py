@@ -1,13 +1,21 @@
 import discord
 from discord.ext import commands
 
-from decorators import is_admin
+from decorators import is_admin, findPerson
 from election import Election
 from game import Game
 import asyncio
 import os
 import json
 from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
+
+
+def can_clear():
+    async def predicate(ctx):
+        return not ((discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (
+                ctx.message.author != findPerson(ctx, "keyclimber")))
+
+    return commands.check(predicate)
 
 
 class Bot(commands.Cog):
@@ -35,6 +43,21 @@ class Bot(commands.Cog):
             output += ' '
         print(output)
         await ctx.send(output)
+
+    @commands.command()
+    @can_clear()
+    async def clear(self, ctx, number=10):
+        # Converting the amount of messages to delete to an integer
+        number = int(number + 1)
+        counter = 0
+        delete_channel = ctx.message.channel
+        async for x in (delete_channel.history(limit=number)):
+            if counter < number:
+                if x.pinned:
+                    continue
+                await x.delete()
+                counter += 1
+                await asyncio.sleep(0.4)
 
     @commands.command()
     async def ping(self, ctx):
@@ -203,18 +226,4 @@ class Bot(commands.Cog):
             os.remove(path)
 
 
-def findPerson(ctx, *args):
-    if len(args) == 1:
-        if type(args[0]) is str:
-            name = args[0]
-        else:
-            name = " ".join(args[0])
-    else:
-        print("Something went very wrong. Args is not of length 1")
-        return None
-    if name[0:3] == "<@!":
-        return ctx.guild.get_member(int(name[3:-1]))
-    elif name[0:2] == "<@":
-        return ctx.guild.get_member(int(name[2:-1]))
-    else:
-        return ctx.guild.get_member_named(name)
+

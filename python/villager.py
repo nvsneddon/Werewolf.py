@@ -1,5 +1,7 @@
 class Villager:
 
+    # TODO Refactor this class to include the member object and use properties to access instead of
+    #  having all of these attributes
     def __init__(self, discordtag: str, character: str, id: int):
         # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
         self.__name: str = discordtag.split("#")[0]
@@ -12,6 +14,8 @@ class Villager:
         self.__inLove: bool = False
         self.__userID = id
         self.__protected = False
+        self.__numWerewolves = 0
+        self.__numVillagers= 0
 
         # self.__inSpecialChannel = bool(character in specialChannel)
 
@@ -47,6 +51,11 @@ class Villager:
     def Mention(self) -> str:
         return "<@" + str(self.__userID) + ">"
 
+
+    @property
+    def InLove(self):
+        return self.__inLove
+
     @property
     def IsWerewolf(self) -> bool:
         return self.__is_werewolf
@@ -69,13 +78,15 @@ class Villager:
     def Protected(self, value):
         self.__protected = value
 
-    def die(self) -> None:
+    def die(self) -> bool:
         self.__alive = False
+        return self.__is_werewolf
 
     def __str__(self):
         return "Name: {}\nTag: {}\nID: {}\nCharacter: {}\nAlive: {}\n".format(self.__name, self.__discordTag,
                                                                               str(self.__userID), self.__character,
                                                                               self.__alive)
+
 
     def __eq__(self, other):
         if self is None or other is None:
