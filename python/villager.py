@@ -51,6 +51,11 @@ class Villager:
     def Mention(self) -> str:
         return "<@" + str(self.__userID) + ">"
 
+
+    @property
+    def InLove(self):
+        return self.__inLove
+
     @property
     def IsWerewolf(self) -> bool:
         return self.__is_werewolf
@@ -81,6 +86,7 @@ class Villager:
         return "Name: {}\nTag: {}\nID: {}\nCharacter: {}\nAlive: {}\n".format(self.__name, self.__discordTag,
                                                                               str(self.__userID), self.__character,
                                                                               self.__alive)
+
 
     def __eq__(self, other):
         if self is None or other is None:

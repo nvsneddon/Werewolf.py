@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from decorators import is_from_channel, is_admin, findPerson, is_not_character
 from election import Election
-from files import getChannelId, werewolfMessages, config, readJsonFromConfig
+from files import getChannelId, werewolfMessages, config, readJsonFromConfig, channels_config
 from villager import Villager
 from cipher import Cipher
 
@@ -105,6 +105,13 @@ class Game(commands.Cog):
         for i in self.__players:
             print(i)
 
+    @property
+    def GameStats(self):
+        return {
+            "werewolves": self.__numWerewolves,
+            "villagers": self.__numVillagers
+        }
+
     @commands.command(aliases=["murder"])
     @is_from_channel("werewolves")
     async def kill(self, ctx, person_name: str):
@@ -142,6 +149,13 @@ class Game(commands.Cog):
             await self.die(ctx, target)
 
         dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
+        # await channel.set_permissions(member, overwrite=None)
+
+        for x in channels_config["channels"]:
+            channel = ctx.guild.get_channel(getChannelId(x))
+            member = ctx.guild.get_member_named(target.DiscordTag)
+            await channel.set_permissions(member, overwrite=None)
+
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
 
@@ -234,6 +248,23 @@ class Game(commands.Cog):
         await channel.send("You have received a hint from above. Hopefully this will help you decipher the code.")
         await channel.send(self.__cipher.Hint)
 
+    def cupidWinner(self):
+        for x in self.__players:
+            if not x.Dead and not x.InLove:
+                return False
+        return True
+
+    def findWinner(self):
+        if self.cupidWinner():
+            return "lovers"
+        stats = self.gameStats()
+        if stats["werewolves"] >= stats["villagers"]:
+            return "werewolves"
+        elif stats["werewolves"] == 0:
+            return "villagers"
+        else:
+            return
+
     @commands.command(aliases=["matchlove", "makeinlove"])
     @is_from_channel("cupid")
     async def match(self, ctx, person1: str, person2: str):
@@ -322,12 +353,15 @@ class Game(commands.Cog):
     #         self.findVillager(target).die()
 
     def findVillager(self, name: str) -> Optional[Villager]:
+        id = 0
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
-            name = name[3:-1]
+            id = name[3:-1]
         elif name[0:2] == "<@":
-            name = name[2:-1]
+            id = name[2:-1]
+        print(name, "is the mention")
         for x in self.__players:
-            if x.Name.lower() == name.lower() or x.DiscordTag.lower() == name.lower():
+            print("We are comparing:", name, x.Mention)
+            if x.UserID == id or x.Name.lower() == name.lower() or x.DiscordTag.lower() == name.lower():
                 return x
         return None
 
