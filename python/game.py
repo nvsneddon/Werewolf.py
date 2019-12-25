@@ -64,7 +64,7 @@ class Game(commands.Cog):
         schedule.every().day.at(config["daytime"]).do(self.daytime).tag("game")
         schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
         schedule.every().day.at(config["nighttime"]).do(self.nighttime).tag("game")
-        schedule.every(3).seconds.do(self.daytimeschedule).tag("game")
+        # schedule.every(3).seconds.do(self.daytime).tag("game")
 
         check_time = datetime.datetime.now().time()
         if datetime.time(7, 0) <= check_time <= datetime.time(21, 0):
@@ -343,12 +343,29 @@ class Game(commands.Cog):
         for x in self.__players:
             x.UsedAbility = False
             x.Protected = False
+        self.__bot.loop.create_task(self.daytimeannounce())
+
+    async def daytimeannounce(self):
+        town_square_id = getChannelId("town-square")
+        town_square_channel = self.__bot.get_channel(town_square_id)
+        await town_square_channel.send("It is daytime")
 
     def nighttime(self):
         self.__killed = False
+        self.__bot.loop.create_task(self.nighttimeannounce())
+
+    async def nighttimeannounce(self):
+        town_square_id = getChannelId("town-square")
+        town_square_channel = self.__bot.get_channel(town_square_id)
+        await town_square_channel.send("It is nighttime")
 
     def almostnighttime(self):
-        pass
+        self.__bot.loop.create_task(self.nighttimeannounce())
+
+    async def almostnighttimeannounce(self):
+        town_square_id = getChannelId("town-square")
+        town_square_channel = self.__bot.get_channel(town_square_id)
+        await town_square_channel.send("It is almost nighttime")
 
     def getVillagerByID(self, player_id: int) -> Optional[Villager]:
         for x in self.__players:
