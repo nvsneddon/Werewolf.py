@@ -64,6 +64,7 @@ class Game(commands.Cog):
         schedule.every().day.at(config["daytime"]).do(self.daytime).tag("game")
         schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
         schedule.every().day.at(config["nighttime"]).do(self.nighttime).tag("game")
+        schedule.every(3).seconds.do(self.daytimeschedule).tag("game")
 
         check_time = datetime.datetime.now().time()
         if datetime.time(7, 0) <= check_time <= datetime.time(21, 0):
@@ -163,6 +164,16 @@ class Game(commands.Cog):
     @is_admin()
     async def countpeople(self, ctx):
         await ctx.send("Villagers: {}\nWerewolves: {}".format(self.__numVillagers, self.__numWerewolves))
+
+    @commands.command(aliases = ['daytime'])
+    @is_admin()
+    async def day(self, ctx):
+        self.daytime()
+
+    @commands.command(aliases = ['nighttime'])
+    @is_admin()
+    async def night(self, ctx):
+        self.nighttime()
 
     @commands.command()
     @hunter()
@@ -358,9 +369,7 @@ class Game(commands.Cog):
             id = name[3:-1]
         elif name[0:2] == "<@":
             id = name[2:-1]
-        print(name, "is the mention")
         for x in self.__players:
-            print("We are comparing:", name, x.Mention)
             if x.UserID == id or x.Name.lower() == name.lower() or x.DiscordTag.lower() == name.lower():
                 return x
         return None
