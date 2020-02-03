@@ -50,6 +50,7 @@ class Game(commands.Cog):
         self.__inlove = []
         self.__pending_death = None
         self.__bakerdead = False
+        self.__election_cog = None
         self.__protected = None
         self.__daysleft = 3
         self.__hunter = False  # Variable to turn on the hunter's power
@@ -161,7 +162,6 @@ class Game(commands.Cog):
         await target_user.edit(roles=[dead_role])
 
     @commands.command()
-    @is_admin()
     async def countpeople(self, ctx):
         await ctx.send("Villagers: {}\nWerewolves: {}".format(self.__numVillagers, self.__numWerewolves))
 
@@ -176,10 +176,15 @@ class Game(commands.Cog):
         self.nighttime()
 
     @commands.command()
+    @is_admin()
+    async def announcenight(self, ctx):
+        self.almostnighttimeannounce()
+
+    @commands.command()
     @hunter()
     async def shoot(self, ctx, victim: str):
         dead_villager = self.findVillager(victim)
-        if deadl_villager is None:
+        if dead_villager is None:
             ctx.send("Please try again. That person wasn't able to be found.")
             return
         lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
@@ -305,8 +310,8 @@ class Game(commands.Cog):
         town_square_id = getChannelId("town-square")
         town_square_channel = ctx.guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
-        election_cog = Election(self.__bot, future, self.__players)
-        self.__bot.add_cog(election_cog)
+        self.__election_cog = Election(self.__bot, future, self.__players)
+        self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("The lynching vote has now begun.")
         await future
         self.__bot.remove_cog("Election")
@@ -352,6 +357,8 @@ class Game(commands.Cog):
 
     def nighttime(self):
         self.__killed = False
+        if self.__election_cog is not None:
+            self.__election_cog.stop_vote()
         self.__bot.loop.create_task(self.nighttimeannounce())
 
     async def nighttimeannounce(self):
@@ -360,11 +367,13 @@ class Game(commands.Cog):
         await town_square_channel.send("It is nighttime")
 
     def almostnighttime(self):
-        self.__bot.loop.create_task(self.nighttimeannounce())
+        self.__bot.loop.create_task(self.almostnighttimeannounce())
 
     async def almostnighttimeannounce(self):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
+        x = config["minutes-before-warning"]
+        print(type(x))
         await town_square_channel.send("It is almost nighttime")
 
     def getVillagerByID(self, player_id: int) -> Optional[Villager]:
