@@ -35,6 +35,10 @@ def is_not_character(character_name: str):
 
     return commands.check(predicate)
 
+def simple_boolean(b):
+    async def predicate():
+        return b
+    return commands.check(predicate)
 
 def findPerson(ctx, *args):
     if len(args) == 1:

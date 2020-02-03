@@ -14,8 +14,6 @@ class Villager:
         self.__inLove: bool = False
         self.__userID = id
         self.__protected = False
-        self.__numWerewolves = 0
-        self.__numVillagers= 0
 
         # self.__inSpecialChannel = bool(character in specialChannel)
 
