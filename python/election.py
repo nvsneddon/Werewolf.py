@@ -24,6 +24,10 @@ class Election(commands.Cog):
     async def endvote(self, ctx):
         self.stop_vote()
 
+    @commands.command()
+    async def getleading(self, ctx):
+        await ctx.send(f"The leading person is {self.__Leading}")
+
     def stop_vote(self):
         self.__future.set_result(self.__Leading)
 

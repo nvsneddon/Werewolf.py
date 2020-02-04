@@ -42,7 +42,7 @@ class Game(commands.Cog):
         return commands.check(predicate)
 
 
-    def __init__(self, bot, members, roles, future, randomshuffle=True):
+    def __init__(self, bot, members, future, roles, randomshuffle=True):
         self.__bot = bot
         self.__hunter_future = None
         self.__cipher = None
@@ -326,7 +326,6 @@ class Game(commands.Cog):
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
 
     @commands.command(alias=["startwerewolfvote"])
-    @is_admin()
     async def startvote(self, ctx):
         town_square_id = getChannelId("town-square")
         town_square_channel = ctx.guild.get_channel(town_square_id)
@@ -342,8 +341,10 @@ class Game(commands.Cog):
             return
         await town_square_channel.send("The voting has closed.")
         for x in result:
-            dead_villager = self.findVillager(x)
-            await self.die(ctx, target)
+            dead_villager: Villager = self.findVillager(x)
+            print("The dead villager", dead_villager)
+            await self.die(ctx, dead_villager)
+            dead_villager.die()
             lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await town_square_channel.send(lynched_message)
         if len(result) > 1:
