@@ -42,10 +42,11 @@ class Game(commands.Cog):
         return commands.check(predicate)
 
 
-    def __init__(self, bot, members, roles, randomshuffle=True):
+    def __init__(self, bot, members, roles, future, randomshuffle=True):
         self.__bot = bot
         self.__hunter_future = None
         self.__cipher = None
+        self.__game_future = future
         self.__players = []
         self.__members = members
         self.__inlove = []
@@ -284,15 +285,20 @@ class Game(commands.Cog):
                 return False
         return True
 
-    def findWinner(self):
+    async def findWinner(self, ctx):
+        channel = ctx.guild.get_channel(getChannelId("town-square"))
         if self.cupidWinner():
-            return "lovers"
+            await channel.send("We see that true loves conquers even in the most tragic of times. The love birds and cupid win.")
+            self.__game_future.set_result("gameover")
         if self.GameStats["werewolves"] >= self.GameStats["villagers"]:
-            return "werewolves"
+            await channel.send("The werewolves outnumber the villagers. The werewolves win.")
+            self.__game_future.set_result("gameover")
         elif self.GameStats["werewolves"] == 0:
-            return "villagers"
-        else:
-            return
+            await channel.send("The last of the werewolves are now dead. The villagers win.")
+            self.__game_future.set_result("gameover")
+        elif self.__daysleft == 0:
+            await channel.send("The villagers die of starvation! The werewolves survive off of the villagers' corpses and win the game.")
+            self.__game_future.set_result("gameover")
 
     @commands.command(aliases=["matchlove", "makeinlove"])
     @is_from_channel("cupid")
