@@ -35,10 +35,14 @@ def is_not_character(character_name: str):
 
     return commands.check(predicate)
 
-def simple_boolean(b):
-    async def predicate():
-        return b
+
+def has_ability(character_name: str):
+    def predicate(ctx):
+        cog = ctx.bot.get_cog("Game")
+        return cog.Abilities.check_ability(character_name)
+
     return commands.check(predicate)
+
 
 def findPerson(ctx, *args):
     if len(args) == 1:

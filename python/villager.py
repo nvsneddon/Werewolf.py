@@ -10,7 +10,7 @@ class Villager:
         self.__is_werewolf: bool = (character == "werewolf")
         self.__killer: bool = (character == "werewolf" or character == "hunter")
         self.__alive: bool = True
-        self.__usedAbility = False
+        # self.__usedAbility = False
         self.__inLove: bool = False
         self.__userID = id
         self.__protected = False
@@ -49,7 +49,6 @@ class Villager:
     def Mention(self) -> str:
         return "<@" + str(self.__userID) + ">"
 
-
     @property
     def InLove(self):
         return self.__inLove
@@ -58,19 +57,19 @@ class Villager:
     def IsWerewolf(self) -> bool:
         return self.__is_werewolf
 
-    @property
-    def UsedAbility(self):
-        return self.__usedAbility
+    # @property
+    # def UsedAbility(self):
+    #     return self.__usedAbility
+    #
+    # def useAbility(self):
+    #     if self.__usedAbility:
+    #         return False
+    #     self.__usedAbility = True
+    #     return True
 
-    def useAbility(self):
-        if self.__usedAbility:
-            return False
-        self.__usedAbility = True
-        return True
-
-    @UsedAbility.setter
-    def UsedAbility(self, value):
-        self.__usedAbility = value
+    # @UsedAbility.setter
+    # def UsedAbility(self, value):
+    #     self.__usedAbility = value
 
     @Protected.setter
     def Protected(self, value):
@@ -81,10 +80,8 @@ class Villager:
         return self.__is_werewolf
 
     def __str__(self):
-        return "Name: {}\nTag: {}\nID: {}\nCharacter: {}\nAlive: {}\n".format(self.__name, self.__discordTag,
-                                                                              str(self.__userID), self.__character,
-                                                                              self.__alive)
-
+        return f"Name: {self.__name}\nTag: {self.__discordTag}\nID: {self.__userID}\n" \
+               f"Character: {self.__character}\nAlive: {self.__alive}\n"
 
     def __eq__(self, other):
         if self is None or other is None:

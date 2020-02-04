@@ -6,7 +6,8 @@ class Abilities:
             "werewolves": False,
             "seer": False,
             "bodyguard": False,
-            "villager": False
+            "villager": False,
+            "cupid": True
         }
 
         self.__night = ("spirits", "werewolves")
@@ -24,6 +25,7 @@ class Abilities:
                     self.__roles[x] = True
         else:
             self.daytime()
+        self.__roles["cupid"] = True
 
     def check_ability(self, character):
         if character not in self.__roles:
