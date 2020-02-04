@@ -140,6 +140,7 @@ class Game(commands.Cog):
             town_square_channel = ctx.guild.get_channel(town_square_id)
             await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Mention))
             await self.die(ctx, target)
+        await self.findWinner(ctx)
 
     async def die(self, ctx, target: Villager):
         if target.die():
@@ -172,6 +173,7 @@ class Game(commands.Cog):
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
 
+
     @commands.command()
     async def countpeople(self, ctx):
         await ctx.send("Villagers: {}\nWerewolves: {}".format(self.__numVillagers, self.__numWerewolves))
@@ -198,12 +200,14 @@ class Game(commands.Cog):
         if dead_villager is None:
             ctx.send("Please try again. That person wasn't able to be found.")
             return
-        lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
-        town_square_channel = ctx.guild.get_channel(town_square_id)
+        lynched_message = werewolfMessages[dead_villager.Character]["hunter"].format(dead_villager.Mention)
+        town_square_channel = ctx.guild.get_channel(getChannelId("town-square"))
         await town_square_channel.send(lynched_message)
-        await self.die(ctx, target)
+        await self.die(ctx, dead_villager)
         self.__hunter_future.set_result("dead")
         self.__bot.remove_command("shoot")
+
+        await self.findWinner(ctx)
 
 
     @commands.command(aliases=["see", "look", "suspect"])
@@ -335,6 +339,7 @@ class Game(commands.Cog):
         await town_square_channel.send("The lynching vote has now begun.")
         await future
         self.__bot.remove_cog("Election")
+        self.__election_cog = None
         result = future.result()
         if result == "cancel":
             await town_square_channel.send("The lynching vote has been cancelled")
@@ -349,6 +354,7 @@ class Game(commands.Cog):
             await town_square_channel.send(lynched_message)
         if len(result) > 1:
             await town_square_channel.send("We had a bloodbath because we had a tie.")
+        await self.findWinner(ctx)
 
     @property
     def Hunter(self):
