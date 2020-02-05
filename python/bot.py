@@ -7,7 +7,7 @@ from game import Game
 import asyncio
 import os
 import json
-from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
+from files import getChannelId, channels_config, roles_config, readJsonFromConfig
 
 
 def can_clear():
@@ -18,16 +18,17 @@ def can_clear():
     return commands.check(predicate)
 
 
+def has_role(r):
+    async def predicate(ctx):
+        return r in ctx.author.roles
+
+    return commands.check(predicate)
+
+
 class Bot(commands.Cog):
 
     def __init__(self, bot):
         self.__bot = bot
-
-    def has_role(self, r):
-        async def predicate(ctx):
-            return r in ctx.author.roles
-
-        return commands.check(predicate)
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -66,6 +67,7 @@ class Bot(commands.Cog):
     @commands.command(pass_context=True)
     @is_admin()
     async def startgame(self, ctx, *args: int):
+        game_future = self.__bot.loop.create_future()
         alive_role = discord.utils.get(
             ctx.guild.roles, name="Alive")
         playing_role = discord.utils.get(
@@ -83,7 +85,7 @@ class Bot(commands.Cog):
             return
         for player in players:
             await player.edit(roles=roles_assignment)
-        game_cog = Game(self.__bot, players, args)
+        game_cog = Game(self.__bot, members=players, future=game_future, roles=args)
         self.__bot.add_cog(game_cog)
         read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
         for x in ctx.guild.members:
@@ -94,6 +96,23 @@ class Bot(commands.Cog):
                     channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                     await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
         await ctx.send("Let the games begin!")
+        await game_future
+        town_square_id = getChannelId("town-square")
+        town_square_channel = self.__bot.get_channel(town_square_id)
+        winner = game_future.result()
+        print(winner)
+        if winner == "werewolves":
+            await town_square_channel.send("Werewolves outnumber the villagers. Werewolves won.")
+        elif winner == "villagers":
+            await town_square_channel.send("All werewolves are now dead. Villagers win!")
+        elif winner == "cupid":
+            await town_square_channel.send("Cupid did a great job. The last two people alive are the love birds.")
+        elif winner == "bakerdead":
+            await town_square_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses "
+                                           "and win the game.")
+
+        await self.__finishGame(ctx)
+
 
     @commands.command()
     @is_admin()

@@ -2,20 +2,18 @@ class Villager:
 
     # TODO Refactor this class to include the member object and use properties to access instead of
     #  having all of these attributes
-    def __init__(self, discordtag: str, character: str, id: int):
+    def __init__(self, discord_tag: str, character: str, id: int):
         # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
-        self.__name: str = discordtag.split("#")[0]
-        self.__discordTag: str = discordtag
+        self.__name: str = discord_tag.split("#")[0]
+        self.__discordTag: str = discord_tag
         self.__character: str = character
         self.__is_werewolf: bool = (character == "werewolf")
         self.__killer: bool = (character == "werewolf" or character == "hunter")
         self.__alive: bool = True
-        self.__usedAbility = False
+        # self.__usedAbility = False
         self.__inLove: bool = False
         self.__userID = id
         self.__protected = False
-        self.__numWerewolves = 0
-        self.__numVillagers= 0
 
         # self.__inSpecialChannel = bool(character in specialChannel)
 
@@ -51,7 +49,6 @@ class Villager:
     def Mention(self) -> str:
         return "<@" + str(self.__userID) + ">"
 
-
     @property
     def InLove(self):
         return self.__inLove
@@ -60,19 +57,19 @@ class Villager:
     def IsWerewolf(self) -> bool:
         return self.__is_werewolf
 
-    @property
-    def UsedAbility(self):
-        return self.__usedAbility
+    # @property
+    # def UsedAbility(self):
+    #     return self.__usedAbility
+    #
+    # def useAbility(self):
+    #     if self.__usedAbility:
+    #         return False
+    #     self.__usedAbility = True
+    #     return True
 
-    def useAbility(self):
-        if self.__usedAbility:
-            return False
-        self.__usedAbility = True
-        return True
-
-    @UsedAbility.setter
-    def UsedAbility(self, value):
-        self.__usedAbility = value
+    # @UsedAbility.setter
+    # def UsedAbility(self, value):
+    #     self.__usedAbility = value
 
     @Protected.setter
     def Protected(self, value):
@@ -83,10 +80,8 @@ class Villager:
         return self.__is_werewolf
 
     def __str__(self):
-        return "Name: {}\nTag: {}\nID: {}\nCharacter: {}\nAlive: {}\n".format(self.__name, self.__discordTag,
-                                                                              str(self.__userID), self.__character,
-                                                                              self.__alive)
-
+        return f"Name: {self.__name}\nTag: {self.__discordTag}\nID: {self.__userID}\n" \
+               f"Character: {self.__character}\nAlive: {self.__alive}\n"
 
     def __eq__(self, other):
         if self is None or other is None:

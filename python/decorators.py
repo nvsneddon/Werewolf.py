@@ -36,6 +36,14 @@ def is_not_character(character_name: str):
     return commands.check(predicate)
 
 
+def has_ability(character_name: str):
+    def predicate(ctx):
+        cog = ctx.bot.get_cog("Game")
+        return cog.Abilities.check_ability(character_name)
+
+    return commands.check(predicate)
+
+
 def findPerson(ctx, *args):
     if len(args) == 1:
         if type(args[0]) is str:
