@@ -128,7 +128,7 @@ class Game(commands.Cog):
     @commands.command(aliases=["murder"])
     @is_from_channel("werewolves")
     async def kill(self, ctx, person_name: str):
-        if self.__abilities.check_ability("werewolves"):
+        if not self.__abilities.check_ability("werewolves"):
             await ctx.send("You can't kill two people per round. ")
             return
         target = self.findVillager(person_name)
@@ -220,7 +220,7 @@ class Game(commands.Cog):
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
     async def investigate(self, ctx, person_name: str):
-        if self.__abilities.check_ability("seer"):
+        if not self.__abilities.check_ability("seer"):
             await ctx.send("The future is hazy, but tomorrow you could have a better chance. If you don't die before!")
             return
         target = self.findVillager(person_name)
@@ -242,7 +242,7 @@ class Game(commands.Cog):
     @commands.command()
     @is_from_channel("bodyguard")
     async def protect(self, ctx, person_name: str):
-        if self.__abilities.check_ability("bodyguard"):
+        if not self.__abilities.check_ability("bodyguard"):
             await ctx.send("You've been protecting someone and now you're tired. Get some rest until the next morning.")
             return
         protector: Villager = self.findVillager(ctx.message.author.name)
@@ -268,7 +268,7 @@ class Game(commands.Cog):
     @is_from_channel("afterlife")
     @is_not_character("werewolf")
     async def sendmessage(self, ctx, word: str):
-        if self.__abilities.check_ability("spirits"):
+        if not self.__abilities.check_ability("spirits"):
             await ctx.send("You've already sent a message or a hint. Wait until the next night.")
             return
         if len(word.split(' ')) > 1:
@@ -287,7 +287,7 @@ class Game(commands.Cog):
     @is_from_channel("afterlife")
     @is_not_character("werewolf")
     async def sendhint(self, ctx):
-        if self.__abilities.check_ability("spirits"):
+        if not self.__abilities.check_ability("spirits"):
             await ctx.send("You've already sent a message or a hint. Wait until the next night.")
             return
         if self.__cipher == None:
