@@ -54,7 +54,7 @@ class Game(commands.Cog):
         self.__bakerdead = False
         self.__election_cog = None
         self.__last_protected = None
-        self.__daysleft = 3
+        self.__daysleft = 4
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__running = True
         self.__numWerewolves = 0
@@ -140,7 +140,8 @@ class Game(commands.Cog):
             town_square_channel = ctx.guild.get_channel(town_square_id)
             await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Mention))
             await self.die(ctx, target)
-        await self.findWinner(ctx)
+        if self.Winner != "":
+            self.__game_future.set_result(self.Winner)
 
     async def die(self, ctx, target: Villager):
         if target.die():
@@ -152,6 +153,8 @@ class Game(commands.Cog):
             self.__pending_death = target.DiscordTag
             self.__hunter_future = self.__bot.loop.create_future()
             await self.__hunter_future
+        elif target.Character == "baker":
+            self.__bakerdead = True
         if target in self.__inlove:
             self.__inlove.remove(target)
             other: Villager = self.__inlove[0]
@@ -176,7 +179,7 @@ class Game(commands.Cog):
 
     @commands.command()
     async def countpeople(self, ctx):
-        await ctx.send("Villagers: {}\nWerewolves: {}".format(self.__numVillagers, self.__numWerewolves))
+        await ctx.send(f"Villagers: {self.__numVillagers}\nWerewolves: {self.__numWerewolves}")
 
     @commands.command(aliases = ['daytime'])
     @is_admin()
@@ -207,7 +210,7 @@ class Game(commands.Cog):
         self.__hunter_future.set_result("dead")
         self.__bot.remove_command("shoot")
 
-        await self.findWinner(ctx)
+        # await self.findWinner(ctx)
 
 
     @commands.command(aliases=["see", "look", "suspect"])
@@ -289,20 +292,18 @@ class Game(commands.Cog):
                 return False
         return True
 
-    async def findWinner(self, ctx):
-        channel = ctx.guild.get_channel(getChannelId("town-square"))
+    @property
+    def Winner(self) -> str:
+        # channel = ctx.guild.get_channel(getChannelId("town-square"))
         if self.cupidWinner():
-            await channel.send("We see that true loves conquers even in the most tragic of times. The love birds and cupid win.")
-            self.__game_future.set_result("gameover")
+            return "cupid"
         if self.GameStats["werewolves"] >= self.GameStats["villagers"]:
-            await channel.send("The werewolves outnumber the villagers. The werewolves win.")
-            self.__game_future.set_result("gameover")
+            return "werewolves"
         elif self.GameStats["werewolves"] == 0:
-            await channel.send("The last of the werewolves are now dead. The villagers win.")
-            self.__game_future.set_result("gameover")
+            return "villagers"
         elif self.__daysleft == 0:
-            await channel.send("The villagers die of starvation! The werewolves survive off of the villagers' corpses and win the game.")
-            self.__game_future.set_result("gameover")
+            return "werewolves"
+        return ""
 
     @commands.command(aliases=["matchlove", "makeinlove"])
     @is_from_channel("cupid")
@@ -354,7 +355,8 @@ class Game(commands.Cog):
             await town_square_channel.send(lynched_message)
         if len(result) > 1:
             await town_square_channel.send("We had a bloodbath because we had a tie.")
-        await self.findWinner(ctx)
+        if self.Winner != "":
+            self.__game_future.set_result(self.Winner)
 
     @property
     def Hunter(self):
@@ -372,6 +374,9 @@ class Game(commands.Cog):
     def daytime(self):
         if self.__bakerdead:
             self.__daysleft -= 1
+            if self.Winner != "":
+                self.__game_future.set_result(self.Winner)
+
         # TODO Make use of the baker somehow. Look at the old code base.
         # self.__killed = True
         for x in self.__players:
@@ -379,10 +384,12 @@ class Game(commands.Cog):
 
         self.__bot.loop.create_task(self.daytimeannounce())
 
-    async def daytimeannounce(self):
+    async def daytimeannounce(self, ):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         await town_square_channel.send("It is daytime")
+        if self.__bakerdead:
+            await town_square_channel.send(f"You have {self.__daysleft} days left")
 
     def nighttime(self):
         # self.__killed = False
@@ -411,13 +418,6 @@ class Game(commands.Cog):
             if player_id == x.UserID:
                 return x
         return None
-
-    # TODO remove when content at not having this piece of code
-    # # returns person that was killed
-    # def killmaybe(self, killer, target) -> None:
-    #     killerVillager = self.findVillager(killer)
-    #     if killerVillager.iskiller():
-    #         self.findVillager(target).die()
 
     def findVillager(self, name: str) -> Optional[Villager]:
         id = 0
