@@ -226,19 +226,19 @@ class Game(commands.Cog):
             await ctx.send("The future is hazy, but tomorrow you could have a better chance. If you don't die before!")
             return
         target = self.findVillager(person_name)
-        seer: Villager = self.findVillager(ctx.message.author.name)
-        if seer is None:
-            message = "Seer is None. This should never happen"
-            print(message)
-            ctx.send(message)
-            return
+        # seer: Villager = self.findVillager(ctx.message.author.name)
+        # if seer is None:
+        #     message = "Seer is None. This should never happen"
+        #     print(message)
+        #     ctx.send(message)
+        #     return
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
         if not self.__abilities.check_ability("seer"):
             await ctx.send("You already used your ability. Try again after the next sunrise.")
             return
-        await ctx.send("{} is {} a werewolf".format(person_name, "" if target.IsWerewolf else "not"))
+        await ctx.send("{} is {} a werewolf".format(target.Mention, "" if target.IsWerewolf else "not"))
         self.__abilities.use_ability("seer")
 
     @commands.command()
@@ -259,11 +259,11 @@ class Game(commands.Cog):
             await ctx.send("You should have protected that person sooner. Choose someone else.")
             return
         self.__abilities.use_ability("bodyguard")
-        await ctx.send("You've protected {}".format(the_protected_one.Name))
+        await ctx.send("You've protected {}".format(the_protected_one.Mention))
         the_protected_one.Protected = True
         self.__last_protected = person_name
         protector.UsedAbility = True
-        protected_member = ctx.guild.get_member_named(person_name)
+        protected_member = ctx.guild.get_member_named(the_protected_one.DiscordTag)
         await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
     @commands.command()
