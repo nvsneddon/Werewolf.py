@@ -396,8 +396,6 @@ class Game(commands.Cog):
             if self.Winner != "":
                 self.__game_future.set_result(self.Winner)
 
-        # TODO Make use of the baker somehow. Look at the old code base.
-        # self.__killed = True
         for x in self.__players:
             x.Protected = False
 
