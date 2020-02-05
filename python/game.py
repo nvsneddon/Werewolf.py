@@ -59,6 +59,7 @@ class Game(commands.Cog):
         self.__running = True
         self.__numWerewolves = 0
         self.__numVillagers = 0
+        self.__had_election = False
         self.__abilities = Abilities()
 
         self.schedstop = threading.Event()
@@ -348,13 +349,21 @@ class Game(commands.Cog):
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
 
-    @commands.command(alias=["startwerewolfvote"])
-    async def startvote(self, ctx):
-
+    @commands.command(alias=["startwerewolfvote", 'killvote'])
+    async def startlynch(self, ctx):
+        if self.__had_election:
+            await ctx.send("You cannot have more than one election at one time.")
+            return
         town_square_id = getChannelId("town-square")
         town_square_channel = ctx.guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
-        self.__election_cog = Election(self.__bot, future, self.__players)
+        to_vote = []
+        for i in self.__players:
+            discordPerson = ctx.message.guild.get_member_named(i.DiscordTag)
+            alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
+            if alive_role in discordPerson.roles:
+                to_vote.append(i)
+        self.__election_cog = Election(self.__bot, future, to_vote)
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("The lynching vote has now begun.")
         await future
@@ -365,6 +374,7 @@ class Game(commands.Cog):
             await town_square_channel.send("The lynching vote has been cancelled")
             return
         await town_square_channel.send("The voting has closed.")
+        self.__had_election = True
         for x in result:
             dead_villager: Villager = self.findVillager(x)
             print("The dead villager", dead_villager)
@@ -398,7 +408,7 @@ class Game(commands.Cog):
 
         for x in self.__players:
             x.Protected = False
-
+        self.__had_election = False
         self.__bot.loop.create_task(self.daytimeannounce())
 
     async def daytimeannounce(self, ):

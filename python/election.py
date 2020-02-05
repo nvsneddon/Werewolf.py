@@ -12,7 +12,7 @@ class Election(commands.Cog):
 
     def __init__(self, bot, future, people):
         self.__bot = bot
-        self.__people = people
+        self.__people: [Villager] = people
         self.__casted_votes = {}
         self.__voted = {}
         self.__future = future
@@ -26,6 +26,9 @@ class Election(commands.Cog):
 
     @commands.command()
     async def getleading(self, ctx):
+        if len(self.__Leading) == 0:
+            await ctx.send("No vote has been cast yet. No one is in the lead.")
+            return
         message = f"The leading {'person is' if len(self.__Leading) < 2 else 'people are:'}"
         message += '\n' + '\n'.join(self.__Leading)
         await ctx.send(message)
