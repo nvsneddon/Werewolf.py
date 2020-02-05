@@ -108,7 +108,6 @@ class Game(commands.Cog):
                 self.__numVillagers += 1;
             self.__players.append(y)
             cards.pop(0)
-            # await x.send("Hi there")
             message = '\n'.join(werewolfMessages[y.Character]["welcome"])
             # self.__bot.loop.create_task(self.__sendPM(x, message))
 

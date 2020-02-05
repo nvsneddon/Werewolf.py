@@ -213,8 +213,6 @@ class Bot(commands.Cog):
             await channel.send('\n'.join(werewolfMessages["channel_messages"][i]))
             async for x in (channel.history(limit=1)):
                 await x.pin()
-            # message_id = channel.last_message_id
-            # channel_id_dict[i] = channel.id
 
         try:
             dirname = os.path.dirname(__file__)
