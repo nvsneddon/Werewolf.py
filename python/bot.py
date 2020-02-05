@@ -108,7 +108,8 @@ class Bot(commands.Cog):
         elif winner == "cupid":
             await town_square_channel.send("Cupid did a great job. The last two people alive are the love birds.")
         elif winner == "bakerdead":
-            await town_square_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses and win the game.")
+            await town_square_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses "
+                                           "and win the game.")
 
         await self.__finishGame(ctx)
 

@@ -21,6 +21,7 @@ class Game(commands.Cog):
     __last_protected: str
     __daysleft: int
     __bakerdead: bool
+    __voted: bool
     __inlove: List[Villager]
     __players: List[Villager]
 
@@ -46,6 +47,7 @@ class Game(commands.Cog):
         self.__bot = bot
         self.__hunter_future = None
         self.__cipher = None
+        self.__voted = False
         self.__game_future = future
         self.__players = []
         self.__members = members
@@ -332,6 +334,7 @@ class Game(commands.Cog):
 
     @commands.command(alias=["startwerewolfvote"])
     async def startvote(self, ctx):
+
         town_square_id = getChannelId("town-square")
         town_square_channel = ctx.guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
