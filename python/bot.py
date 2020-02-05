@@ -7,7 +7,7 @@ from game import Game
 import asyncio
 import os
 import json
-from files import werewolfMessages, commandDescriptions, config, channels_config, roles_config, readJsonFromConfig
+from files import getChannelId, channels_config, roles_config, readJsonFromConfig
 
 
 def can_clear():
@@ -97,6 +97,19 @@ class Bot(commands.Cog):
                     await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
         await ctx.send("Let the games begin!")
         await game_future
+        town_square_id = getChannelId("town-square")
+        town_square_channel = self.__bot.get_channel(town_square_id)
+        winner = game_future.result()
+        print(winner)
+        if winner == "werewolves":
+            await town_square_channel.send("Werewolves outnumber the villagers. Werewolves won.")
+        elif winner == "villagers":
+            await town_square_channel.send("All werewolves are now dead. Villagers win!")
+        elif winner == "cupid":
+            await town_square_channel.send("Cupid did a great job. The last two people alive are the love birds.")
+        elif winner == "bakerdead":
+            await town_square_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses and win the game.")
+
         await self.__finishGame(ctx)
 
 

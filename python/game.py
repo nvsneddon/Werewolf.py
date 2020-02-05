@@ -301,8 +301,8 @@ class Game(commands.Cog):
             return "werewolves"
         elif self.GameStats["werewolves"] == 0:
             return "villagers"
-        elif self.__daysleft == 0:
-            return "werewolves"
+        elif self.__daysleft <= 0:
+            return "bakerdead"
         return ""
 
     @commands.command(aliases=["matchlove", "makeinlove"])
@@ -388,7 +388,7 @@ class Game(commands.Cog):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         await town_square_channel.send("It is daytime")
-        if self.__bakerdead:
+        if self.__bakerdead and self.__daysleft > 0:
             await town_square_channel.send(f"You have {self.__daysleft} days left")
 
     def nighttime(self):
