@@ -26,7 +26,9 @@ class Election(commands.Cog):
 
     @commands.command()
     async def getleading(self, ctx):
-        await ctx.send(f"The leading person is {self.__Leading}")
+        message = f"The leading {'person is' if len(self.__Leading) < 2 else 'people are:'}"
+        message += '\n' + '\n'.join(self.__Leading)
+        await ctx.send(message)
 
     def stop_vote(self):
         self.__future.set_result(self.__Leading)
@@ -36,6 +38,8 @@ class Election(commands.Cog):
         maxTally = 0
         leading = []
         for name, votes in self.__casted_votes.items():
+            if votes == 0:
+                continue
             if maxTally < votes:
                 leading = [name]
                 maxTally = votes
