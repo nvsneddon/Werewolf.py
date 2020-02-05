@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from files import config, writeJsonToConfig, writeToConfig
+
+from files import config, writeJsonToConfig
 from bot import Bot
 
 bot = commands.Bot(command_prefix='!')

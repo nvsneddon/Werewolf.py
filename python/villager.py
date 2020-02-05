@@ -2,10 +2,10 @@ class Villager:
 
     # TODO Refactor this class to include the member object and use properties to access instead of
     #  having all of these attributes
-    def __init__(self, discordtag: str, character: str, id: int):
+    def __init__(self, discord_tag: str, character: str, id: int):
         # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
-        self.__name: str = discordtag.split("#")[0]
-        self.__discordTag: str = discordtag
+        self.__name: str = discord_tag.split("#")[0]
+        self.__discordTag: str = discord_tag
         self.__character: str = character
         self.__is_werewolf: bool = (character == "werewolf")
         self.__killer: bool = (character == "werewolf" or character == "hunter")

@@ -7,7 +7,8 @@
         ],
         "killed": "That's weird. The werewolves have turned cannibalistic and have killed one of their own. {} is now dead!",
         "lynched": "Congratulations villagers. You have killed {}, who was a werewolf\nThat means we can all sleep better at night! At least some of you!",
-        "inlove": "This werewolf {} died because of their love for the other that has died."
+        "inlove": "This werewolf {} died because of their love for the other that has died.",
+        "hunter": "You did the right thing by killing {}. One werewolf is now dead!"
     },
     "seer":{
         "welcome": [
@@ -19,7 +20,8 @@
         ],
         "killed": "Last night, the werewolves have taken your seer {}. I wonder who saw that coming.",
         "lynched": "You guys killed the seer {}! You guys should have done better!",
-        "inlove": "The seer saw someone to love. Now that that person is gone, so is the seer {}."
+        "inlove": "The seer saw someone to love. Now that that person is gone, so is the seer {}.",
+        "hunter": "You shot the seer, {}. That sucks!"
     },
     "bodyguard":{
         "welcome": [
@@ -31,7 +33,8 @@
         ],
         "killed": "Our good bodyguard {} has been killed.",
         "lynched": "You guys killed your last line of defense. The bodyguard {} is nowhere to protect you guys.",
-        "inlove": "The bodyguard {} who could not save their love in time decided to follow their love to the grave."
+        "inlove": "The bodyguard {} who could not save their love in time decided to follow their love to the grave.",
+        "hunter": "You shot the bodyguard {}. Now who will protect us?"
     },
     "cupid":{
         "welcome":[
@@ -43,7 +46,8 @@
         ],
         "killed": "Well, cupid was killed. At least {} did the job (I hope)!",
         "lynched": "You guys killed our cupid {}. All he did was spread love and you respond with death? Shame on you!",
-        "inlove": "Our cupid {} died because even cupid is capable of falling in love."
+        "inlove": "Our cupid {} died because even cupid is capable of falling in love.",
+        "hunter": "You shot {}, who did nothing but create love. We will miss cupid!"
     },
     "villager": {
         "welcome": [
@@ -55,7 +59,8 @@
         ],
         "killed": "The nice villager {} has died. This person will surely be missed.",
         "lynched": "It turns out {} was just nothing more than an ordinary villager. You betrayed your village! Better luck next time.",
-        "inlove": "Our good villager {} decided that life without a loved one is not a life worth living. Love is weird sometimes!"
+        "inlove": "Our good villager {} decided that life without a loved one is not a life worth living. Love is weird sometimes!",
+        "hunter": "You just shot the villager {}."
     },
     "hunter": {
         "welcome":[
@@ -65,7 +70,8 @@
         ],
         "killed": "The hunter {} has died. It's now time for his moment to shine and for him to kill someone else.",
         "lynched": "You just voted to kill the great hunter {}. The hunter's understandably angry and will kill one of you before the hunter dies.",
-        "inlove": "The hunter decided that life without a loved one is not a life worth living. The hunter {} will shoot someone before taking their own life."
+        "inlove": "The hunter decided that life without a loved one is not a life worth living. The hunter {} will shoot someone before taking their own life.",
+        "hunter": "You shot a fellow hunter!{}."
     },
     "baker": {
         "welcome":[
@@ -73,9 +79,10 @@
             "You may be ordinary, but your skills are needed. If you die, we will all starve to death in a couple of days. So please do everything you can to stay alive.",
             "Good luck and may you beat the werewolves!"
         ],
-        "killed": "Our fantastic baker, {}, has died. That's not good at all.",
+        "killed": "Our fantastic baker, {}, has died. That's not good at all. Now you only have three days until you starve to death.",
         "lynched": "You just killed the baker {}! I don't know why you did that, but great job.", 
-        "inlove": "When the baker lost his buns, he went on a hunger strike. Then {} died grieving his loss!" 
+        "inlove": "When the baker lost his buns, he went on a hunger strike. Then {} died grieving his loss!",
+        "hunter": "You shot a fellow hunter {}. Why would you shoot one of your own?"
     },
     "babywolf": {
         "welcome":[
@@ -85,7 +92,8 @@
         ],
         "killed": "The baby wolf {} got killed by its own family! In frustration, they will start to kill two people at night!",
         "lynched": "You just killed the baby wolf, {}. Now its wolf family will start to hunt two people at night!",
-        "inlove": "What do you know! The baby werewolf had a secret love that it kept from its family! Now that its love died, so shall {}."
+        "inlove": "What do you know! The baby werewolf had a secret love that it kept from its family! Now that its love died, so shall {}.",
+        "hunter": "You shot the baby wolf {}. Now the other wolves are angry!"
     },
     "mason": {
         "welcome":[
@@ -96,7 +104,8 @@
         ],
         "killed": "The nice villager {} has died. This person will surely be missed.",
         "lynched": "It turns out {} was just nothing more than an ordinary villager. You betrayed your village! Better luck next time.",
-        "inlove": "Our good villager {} decided that life without a loved one is not a life worth living. Love is weird sometimes!"
+        "inlove": "Our good villager {} decided that life without a loved one is not a life worth living. Love is weird sometimes!",
+        "hunter": "You shot {}, who was nothing but a mason. How does that make you feel?"
     },
     "lovebird": [
         "Well well well! It looks like you have an eye for {}. Don't worry, {} kind of likes you as well.",
