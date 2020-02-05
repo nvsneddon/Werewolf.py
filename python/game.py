@@ -127,8 +127,10 @@ class Game(commands.Cog):
 
     @commands.command(aliases=["murder"])
     @is_from_channel("werewolves")
-    @has_ability("werewolves")
     async def kill(self, ctx, person_name: str):
+        if self.__abilities.check_ability("werewolves"):
+            await ctx.send("You can't kill two people per round. ")
+            return
         target = self.findVillager(person_name)
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
@@ -217,8 +219,10 @@ class Game(commands.Cog):
 
     @commands.command(aliases=["see", "look", "suspect"])
     @is_from_channel("seer")
-    @has_ability("seer")
     async def investigate(self, ctx, person_name: str):
+        if self.__abilities.check_ability("seer"):
+            await ctx.send("The future is hazy, but tomorrow you could have a better chance. If you don't die before!")
+            return
         target = self.findVillager(person_name)
         seer: Villager = self.findVillager(ctx.message.author.name)
         if seer is None:
@@ -237,8 +241,10 @@ class Game(commands.Cog):
 
     @commands.command()
     @is_from_channel("bodyguard")
-    @has_ability("bodyguard")
     async def protect(self, ctx, person_name: str):
+        if self.__abilities.check_ability("bodyguard"):
+            await ctx.send("You've been protecting someone and now you're tired. Get some rest until the next morning.")
+            return
         protector: Villager = self.findVillager(ctx.message.author.name)
         the_protected_one = self.findVillager(person_name)
         if the_protected_one is None:
@@ -261,8 +267,10 @@ class Game(commands.Cog):
     @commands.command()
     @is_from_channel("afterlife")
     @is_not_character("werewolf")
-    @has_ability("spirits")
     async def sendmessage(self, ctx, word: str):
+        if self.__abilities.check_ability("spirits"):
+            await ctx.send("You've already sent a message or a hint. Wait until the next night.")
+            return
         if len(word.split(' ')) > 1:
             await ctx.send("You can only send one word at a time")
             return
@@ -278,8 +286,10 @@ class Game(commands.Cog):
     @commands.command()
     @is_from_channel("afterlife")
     @is_not_character("werewolf")
-    @has_ability("spirits")
     async def sendhint(self, ctx):
+        if self.__abilities.check_ability("spirits"):
+            await ctx.send("You've already sent a message or a hint. Wait until the next night.")
+            return
         if self.__cipher == None:
             await ctx.send("There is no cipher that you can give out. Give out a hint instead.")
             return
