@@ -85,7 +85,7 @@ class Bot(commands.Cog):
             return
         for player in players:
             await player.edit(roles=roles_assignment)
-        game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=False)
+        game_cog = Game(self.__bot, members=players, future=game_future, roles=args)
         self.__bot.add_cog(game_cog)
         read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
         for x in ctx.guild.members:
