@@ -78,6 +78,7 @@ def readFromConfig(filename: str) -> str:
 
     except:
         print("File " + filename + " not found")
+        exit()
 
 
 def readJsonFromConfig(filename: str) -> dict:

@@ -100,7 +100,6 @@ class Bot(commands.Cog):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         winner = game_future.result()
-        print(winner)
         if winner == "werewolves":
             await town_square_channel.send("Werewolves outnumber the villagers. Werewolves won.")
         elif winner == "villagers":
@@ -112,7 +111,6 @@ class Bot(commands.Cog):
                                            "and win the game.")
 
         await self.__finishGame(ctx)
-
 
     @commands.command()
     @is_admin()
@@ -246,6 +244,3 @@ class Bot(commands.Cog):
         path = os.path.join(dirname, '../config/channel_id_list.json')
         if os.path.exists(path):
             os.remove(path)
-
-
-
