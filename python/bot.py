@@ -113,7 +113,6 @@ class Bot(commands.Cog):
 
         await self.__finishGame(ctx)
 
-
     @commands.command()
     @is_admin()
     async def endgame(self, ctx):
@@ -246,6 +245,3 @@ class Bot(commands.Cog):
         path = os.path.join(dirname, '../config/channel_id_list.json')
         if os.path.exists(path):
             os.remove(path)
-
-
-
