@@ -98,13 +98,15 @@
     "mason": {
         "welcome":[
             "You are a mason. The people in your secret society are trustworthy members that you can rely on.",
-            "The good news is that you will know who these people are, but you can't make your clan known to the world. If you do, the werewolves will go after you",
-            "If you die, your true identity will not be shown. After all, you are just a villager.",
-            "Whatever you do, be wise in everyting and kill the werewolves and help the villagers."
+            "The good news is that you will know who these people are, but you can't make your clan known to the world. If you do, the werewolves will go after you.",
+            "Why do they want to get you? Because you figured out how to communicate with the dead.",
+            "This new ability is still somewhat foreign, so the messages may not be so clear. Good thing you will have help deciphering the message.",
+            "If the spirits notice that you're struggling, they can send a hint to help you.",
+            "Whatever you do, be wise in everything and kill the werewolves and help the villagers."
         ],
-        "killed": "The nice villager {} has died. This person will surely be missed.",
-        "lynched": "It turns out {} was just nothing more than an ordinary villager. You betrayed your village! Better luck next time.",
-        "inlove": "Our good villager {} decided that life without a loved one is not a life worth living. Love is weird sometimes!",
+        "killed": "{} has died as a loyal mason. Now it will be harder to know what the spirits are saying. ",
+        "lynched": "It turns out {} was a mason. Try not to kill people who are on your side next time.",
+        "inlove": "{0} had a bigger secret than being a mason. {0} was in love and determined that being alone is worse than death! Now he's dead.",
         "hunter": "You shot {}, who was nothing but a mason. How does that make you feel?"
     },
     "lovebird": [
@@ -122,6 +124,39 @@
         "Cupid makes two people fall in love. Those people are up against the world no matter what side of the werewolf/villager conflict they're in.",
         "If one of the lovebirds die, so does the other.",
         "The Hunter has the ability to kill someone before dying.",
-        "The Baker has a very important roll. He makes bread for everyone in town. If he dies, so will everyone after a couple of days, depending how far in the game the baker dies."
-    ]
+        "The Baker has a very important roll. He makes bread for everyone in town. If he dies, so will everyone after a couple of days, depending how far in the game the baker dies.",
+        "The Masons are two people in a secret group. They know and trust each other with their lives. They also can talk with the dead to figure some cool stuff out."
+    ],
+    "channel_messages": {
+
+        "town-square": [
+            "This place is for everyone to chat and stuff here. We also hold our elections here.",
+            "If you need help, please type !help or !help [Command] for extra guidance."
+        ],
+        "werewolves":  [
+            "If you see this, it's because you're a werewolf. You have your own spot here to talk with other werewolves.",
+            "Oh yeah, you can also kill using the !kill <person> command."
+        ],
+        "seer":  [
+            "This is your home. You can investigate people using the !investigate <person> command.",
+            "I hope you use this wisely."
+        ],
+        "bodyguard":  [
+            "You can use this channel to protect someone. You can't pick the same person twice.",
+            "To protect someone, use the !protect <person> command."
+        ],
+        "cupid":  [
+            "The place where you can make people fall in love.",
+            "All you need to do is use the command !match <person1> <person2>"
+        ],
+        "mason":  [
+
+        ],
+        "lovebirds":  [
+
+        ],
+        "afterlife": [
+
+        ]
+    }
 }
