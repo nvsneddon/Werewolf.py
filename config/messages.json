@@ -150,13 +150,18 @@
             "All you need to do is use the command !match <person1> <person2>"
         ],
         "mason":  [
-
+            "Welcome, fellow Masons to the clan. You can trust everyone in here with your life because they're no werewolf.",
+            "You will also receive messages from the deceased who will attempt to tell you some vital information that might save the town.",
+            "Hopefully, you'll use it wisely. Good luck!"
         ],
         "lovebirds":  [
-
+            "You're personal love channel to talk love stuff.",
+            "Don't be afraid to go on a date! :)"
         ],
         "afterlife": [
-
+            "Welcome to the afterlife! You have died but you have a chance to avenge yourselves of your death.",
+            "You can send a message every night using the !sendmessage <word> command.",
+            "If the mortals are having a hard time figuring out your message, you can use !sendhint instead."
         ]
     }
 }

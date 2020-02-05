@@ -7,7 +7,7 @@ from game import Game
 import asyncio
 import os
 import json
-from files import getChannelId, channels_config, roles_config, readJsonFromConfig
+from files import getChannelId, channels_config, roles_config, readJsonFromConfig, werewolfMessages
 
 
 def can_clear():
@@ -209,8 +209,12 @@ class Bot(commands.Cog):
         channel_id_dict = dict()
         for i in channels_config["channels"]:
             await ctx.guild.create_text_channel(name=i, category=c)
-            id = discord.utils.get(ctx.guild.channels, name=i).id
-            channel_id_dict[i] = id
+            channel = discord.utils.get(ctx.guild.channels, name=i)
+            await channel.send('\n'.join(werewolfMessages["channel_messages"][i]))
+            async for x in (channel.history(limit=1)):
+                await x.pin()
+            # message_id = channel.last_message_id
+            # channel_id_dict[i] = channel.id
 
         try:
             dirname = os.path.dirname(__file__)
@@ -218,7 +222,7 @@ class Bot(commands.Cog):
             f.write(json.dumps(channel_id_dict))
             f.close()
         except:
-            print("Something went wrong. Exiting now!")
+            print("Channel_id_list.json not found. Exiting now!")
             exit()
 
         for i, j in channels_config["channel-permissions"].items():
