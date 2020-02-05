@@ -131,7 +131,9 @@
 
         "town-square": [
             "This place is for everyone to chat and stuff here. We also hold our elections here.",
-            "If you need help, please type !help or !help [Command] for extra guidance."
+            "If you need help, please type !help or !help [Command] for extra guidance.",
+            "You can always just send the narrator (me) a personal message and I'll pass it onto him anonymously.",
+            "He'll be able to respond to you quickly."
         ],
         "werewolves":  [
             "If you see this, it's because you're a werewolf. You have your own spot here to talk with other werewolves.",

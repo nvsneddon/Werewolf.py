@@ -211,6 +211,7 @@ class Bot(commands.Cog):
             await ctx.guild.create_text_channel(name=i, category=c)
             channel = discord.utils.get(ctx.guild.channels, name=i)
             await channel.send('\n'.join(werewolfMessages["channel_messages"][i]))
+            channel_id_dict[i] = channel.id
             async for x in (channel.history(limit=1)):
                 await x.pin()
 

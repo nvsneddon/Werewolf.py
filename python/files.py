@@ -70,8 +70,8 @@ def writeToConfig(filename: str, file: str) -> None:
 
 def readFromConfig(filename: str) -> str:
     try:
-        dirname = os.path.dirname(__file__)
-        f = open(os.path.join(dirname, "../config/" + filename))
+        dir_name = os.path.dirname(__file__)
+        f = open(os.path.join(dir_name, "../config/" + filename))
         readfile = f.read()
         f.close()
         return readfile
@@ -85,14 +85,14 @@ def readJsonFromConfig(filename: str) -> dict:
 
 
 def fileFoundInConfig(filename: str) -> bool:
-    dirname = os.path.dirname(__file__)
-    return os.path.exists(os.path.join(dirname, "../config/" + filename))
+    dir_name = os.path.dirname(__file__)
+    return os.path.exists(os.path.join(dir_name, "../config/" + filename))
 
 
 def get_channel_ids() -> dict:
     try:
-        dirname = os.path.dirname(__file__)
-        f = open(os.path.join(dirname, "../config/channel_id_list.json"))
+        dir_name = os.path.dirname(__file__)
+        f = open(os.path.join(dir_name, "../config/channel_id_list.json"))
         readfile = json.loads(f.read())
         f.close()
         return readfile

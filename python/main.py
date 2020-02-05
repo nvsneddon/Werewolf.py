@@ -30,9 +30,12 @@ async def on_guild_join(self, guild):
 async def on_message(message):
     if message.guild is None and (message.author != bot.user):
         if message.content.startswith("!respond"):
-            response = message.content.split("#")
+            delimiter = '#'
+            response = message.content.split(delimiter)
+            user_id = response[1]
+            response_message = delimiter.join(response[2:])
             await message.author.send("The message has been sent!")
-            await bot.get_guild(523892810319921157).get_member(int(response[1])).send(f"Response from Nathaniel: {response[2]}")
+            await bot.get_guild(523892810319921157).get_member(int(user_id)).send(f"Response from Nathaniel: {response_message}")
         else:
             question = message.content + "\n" + str(message.author.id)
             await message.author.send("Thanks for submitting. Your question will be answered shortly.")
