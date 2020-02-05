@@ -81,7 +81,7 @@ class Bot(commands.Cog):
             if playing_role in member.roles:
                 players.append(member)
         if len(players) < sum(args):
-            await ctx.send("You gave out too many roles for the number of people.")
+            await ctx.send("You gave out too many roles for the number of people. Please try again.")
             return
         for player in players:
             await player.edit(roles=roles_assignment)

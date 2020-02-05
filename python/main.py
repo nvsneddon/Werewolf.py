@@ -4,6 +4,8 @@ from discord.ext import commands
 from files import config, writeJsonToConfig
 from bot import Bot
 
+import sys
+
 bot = commands.Bot(command_prefix='!')
 
 
