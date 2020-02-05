@@ -41,7 +41,7 @@ class Game(commands.Cog):
 
         return commands.check(predicate)
 
-    def __init__(self, bot, members, future, roles, randomshuffle=True):
+    def __init__(self, bot, members, future, roles, randomshuffle=True, send_message_flag=True):
         self.__bot = bot
         self.__hunter_future = None
         self.__cipher = None
@@ -109,7 +109,8 @@ class Game(commands.Cog):
             self.__players.append(y)
             cards.pop(0)
             message = '\n'.join(werewolfMessages[y.Character]["welcome"])
-            # self.__bot.loop.create_task(self.__sendPM(x, message))
+            if send_message_flag:
+                self.__bot.loop.create_task(self.__sendPM(x, message))
 
         for i in self.__players:
             print(i)
