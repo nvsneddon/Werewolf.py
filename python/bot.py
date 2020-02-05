@@ -100,7 +100,6 @@ class Bot(commands.Cog):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         winner = game_future.result()
-        print(winner)
         if winner == "werewolves":
             await town_square_channel.send("Werewolves outnumber the villagers. Werewolves won.")
         elif winner == "villagers":
