@@ -30,7 +30,7 @@ async def on_message(message):
         if message.content.startswith("!respond"):
             response = message.content.split("#")
             await message.author.send("The message has been sent!")
-            await bot.get_server(523892810319921157).get_member(response[1]).send(response[2])
+            await bot.get_guild(523892810319921157).get_member(int(response[1])).send(f"Response from Nathaniel: {response[2]}")
         else:
             question = message.content + "\n" + str(message.author.id)
             await message.author.send("Thanks for submitting. Your question will be answered shortly.")

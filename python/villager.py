@@ -2,10 +2,11 @@ class Villager:
 
     # TODO Refactor this class to include the member object and use properties to access instead of
     #  having all of these attributes
-    def __init__(self, discord_tag: str, character: str, id: int):
+    def __init__(self, discord_tag: str, character: str, id: int, nickname=None):
         # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
         self.__name: str = discord_tag.split("#")[0]
         self.__discordTag: str = discord_tag
+        self.__nickname = nickname
         self.__character: str = character
         self.__is_werewolf: bool = (character == "werewolf")
         self.__killer: bool = (character == "werewolf" or character == "hunter")
@@ -50,6 +51,10 @@ class Villager:
         return "<@" + str(self.__userID) + ">"
 
     @property
+    def NickName(self) -> str:
+        return self.__nickname if self.__nickname is not None else ''
+
+    @property
     def InLove(self):
         return self.__inLove
 
@@ -81,7 +86,8 @@ class Villager:
 
     def __str__(self):
         return f"Name: {self.__name}\nTag: {self.__discordTag}\nID: {self.__userID}\n" \
-               f"Character: {self.__character}\nAlive: {self.__alive}\n"
+               f"Character: {self.__character}\nAlive: {self.__alive}\n" \
+               f"Nickname: {self.__nickname if self.__nickname else 'No Nickname'}\n"
 
     def __eq__(self, other):
         if self is None or other is None:

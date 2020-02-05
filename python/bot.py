@@ -7,7 +7,7 @@ from game import Game
 import asyncio
 import os
 import json
-from files import getChannelId, channels_config, roles_config, readJsonFromConfig
+from files import getChannelId, channels_config, roles_config, readJsonFromConfig, werewolfMessages
 
 
 def can_clear():
@@ -85,7 +85,7 @@ class Bot(commands.Cog):
             return
         for player in players:
             await player.edit(roles=roles_assignment)
-        game_cog = Game(self.__bot, members=players, future=game_future, roles=args)
+        game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=False)
         self.__bot.add_cog(game_cog)
         read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
         for x in ctx.guild.members:
@@ -209,8 +209,10 @@ class Bot(commands.Cog):
         channel_id_dict = dict()
         for i in channels_config["channels"]:
             await ctx.guild.create_text_channel(name=i, category=c)
-            id = discord.utils.get(ctx.guild.channels, name=i).id
-            channel_id_dict[i] = id
+            channel = discord.utils.get(ctx.guild.channels, name=i)
+            await channel.send('\n'.join(werewolfMessages["channel_messages"][i]))
+            async for x in (channel.history(limit=1)):
+                await x.pin()
 
         try:
             dirname = os.path.dirname(__file__)
@@ -218,7 +220,7 @@ class Bot(commands.Cog):
             f.write(json.dumps(channel_id_dict))
             f.close()
         except:
-            print("Something went wrong. Exiting now!")
+            print("Channel_id_list.json not found. Exiting now!")
             exit()
 
         for i, j in channels_config["channel-permissions"].items():
