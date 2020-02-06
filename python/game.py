@@ -170,7 +170,6 @@ class Game(commands.Cog):
             self.__inlove.remove(other)
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
-            # TODO Change the message to support both names of dead people
             await town_square_channel.send(werewolfMessages[other.Character]["inlove"].format(other.Mention))
             await self.die(ctx, other)
 
@@ -348,7 +347,6 @@ class Game(commands.Cog):
                                                overwrite=discord.PermissionOverwrite(**read_write_permission))
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
-# TODO work on making a casual vote
     @commands.command()
     async def startvote(self, ctx):
         if self.__election_cog is not None:
