@@ -148,6 +148,9 @@ class Game(commands.Cog):
         self.__abilities.use_ability("werewolves")
         if target.Protected:
             await ctx.send("That person has been protected. You just wasted your kill!")
+            town_square_id = getChannelId("town-square")
+            town_square_channel = ctx.guild.get_channel(town_square_id)
+            await town_square_channel.send(f"The werewolves have tried to kill {target.Mention}. Good thing this person had a bodyguard with them.")
         else:
             await ctx.send("Killing {}".format(target.Mention))
             town_square_id = getChannelId("town-square")
@@ -258,7 +261,7 @@ class Game(commands.Cog):
             await ctx.send("I couldn't find that person!")
             return
         if self.__last_protected == person_name:
-            ctx.send("You protected that person recently. Try someone new.")
+            await ctx.send("You protected that person recently. Try someone new.")
             return
         if the_protected_one.Dead:
             await ctx.send("You should have protected that person sooner. Choose someone else.")
