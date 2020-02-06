@@ -70,7 +70,6 @@ class Game(commands.Cog):
         schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
         schedule.every().day.at(config["nighttime"]).do(self.nighttime).tag("game")
         # schedule.every(3).seconds.do(self.daytime).tag("game")
-
         check_time = datetime.datetime.now().time()
         if datetime.time(7, 0) <= check_time <= datetime.time(19, 0):
             self.__abilities.start_game()
@@ -471,7 +470,6 @@ class Game(commands.Cog):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         x = config["minutes-before-warning"]
-        print(type(x))
         await town_square_channel.send("It is almost nighttime")
 
     def getVillagerByID(self, player_id: int) -> Optional[Villager]:
