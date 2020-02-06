@@ -246,7 +246,7 @@ class Game(commands.Cog):
         if not self.__abilities.check_ability("seer"):
             await ctx.send("You already used your ability. Try again after the next sunrise.")
             return
-        await ctx.send("{} is {} a werewolf".format(target.Mention, "" if target.IsWerewolf else "not"))
+        await ctx.send("{} is {} a werewolf".format(target.Mention, "" if target.Werewolf else "not"))
         self.__abilities.use_ability("seer")
 
     @commands.command()
@@ -272,7 +272,8 @@ class Game(commands.Cog):
         self.__last_protected = person_name
         protector.UsedAbility = True
         protected_member = ctx.guild.get_member_named(the_protected_one.DiscordTag)
-        await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
+        if not the_protected_one.Werewolf:
+            await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
     @commands.command(**command_parameters['sendinstructions'])
     async def sendinstructions(self, ctx):

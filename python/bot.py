@@ -67,32 +67,33 @@ class Bot(commands.Cog):
     @commands.command(pass_context=True)
     @is_admin()
     async def startgame(self, ctx, *args: int):
-        game_future = self.__bot.loop.create_future()
-        alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
-        playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
-        roles_assignment = [alive_role]
-        if len(args) == 0:
-            await ctx.send("Please add game parameters to the game")
-            return
-        players = []
-        for member in ctx.guild.members:
-            if playing_role in member.roles:
-                players.append(member)
-        if len(players) < sum(args):
-            await ctx.send("You gave out too many roles for the number of people. Please try again.")
-            return
-        for player in players:
-            await player.edit(roles=roles_assignment)
-        game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=False)
-        self.__bot.add_cog(game_cog)
-        read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
-        for x in ctx.guild.members:
-            if alive_role in x.roles:
-                character = game_cog.getVillagerByID(x.id).Character
-                if character in channels_config["character-to-channel"]:
-                    channel_name = channels_config["character-to-channel"][character]
-                    channel = discord.utils.get(ctx.guild.channels, name=channel_name)
-                    await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+        with ctx.typing():
+            game_future = self.__bot.loop.create_future()
+            alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
+            playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
+            roles_assignment = [alive_role]
+            if len(args) == 0:
+                await ctx.send("Please add game parameters to the game")
+                return
+            players = []
+            for member in ctx.guild.members:
+                if playing_role in member.roles:
+                    players.append(member)
+            if len(players) < sum(args):
+                await ctx.send("You gave out too many roles for the number of people. Please try again.")
+                return
+            for player in players:
+                await player.edit(roles=roles_assignment)
+            game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=False)
+            self.__bot.add_cog(game_cog)
+            read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
+            for x in ctx.guild.members:
+                if alive_role in x.roles:
+                    character = game_cog.getVillagerByID(x.id).Character
+                    if character in channels_config["character-to-channel"]:
+                        channel_name = channels_config["character-to-channel"][character]
+                        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+                        await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
         await ctx.send("Let the games begin!")
         await game_future
         town_square_id = getChannelId("town-square")
@@ -113,8 +114,9 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def endgame(self, ctx):
-        await ctx.send("Ending Game")
-        await self.__finishGame(ctx)
+        with ctx.typing():
+            await self.__finishGame(ctx)
+            await ctx.send("Game has ended")
 
     async def __finishGame(self, ctx):
         self.__bot.remove_cog("Game")

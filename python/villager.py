@@ -61,7 +61,7 @@ class Villager:
         return self.__inLove
 
     @property
-    def IsWerewolf(self) -> bool:
+    def Werewolf(self) -> bool:
         return self.__is_werewolf
 
     # @property
