@@ -68,10 +68,8 @@ class Bot(commands.Cog):
     @is_admin()
     async def startgame(self, ctx, *args: int):
         game_future = self.__bot.loop.create_future()
-        alive_role = discord.utils.get(
-            ctx.guild.roles, name="Alive")
-        playing_role = discord.utils.get(
-            ctx.guild.roles, name="Playing")
+        alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
+        playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
         roles_assignment = [alive_role]
         if len(args) == 0:
             await ctx.send("Please add game parameters to the game")

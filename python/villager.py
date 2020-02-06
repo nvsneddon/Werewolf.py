@@ -53,6 +53,10 @@ class Villager:
         return self.__nickname if self.__nickname is not None else ''
 
     @property
+    def ProperName(self):
+        return self.__nickname if self.__nickname is not None else self.__name
+
+    @property
     def InLove(self):
         return self.__inLove
 

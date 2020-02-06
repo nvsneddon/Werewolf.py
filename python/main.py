@@ -1,10 +1,8 @@
 import discord
 from discord.ext import commands
 
-from files import config, writeJsonToConfig
+from files import config, writeJsonToConfig, readJsonFromConfig
 from bot import Bot
-
-import sys
 
 bot = commands.Bot(command_prefix='!')
 
@@ -16,15 +14,19 @@ async def on_ready():
 
 
 @bot.event
-async def on_guild_join(self, guild):
+async def on_guild_join(guild):
     writeJsonToConfig("server_config.json", {"server_id": str(guild.id)})
     if not discord.utils.get(guild.channels, name="bot-admin"):
+        permissions = readJsonFromConfig('permissions.json')
+        overwrite = {
+            guild.default_role: discord.PermissionOverwrite(**permissions['none'])
+        }
         await guild.create_text_channel(name="bot-admin")
         channel = discord.utils.get(guild.channels, name="bot-admin")
         await channel.send(
-            "Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)")
-        # TODO make it so that only the owner gets permission to this channel
-
+            "Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide who will be allowed to access this channel.\nHave fun :)"
+        )
+        #TODO Test to see if this works before deploying to other servers
 
 @bot.event
 async def on_message(message):
