@@ -71,7 +71,7 @@ class Election(commands.Cog):
                 self.__casted_votes[self.__voted[voter_name]] -= 1
             self.__casted_votes[votee.Name] += 1
             self.__voted[voter_name] = votee.Name
-            await ctx.send("Your vote for {} has been confirmed".format(voteestring))
+            await ctx.send(f"Your vote for {votee.Mention} has been confirmed")
         else:
             await ctx.send("You can't vote for that person. Please try again.")
 
