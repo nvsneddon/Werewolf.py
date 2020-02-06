@@ -10,6 +10,7 @@ def is_admin():
 
     return commands.check(predicate)
 
+
 def is_vote_leader():
     async def predicate(ctx):
         cog = ctx.bot.get_cog("Election")
@@ -18,6 +19,17 @@ def is_vote_leader():
         return cog.VoteLeader == str(ctx.message.author)
 
     return commands.check(predicate)
+
+
+def is_vote_channel():
+    async def predicate(ctx):
+        cog = ctx.bot.get_cog("Election")
+        if cog.VoteChannel is None:
+            return True
+        return cog.VoteChannel == ctx.channel
+
+    return commands.check(predicate)
+
 
 
 def is_from_channel(channel_name: str):
