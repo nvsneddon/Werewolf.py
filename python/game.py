@@ -10,10 +10,12 @@ from discord.ext import commands
 
 from decorators import is_from_channel, is_admin, findPerson, is_not_character, has_ability
 from election import Election
-from files import getChannelId, werewolfMessages, config, readJsonFromConfig, channels_config
+from files import getChannelId, werewolfMessages, config, readJsonFromConfig, channels_config, command_parameters
 from villager import Villager
 from abilities import Abilities
 from cipher import Cipher
+
+
 
 
 class Game(commands.Cog):
@@ -133,7 +135,7 @@ class Game(commands.Cog):
             "villagers": self.__numVillagers
         }
 
-    @commands.command(aliases=["murder"])
+    @commands.command(**command_parameters['kill'])
     @is_from_channel("werewolves")
     async def kill(self, ctx, person_name: str):
         if not self.__abilities.check_ability("werewolves"):
@@ -206,7 +208,7 @@ class Game(commands.Cog):
     async def announcenight(self, ctx):
         self.almostnighttimeannounce()
 
-    @commands.command()
+    @commands.command(**command_parameters['shoot'])
     @hunter()
     async def shoot(self, ctx, victim: str):
         dead_villager = self.findVillager(victim)
@@ -222,7 +224,7 @@ class Game(commands.Cog):
 
         # await self.findWinner(ctx)
 
-    @commands.command(aliases=["see", "look", "suspect"])
+    @commands.command(**command_parameters['investigate'])
     @is_from_channel("seer")
     async def investigate(self, ctx, person_name: str):
         if not self.__abilities.check_ability("seer"):
@@ -269,9 +271,9 @@ class Game(commands.Cog):
         protected_member = ctx.guild.get_member_named(the_protected_one.DiscordTag)
         await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
-    @commands.command()
+    @commands.command(**command_parameters['sendinstructions'])
     async def sendinstructions(self, ctx):
-        await ctx.send(werewolfMessages["help"])
+        await ctx.send('\n'.join(werewolfMessages["help"]))
 
     @commands.command()
     @is_from_channel("afterlife")
