@@ -348,12 +348,50 @@ class Game(commands.Cog):
                                                overwrite=discord.PermissionOverwrite(**read_write_permission))
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
+#TODO work on making a casual vote
+    # @commands.command()
+    # async def startvote(self, ctx):
+    #     if self.__election_cog is not None:
+    #         await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
+    #         return
+    #     author = ctx.message.author
+    #     # town_square_id = getChannelId("town-square")
+    #     town_square_channel = ctx.guild.get_channel(town_square_id)
+    #     future = self.__bot.loop.create_future()
+    #     to_vote = []
+    #     for i in self.__players:
+    #         discordPerson = ctx.message.guild.get_member_named(i.DiscordTag)
+    #         alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
+    #         if alive_role in discordPerson.roles:
+    #             to_vote.append(i)
+    #     self.__election_cog = Election(self.__bot, future, to_vote, voteleader=str(author))
+    #     self.__bot.add_cog(self.__election_cog)
+    #     await ctx.send("The lynching vote has now begun.")
+    #     await future
+    #     self.__bot.remove_cog("Election")
+    #     self.__election_cog = None
+    #     result = future.result()
+    #     if result == "cancel":
+    #         await ctx.send("The lynching vote has been cancelled")
+    #         return
+    #     await town_square_channel.send("The voting has closed.")
+    #     if len(result) == 0:
+    #         await town_square_channel.send("No results")
+    #     elif len(result) == 1:
+    #         await town_square_channel.send(f"The winner is: {result[0]}")
+    #     else:
+    #         await town_square_channel.send("The winners are:" + '\n' + '\n'.join(result))
+
 
     @commands.command(alias=["startwerewolfvote", 'killvote'])
     async def startlynch(self, ctx):
+        if self.__election_cog is not None:
+            await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
+            return
         if self.__had_election:
             await ctx.send("You cannot have more than one election at one time.")
             return
+        author = ctx.message.author
         town_square_id = getChannelId("town-square")
         town_square_channel = ctx.guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
@@ -363,7 +401,7 @@ class Game(commands.Cog):
             alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
             if alive_role in discordPerson.roles:
                 to_vote.append(i)
-        self.__election_cog = Election(self.__bot, future, to_vote)
+        self.__election_cog = Election(self.__bot, future, to_vote, voteleader=str(ctx.message.author))
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("The lynching vote has now begun.")
         await future

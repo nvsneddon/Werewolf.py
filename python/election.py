@@ -1,26 +1,26 @@
 from typing import Optional
 
-from decorators import is_admin
+from decorators import is_admin, is_vote_leader
 from villager import Villager
 
-import discord
-import asyncio
 from discord.ext import commands
 
 
 class Election(commands.Cog):
 
-    def __init__(self, bot, future, people):
+    def __init__(self, bot, future, people, voteleader=None):
         self.__bot = bot
         self.__people: [Villager] = people
         self.__casted_votes = {}
         self.__voted = {}
         self.__future = future
         self.__result = None
+        self.__vote_leader = voteleader
         for x in people:
             self.__casted_votes[x.Name] = 0
 
     @commands.command()
+    @is_vote_leader()
     async def endvote(self, ctx):
         self.stop_vote()
 
@@ -35,6 +35,10 @@ class Election(commands.Cog):
 
     def stop_vote(self):
         self.__future.set_result(self.__Leading)
+
+    @property
+    def VoteLeader(self):
+        return self.__vote_leader
 
     @property
     def __Leading(self):
@@ -55,7 +59,7 @@ class Election(commands.Cog):
         return len(self.__voted)
 
     @commands.command()
-    @is_admin()
+    @is_vote_leader()
     async def cancelvote(self, ctx):
         self.__future.set_result("cancel")
 
