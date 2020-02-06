@@ -11,6 +11,27 @@ def is_admin():
     return commands.check(predicate)
 
 
+def is_vote_leader():
+    async def predicate(ctx):
+        cog = ctx.bot.get_cog("Election")
+        if cog.VoteLeader is None:
+            return True
+        return cog.VoteLeader == str(ctx.message.author)
+
+    return commands.check(predicate)
+
+
+def is_vote_channel():
+    async def predicate(ctx):
+        cog = ctx.bot.get_cog("Election")
+        if cog.VoteChannel is None:
+            return True
+        return cog.VoteChannel == ctx.channel
+
+    return commands.check(predicate)
+
+
+
 def is_from_channel(channel_name: str):
     async def predicate(ctx):
         return ctx.channel == discord.utils.get(ctx.guild.channels, name=channel_name)
