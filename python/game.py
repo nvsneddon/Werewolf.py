@@ -67,17 +67,21 @@ class Game(commands.Cog):
         self.schedthread.start()
 
         schedule.every().day.at(config["daytime"]).do(self.daytime).tag("game")
+        warn_voting_time = datetime.datetime(1, 1, 1, int(
+            config['nighttime'][:2]), int(config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0, config['minutes-before-warning'])
         schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
         schedule.every().day.at(config["nighttime"]).do(self.nighttime).tag("game")
         # schedule.every(3).seconds.do(self.daytime).tag("game")
+
+        night_array = config["nighttime"].split(':')
+        day_array = config["daytime"].split(':')
+        warning_array = config["vote-warning"].split(':')
+
         check_time = datetime.datetime.now().time()
-        if datetime.time(7, 0) <= check_time <= datetime.time(19, 0):
+        if datetime.time(int(day_array[0]), int(day_array[1])) <= check_time <= datetime.time(int(night_array[0]), int(night_array[1])):
             self.__abilities.start_game()
-            # self.__killed = False
         else:
             self.__abilities.start_game(True)
-            # Night time
-            # self.__killed = True
 
         cards = []
         if len(roles) >= 7:
