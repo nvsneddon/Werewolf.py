@@ -1,6 +1,6 @@
 {
   "sendinstructions": {
-    "brief": "Use this to send instructions to you",
+    "brief": "Use this to get instructions.",
     "help": "If you don't understand how to play the game, use this command and the bot will tell you what you need to do."
   },
   "countpeople": {
@@ -19,5 +19,17 @@
     "aliases": ["see", "look", "suspect"],
     "brief": "Use this to investigate someone",
     "help": "In order to investigate, you must also say who you want to investigate after invoking the command. You will see if that person is a werewolf or not."
+  },
+  "shoot": {
+    "aliases": [
+      "fireaway"
+    ],
+    "brief": "Shoot anyone of your choice before you die.",
+    "help": "As you're now dying, you have the opportunity to kill someone. Just type this command along with the person's name and you'll be able to take someone down with you."
+  },
+  "kill": {
+    "aliases" :["murder"],
+    "brief": "Kill someone of your choice. Only once per night.",
+    "help": "Because you're a werewolf, you get to kill someone every night as a team. Once someone uses this command, it can't be used until the beginning of the next night."
   }
 }

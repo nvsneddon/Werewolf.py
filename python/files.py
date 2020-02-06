@@ -53,6 +53,12 @@ except FileNotFoundError:
     print("The roles-config.json file was not found and could not be loaded")
     exit()
 
+try:
+    with open(os.path.join(dirname, '../config/commands.json')) as f6:
+        command_parameters = json.loads(f6.read())
+except FileNotFoundError:
+    print("No hints found.")
+    exit()
 
 def writeJsonToConfig(filename: str, file: dict) -> None:
     writeToConfig(filename, json.dumps(file))
