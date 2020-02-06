@@ -1,0 +1,23 @@
+{
+  "sendinstructions": {
+    "brief": "Use this to send instructions to you",
+    "help": "If you don't understand how to play the game, use this command and the bot will tell you what you need to do."
+  },
+  "countpeople": {
+    "brief": "Counts the werewolves alive and the villagers alive",
+    "help": "Counts the werewolves who are alive and the villagers who are alive."
+  },
+  "startlynch": {
+    "brief": "Start a vote to kill someone.",
+    "help": "Start the voting process. The vote will close at night time automatically if the vote hasn't been closed yet."
+  },
+  "startvote": {
+    "brief": "Vote on people without lynching.",
+    "help": "This is very similar to the lynch voting, except that this vote doesn't kill anyone. Perfect for werewolves who want to talk about who they want to kill."
+  },
+  "investigate": {
+    "aliases": ["see", "look", "suspect"],
+    "brief": "Use this to investigate someone",
+    "help": "In order to investigate, you must also say who you want to investigate after invoking the command. You will see if that person is a werewolf or not."
+  }
+}
