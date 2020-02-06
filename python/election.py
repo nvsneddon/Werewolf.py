@@ -89,8 +89,6 @@ class Election(commands.Cog):
         elif name[0:2] == "<@":
             name = name[2:-1]
         for x in self.__people:
-            print(x)
-            if x.Name.lower() == name.lower() or str(x.UserID) == name.lower():
+            if x.Name.lower() == name.lower() or str(x.UserID) == name.lower() or x.DiscordTag == name.lower() or x.NickName == name.lower():
                 return x
         return None
-
