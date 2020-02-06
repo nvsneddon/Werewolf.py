@@ -140,8 +140,9 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def exit(self, ctx):
-        await ctx.send("Goodbye!")
-        await self.__finishGame(ctx)
+        with ctx.typing():
+            await self.__finishGame(ctx)
+            await ctx.send("Goodbye!")
         await self.__bot.logout()
 
     @exit.error
