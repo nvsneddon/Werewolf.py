@@ -30,10 +30,10 @@ except FileNotFoundError:
     print("How many minutes before the voting closes do you want to issue a warning?:")
     minutes_before_warning = int(input())
     warn_voting_time = datetime(1, 1, 1, int(
-        config['nighttime'][:2])) - datetime(1, 1, 1, 0, minutes_before_warning)
-    config['vote-warning'] = str(warn_voting_time)[:5]
+        config['nighttime'][:2]), int(config['nighttime'][3:5])) - datetime(1, 1, 1, 0, minutes_before_warning)
+    # config['vote-warning'] = str(warn_voting_time)[:5]
     config['minutes-before-warning'] = minutes_before_warning
-    print("Voter warning is ", config['vote-warning'])
+    print("Voter warning is", str(warn_voting_time)[:5])
     f3 = open(os.path.join(dirname, "../config/discord-config.json"), "w")
     f3.write(json.dumps(config))
     f3.close()

@@ -53,13 +53,14 @@ class Game(commands.Cog):
         self.__pending_death = None
         self.__bakerdead = False
         self.__election_cog = None
+        self.__lynching = False
+        self.__has_lynched = False
         self.__last_protected = None
         self.__daysleft = 4
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__running = True
         self.__numWerewolves = 0
         self.__numVillagers = 0
-        self.__had_election = False
         self.__abilities = Abilities()
 
         self.schedstop = threading.Event()
@@ -67,17 +68,20 @@ class Game(commands.Cog):
         self.schedthread.start()
 
         schedule.every().day.at(config["daytime"]).do(self.daytime).tag("game")
-        schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
+        warn_voting_time = datetime.datetime(1, 1, 1, int(
+            config['nighttime'][:2]), int(config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0, config['minutes-before-warning'])
+        schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime).tag("game")
         schedule.every().day.at(config["nighttime"]).do(self.nighttime).tag("game")
         # schedule.every(3).seconds.do(self.daytime).tag("game")
+
+        night_array = config["nighttime"].split(':')
+        day_array = config["daytime"].split(':')
+
         check_time = datetime.datetime.now().time()
-        if datetime.time(7, 0) <= check_time <= datetime.time(19, 0):
+        if datetime.time(int(day_array[0]), int(day_array[1])) <= check_time <= datetime.time(int(night_array[0]), int(night_array[1])):
             self.__abilities.start_game()
-            # self.__killed = False
         else:
             self.__abilities.start_game(True)
-            # Night time
-            # self.__killed = True
 
         cards = []
         if len(roles) >= 7:
@@ -383,10 +387,11 @@ class Game(commands.Cog):
         if self.__election_cog is not None:
             await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
             return
-        if self.__had_election:
+        if self.__has_lynched:
             await ctx.send("You cannot have more than one election at one time.")
             return
         author = ctx.message.author
+        self.__lynching = True
         town_square_id = getChannelId("town-square")
         town_square_channel = ctx.guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
@@ -400,6 +405,7 @@ class Game(commands.Cog):
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("The lynching vote has now begun.")
         await future
+        self.__lynching = False
         self.__bot.remove_cog("Election")
         self.__election_cog = None
         result = future.result()
@@ -407,7 +413,7 @@ class Game(commands.Cog):
             await town_square_channel.send("The lynching vote has been cancelled")
             return
         await town_square_channel.send("The voting has closed.")
-        self.__had_election = True
+        self.__has_lynched = True
         for x in result:
             dead_villager: Villager = self.findVillager(x)
             print("The dead villager", dead_villager)
@@ -441,7 +447,7 @@ class Game(commands.Cog):
 
         for x in self.__players:
             x.Protected = False
-        self.__had_election = False
+        self.__has_lynched = False
         self.__bot.loop.create_task(self.daytimeannounce())
 
     async def daytimeannounce(self, ):
@@ -470,7 +476,9 @@ class Game(commands.Cog):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         x = config["minutes-before-warning"]
-        await town_square_channel.send("It is almost nighttime")
+        await town_square_channel.send(f"{x} minute{'s' if x > 1 else ''} left until nighttime.")
+        if self.__lynching:
+            await town_square_channel.send("Once nighttime falls, the lynch vote will be finished.")
 
     def getVillagerByID(self, player_id: int) -> Optional[Villager]:
         for x in self.__players:
