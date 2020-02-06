@@ -450,6 +450,7 @@ class Game(commands.Cog):
         for x in self.__players:
             x.Protected = False
         self.__has_lynched = False
+        self.__abilities.daytime()
         self.__bot.loop.create_task(self.daytimeannounce())
 
     async def daytimeannounce(self, ):
