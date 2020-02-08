@@ -232,7 +232,7 @@ class Game(commands.Cog):
         await ctx.send("{} is {} a werewolf".format(target.Mention, "" if target.Werewolf else "not"))
         self.__abilities.use_ability("seer")
 
-    @commands.command(**command_parameters['bodyguard'])
+    @commands.command(**command_parameters['protect'])
     @is_from_channel("bodyguard")
     async def protect(self, ctx, person_name: str):
         if not self.__abilities.check_ability("bodyguard"):
