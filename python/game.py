@@ -10,10 +10,12 @@ from discord.ext import commands
 
 from decorators import is_from_channel, is_admin, findPerson, is_not_character, has_ability
 from election import Election
-from files import getChannelId, werewolfMessages, config, readJsonFromConfig, channels_config
+from files import getChannelId, werewolfMessages, config, readJsonFromConfig, channels_config, command_parameters
 from villager import Villager
 from abilities import Abilities
 from cipher import Cipher
+
+
 
 
 class Game(commands.Cog):
@@ -53,13 +55,14 @@ class Game(commands.Cog):
         self.__pending_death = None
         self.__bakerdead = False
         self.__election_cog = None
+        self.__lynching = False
+        self.__has_lynched = False
         self.__last_protected = None
         self.__daysleft = 4
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__running = True
         self.__numWerewolves = 0
         self.__numVillagers = 0
-        self.__had_election = False
         self.__abilities = Abilities()
 
         self.schedstop = threading.Event()
@@ -67,18 +70,20 @@ class Game(commands.Cog):
         self.schedthread.start()
 
         schedule.every().day.at(config["daytime"]).do(self.daytime).tag("game")
-        schedule.every().day.at(config["vote-warning"]).do(self.almostnighttime).tag("game")
+        warn_voting_time = datetime.datetime(1, 1, 1, int(
+            config['nighttime'][:2]), int(config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0, config['minutes-before-warning'])
+        schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime).tag("game")
         schedule.every().day.at(config["nighttime"]).do(self.nighttime).tag("game")
         # schedule.every(3).seconds.do(self.daytime).tag("game")
 
+        night_array = config["nighttime"].split(':')
+        day_array = config["daytime"].split(':')
+
         check_time = datetime.datetime.now().time()
-        if datetime.time(7, 0) <= check_time <= datetime.time(19, 0):
+        if datetime.time(int(day_array[0]), int(day_array[1])) <= check_time <= datetime.time(int(night_array[0]), int(night_array[1])):
             self.__abilities.start_game()
-            # self.__killed = False
         else:
             self.__abilities.start_game(True)
-            # Night time
-            # self.__killed = True
 
         cards = []
         if len(roles) >= 7:
@@ -119,18 +124,7 @@ class Game(commands.Cog):
     async def __sendPM(self, member, message):
         await member.send(message)
 
-    @property
-    def Abilities(self):
-        return self.__abilities
-
-    @property
-    def GameStats(self):
-        return {
-            "werewolves": self.__numWerewolves,
-            "villagers": self.__numVillagers
-        }
-
-    @commands.command(aliases=["murder"])
+    @commands.command(**command_parameters['kill'])
     @is_from_channel("werewolves")
     async def kill(self, ctx, person_name: str):
         if not self.__abilities.check_ability("werewolves"):
@@ -143,6 +137,9 @@ class Game(commands.Cog):
         self.__abilities.use_ability("werewolves")
         if target.Protected:
             await ctx.send("That person has been protected. You just wasted your kill!")
+            town_square_id = getChannelId("town-square")
+            town_square_channel = ctx.guild.get_channel(town_square_id)
+            await town_square_channel.send(f"The werewolves have tried to kill {target.Mention} but has been protected. We're glad you're alive.")
         else:
             await ctx.send("Killing {}".format(target.Mention))
             town_square_id = getChannelId("town-square")
@@ -184,7 +181,7 @@ class Game(commands.Cog):
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
 
-    @commands.command()
+    @commands.command(**command_parameters['countpeople'])
     async def countpeople(self, ctx):
         await ctx.send(f"Villagers: {self.__numVillagers}\nWerewolves: {self.__numWerewolves}")
 
@@ -203,7 +200,7 @@ class Game(commands.Cog):
     async def announcenight(self, ctx):
         self.almostnighttimeannounce()
 
-    @commands.command()
+    @commands.command(**command_parameters['shoot'])
     @hunter()
     async def shoot(self, ctx, victim: str):
         dead_villager = self.findVillager(victim)
@@ -219,29 +216,23 @@ class Game(commands.Cog):
 
         # await self.findWinner(ctx)
 
-    @commands.command(aliases=["see", "look", "suspect"])
+    @commands.command(**command_parameters['investigate'])
     @is_from_channel("seer")
     async def investigate(self, ctx, person_name: str):
         if not self.__abilities.check_ability("seer"):
             await ctx.send("The future is hazy, but tomorrow you could have a better chance. If you don't die before!")
             return
         target = self.findVillager(person_name)
-        # seer: Villager = self.findVillager(ctx.message.author.name)
-        # if seer is None:
-        #     message = "Seer is None. This should never happen"
-        #     print(message)
-        #     ctx.send(message)
-        #     return
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
         if not self.__abilities.check_ability("seer"):
             await ctx.send("You already used your ability. Try again after the next sunrise.")
             return
-        await ctx.send("{} is {} a werewolf".format(target.Mention, "" if target.IsWerewolf else "not"))
+        await ctx.send("{} is {} a werewolf".format(target.Mention, "" if target.Werewolf else "not"))
         self.__abilities.use_ability("seer")
 
-    @commands.command()
+    @commands.command(**command_parameters['protect'])
     @is_from_channel("bodyguard")
     async def protect(self, ctx, person_name: str):
         if not self.__abilities.check_ability("bodyguard"):
@@ -253,7 +244,7 @@ class Game(commands.Cog):
             await ctx.send("I couldn't find that person!")
             return
         if self.__last_protected == person_name:
-            ctx.send("You protected that person recently. Try someone new.")
+            await ctx.send("You protected that person recently. Try someone new.")
             return
         if the_protected_one.Dead:
             await ctx.send("You should have protected that person sooner. Choose someone else.")
@@ -264,13 +255,14 @@ class Game(commands.Cog):
         self.__last_protected = person_name
         protector.UsedAbility = True
         protected_member = ctx.guild.get_member_named(the_protected_one.DiscordTag)
-        await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
+        # if not the_protected_one.Werewolf:
+        # await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
-    @commands.command()
+    @commands.command(**command_parameters['sendinstructions'])
     async def sendinstructions(self, ctx):
-        await ctx.send(werewolfMessages["help"])
+        await ctx.send('\n'.join(werewolfMessages["help"]))
 
-    @commands.command()
+    @commands.command(**command_parameters['sendmessage'])
     @is_from_channel("afterlife")
     @is_not_character("werewolf")
     async def sendmessage(self, ctx, word: str):
@@ -289,7 +281,7 @@ class Game(commands.Cog):
         await channel.send("You have received a message from above.")
         await channel.send(self.__cipher.Decode)
 
-    @commands.command()
+    @commands.command(**command_parameters["sendhint"])
     @is_from_channel("afterlife")
     @is_not_character("werewolf")
     async def sendhint(self, ctx):
@@ -310,19 +302,6 @@ class Game(commands.Cog):
                 return False
         return True
 
-    @property
-    def Winner(self) -> str:
-        # channel = ctx.guild.get_channel(getChannelId("town-square"))
-        if self.cupidWinner():
-            return "cupid"
-        if self.GameStats["werewolves"] >= self.GameStats["villagers"]:
-            return "werewolves"
-        elif self.GameStats["werewolves"] == 0:
-            return "villagers"
-        elif self.__daysleft <= 0:
-            return "bakerdead"
-        return ""
-
     @commands.command(aliases=["matchlove", "makeinlove"])
     @is_from_channel("cupid")
     @has_ability("cupid")
@@ -334,6 +313,9 @@ class Game(commands.Cog):
             return
         if villager2 is None:
             await ctx.send("The second villager could not be found. Try again.")
+            return
+        if villager1.Dead or villager2.Dead:
+            await ctx.send("You can't match dead villagers. Try again!")
             return
         self.__abilities.use_ability("cupid")
         self.__inlove.append(villager1)
@@ -347,7 +329,8 @@ class Game(commands.Cog):
                                                overwrite=discord.PermissionOverwrite(**read_write_permission))
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
-    @commands.command()
+
+    @commands.command(**command_parameters['startvote'])
     async def startvote(self, ctx):
         if self.__election_cog is not None:
             await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
@@ -378,16 +361,16 @@ class Game(commands.Cog):
         else:
             await ctx.send("The winners are:" + '\n' + '\n'.join(result))
 
-
-    @commands.command(alias=["startwerewolfvote", 'killvote'])
+    @commands.command(**command_parameters["startlynch"])
     async def startlynch(self, ctx):
         if self.__election_cog is not None:
             await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
             return
-        if self.__had_election:
+        if self.__has_lynched:
             await ctx.send("You cannot have more than one election at one time.")
             return
         author = ctx.message.author
+        self.__lynching = True
         town_square_id = getChannelId("town-square")
         town_square_channel = ctx.guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
@@ -401,6 +384,7 @@ class Game(commands.Cog):
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("The lynching vote has now begun.")
         await future
+        self.__lynching = False
         self.__bot.remove_cog("Election")
         self.__election_cog = None
         result = future.result()
@@ -408,7 +392,7 @@ class Game(commands.Cog):
             await town_square_channel.send("The lynching vote has been cancelled")
             return
         await town_square_channel.send("The voting has closed.")
-        self.__had_election = True
+        self.__has_lynched = True
         for x in result:
             dead_villager: Villager = self.findVillager(x)
             print("The dead villager", dead_villager)
@@ -420,14 +404,6 @@ class Game(commands.Cog):
             await town_square_channel.send("We had a bloodbath because we had a tie.")
         if self.Winner != "":
             self.__game_future.set_result(self.Winner)
-
-    @property
-    def Hunter(self):
-        return self.__hunter
-
-    @property
-    def AlmostDead(self):
-        return self.__pending_death
 
     def cog_unload(self):
         schedule.clear("game")
@@ -442,7 +418,8 @@ class Game(commands.Cog):
 
         for x in self.__players:
             x.Protected = False
-        self.__had_election = False
+        self.__has_lynched = False
+        self.__abilities.daytime()
         self.__bot.loop.create_task(self.daytimeannounce())
 
     async def daytimeannounce(self, ):
@@ -471,8 +448,9 @@ class Game(commands.Cog):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         x = config["minutes-before-warning"]
-        print(type(x))
-        await town_square_channel.send("It is almost nighttime")
+        await town_square_channel.send(f"{x} minute{'s' if x > 1 else ''} left until nighttime.")
+        if self.__lynching:
+            await town_square_channel.send("Once nighttime falls, the lynch vote will be finished.")
 
     def getVillagerByID(self, player_id: int) -> Optional[Villager]:
         for x in self.__players:
@@ -491,3 +469,35 @@ class Game(commands.Cog):
                     x.DiscordTag.lower() == name.lower() or x.NickName.lower() == name.lower():
                 return x
         return None
+
+    @property
+    def Winner(self) -> str:
+        # channel = ctx.guild.get_channel(getChannelId("town-square"))
+        if self.cupidWinner():
+            return "cupid"
+        if self.GameStats["werewolves"] >= self.GameStats["villagers"]:
+            return "werewolves"
+        elif self.GameStats["werewolves"] == 0:
+            return "villagers"
+        elif self.__daysleft <= 0:
+            return "bakerdead"
+        return ""
+
+    @property
+    def Abilities(self):
+        return self.__abilities
+
+    @property
+    def GameStats(self):
+        return {
+            "werewolves": self.__numWerewolves,
+            "villagers": self.__numVillagers
+        }
+
+    @property
+    def Hunter(self):
+        return self.__hunter
+
+    @property
+    def AlmostDead(self):
+        return self.__pending_death

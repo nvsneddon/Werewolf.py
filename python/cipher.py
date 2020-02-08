@@ -56,10 +56,3 @@ class Cipher:
     @property
     def Decode(self):
         return self.__jumbled_message
-
-
-if __name__ == '__main__':
-    x = Cipher("small")
-    print(x.Decode)
-    print(x.Hint)
-    print(x.Message)
