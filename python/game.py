@@ -150,7 +150,7 @@ class Game(commands.Cog):
             await ctx.send("That person has been protected. You just wasted your kill!")
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(f"The werewolves have tried to kill {target.Mention}. Good thing this person had a bodyguard with them.")
+            await town_square_channel.send(f"The werewolves have tried to kill {target.Mention} but has been protected. We're glad you're alive.")
         else:
             await ctx.send("Killing {}".format(target.Mention))
             town_square_id = getChannelId("town-square")
@@ -272,8 +272,8 @@ class Game(commands.Cog):
         self.__last_protected = person_name
         protector.UsedAbility = True
         protected_member = ctx.guild.get_member_named(the_protected_one.DiscordTag)
-        if not the_protected_one.Werewolf:
-            await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
+        # if not the_protected_one.Werewolf:
+        #     await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
     @commands.command(**command_parameters['sendinstructions'])
     async def sendinstructions(self, ctx):
