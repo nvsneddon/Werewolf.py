@@ -124,17 +124,6 @@ class Game(commands.Cog):
     async def __sendPM(self, member, message):
         await member.send(message)
 
-    @property
-    def Abilities(self):
-        return self.__abilities
-
-    @property
-    def GameStats(self):
-        return {
-            "werewolves": self.__numWerewolves,
-            "villagers": self.__numVillagers
-        }
-
     @commands.command(**command_parameters['kill'])
     @is_from_channel("werewolves")
     async def kill(self, ctx, person_name: str):
@@ -192,7 +181,7 @@ class Game(commands.Cog):
         target_user = ctx.message.guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
 
-    @commands.command()
+    @commands.command(**command_parameters['countpeople'])
     async def countpeople(self, ctx):
         await ctx.send(f"Villagers: {self.__numVillagers}\nWerewolves: {self.__numWerewolves}")
 
@@ -234,12 +223,6 @@ class Game(commands.Cog):
             await ctx.send("The future is hazy, but tomorrow you could have a better chance. If you don't die before!")
             return
         target = self.findVillager(person_name)
-        # seer: Villager = self.findVillager(ctx.message.author.name)
-        # if seer is None:
-        #     message = "Seer is None. This should never happen"
-        #     print(message)
-        #     ctx.send(message)
-        #     return
         if target is None:
             await ctx.send("That person could not be found. Please try again.")
             return
@@ -249,7 +232,7 @@ class Game(commands.Cog):
         await ctx.send("{} is {} a werewolf".format(target.Mention, "" if target.Werewolf else "not"))
         self.__abilities.use_ability("seer")
 
-    @commands.command()
+    @commands.command(**command_parameters['bodyguard'])
     @is_from_channel("bodyguard")
     async def protect(self, ctx, person_name: str):
         if not self.__abilities.check_ability("bodyguard"):
@@ -273,13 +256,13 @@ class Game(commands.Cog):
         protector.UsedAbility = True
         protected_member = ctx.guild.get_member_named(the_protected_one.DiscordTag)
         # if not the_protected_one.Werewolf:
-        #     await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
+        # await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
     @commands.command(**command_parameters['sendinstructions'])
     async def sendinstructions(self, ctx):
         await ctx.send('\n'.join(werewolfMessages["help"]))
 
-    @commands.command()
+    @commands.command(**command_parameters['sendmessage'])
     @is_from_channel("afterlife")
     @is_not_character("werewolf")
     async def sendmessage(self, ctx, word: str):
@@ -298,7 +281,7 @@ class Game(commands.Cog):
         await channel.send("You have received a message from above.")
         await channel.send(self.__cipher.Decode)
 
-    @commands.command()
+    @commands.command(**command_parameters["sendhint"])
     @is_from_channel("afterlife")
     @is_not_character("werewolf")
     async def sendhint(self, ctx):
@@ -319,19 +302,6 @@ class Game(commands.Cog):
                 return False
         return True
 
-    @property
-    def Winner(self) -> str:
-        # channel = ctx.guild.get_channel(getChannelId("town-square"))
-        if self.cupidWinner():
-            return "cupid"
-        if self.GameStats["werewolves"] >= self.GameStats["villagers"]:
-            return "werewolves"
-        elif self.GameStats["werewolves"] == 0:
-            return "villagers"
-        elif self.__daysleft <= 0:
-            return "bakerdead"
-        return ""
-
     @commands.command(aliases=["matchlove", "makeinlove"])
     @is_from_channel("cupid")
     @has_ability("cupid")
@@ -343,6 +313,9 @@ class Game(commands.Cog):
             return
         if villager2 is None:
             await ctx.send("The second villager could not be found. Try again.")
+            return
+        if villager1.Dead or villager2.Dead:
+            await ctx.send("You can't match dead villagers. Try again!")
             return
         self.__abilities.use_ability("cupid")
         self.__inlove.append(villager1)
@@ -356,7 +329,8 @@ class Game(commands.Cog):
                                                overwrite=discord.PermissionOverwrite(**read_write_permission))
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
-    @commands.command()
+
+    @commands.command(**command_parameters['startvote'])
     async def startvote(self, ctx):
         if self.__election_cog is not None:
             await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
@@ -387,8 +361,7 @@ class Game(commands.Cog):
         else:
             await ctx.send("The winners are:" + '\n' + '\n'.join(result))
 
-
-    @commands.command(alias=["startwerewolfvote", 'killvote'])
+    @commands.command(**command_parameters["startlynch"])
     async def startlynch(self, ctx):
         if self.__election_cog is not None:
             await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
@@ -431,14 +404,6 @@ class Game(commands.Cog):
             await town_square_channel.send("We had a bloodbath because we had a tie.")
         if self.Winner != "":
             self.__game_future.set_result(self.Winner)
-
-    @property
-    def Hunter(self):
-        return self.__hunter
-
-    @property
-    def AlmostDead(self):
-        return self.__pending_death
 
     def cog_unload(self):
         schedule.clear("game")
@@ -504,3 +469,35 @@ class Game(commands.Cog):
                     x.DiscordTag.lower() == name.lower() or x.NickName.lower() == name.lower():
                 return x
         return None
+
+    @property
+    def Winner(self) -> str:
+        # channel = ctx.guild.get_channel(getChannelId("town-square"))
+        if self.cupidWinner():
+            return "cupid"
+        if self.GameStats["werewolves"] >= self.GameStats["villagers"]:
+            return "werewolves"
+        elif self.GameStats["werewolves"] == 0:
+            return "villagers"
+        elif self.__daysleft <= 0:
+            return "bakerdead"
+        return ""
+
+    @property
+    def Abilities(self):
+        return self.__abilities
+
+    @property
+    def GameStats(self):
+        return {
+            "werewolves": self.__numWerewolves,
+            "villagers": self.__numVillagers
+        }
+
+    @property
+    def Hunter(self):
+        return self.__hunter
+
+    @property
+    def AlmostDead(self):
+        return self.__pending_death

@@ -4,10 +4,12 @@
     "help": "If you don't understand how to play the game, use this command and the bot will tell you what you need to do."
   },
   "countpeople": {
+    "alias": ["peoplecount", "werewolfcount", "villagercount", "count"],
     "brief": "Counts the werewolves alive and the villagers alive",
     "help": "Counts the werewolves who are alive and the villagers who are alive."
   },
   "startlynch": {
+    "alias": ["startwerewolfvote", "killvote", "lynch"],
     "brief": "Start a vote to kill someone.",
     "help": "Start the voting process. The vote will close at night time automatically if the vote hasn't been closed yet."
   },
@@ -21,20 +23,42 @@
     "help": "In order to investigate, you must also say who you want to investigate after invoking the command. You will see if that person is a werewolf or not. You can only investigate once per day. The ability to investigate renews every morning."
   },
   "shoot": {
-    "aliases": [
-      "fireaway"
-    ],
+    "aliases": ["fireaway"],
     "brief": "Shoot anyone of your choice before you die.",
     "help": "As you're now dying, you have the opportunity to kill someone. Just type this command along with the person's name and you'll be able to take someone down with you."
   },
   "kill": {
     "aliases" :["murder"],
     "brief": "Kill someone of your choice. Only once per night.",
-    "help": "Because you're a werewolf, you get to kill someone every night as a team. Once someone uses this command, it can't be used until the beginning of the next night. Once nighttime is over, it's too late to kill someone.",
+    "help": "Because you're a werewolf, you get to kill someone every night as a team. Once someone uses this command, it can't be used until the beginning of the next night. Once nighttime is over, it's too late to kill someone."
   },
   "protect": {
-    "aliases": [],
+    "aliases": ["save", "defend", "shield"],
     "brief": "Use this to protect someone from the werewolves.",
-    "help": "Protect anyone of your choice from the werewolves. Your ability renews every sunrise. They'll get a message from you  "
+    "help": "Protect anyone of your choice from the werewolves. Your ability renews every sunrise. Also remember, you can protect yourself, but you can't protect the same person twice in a row. "
+  },
+  "match": {
+    "aliases": ["matchlove", "makeinlove"],
+    "brief": "Make two people fall in love",
+    "help": "Make two people of your choice fall in love so strong that they'd rather die than live without their love. You only have two arrows, so don't mess up."
+  },
+  "sendmessage": {
+    "alias": ["sendword"],
+    "brief": "Send a one word message to the masons.",
+    "help": "Send a one word message to the masons who will work to listen to the message. They're still working on communing with the dead, so you may have to give them a hint. You can give one hint or message per night. The ability renews every sunset."
+  },
+  "sendhint": {
+    "alias": ["sendhelp"],
+    "brief": "Send a hint about the last message to the masons.",
+    "sendhint": "Send a hint to help the masons decipher the last message. You can give one hint or message per night. The ability renews every sunset."
+  },
+  "echo": {
+    "brief": "Repeats everything typed after."
+  },
+  "ping": {
+    "brief": "Try it out"
+  },
+  "search": {
+    "brief": "Searches for the person on the server and displays their name. "
   }
 }
