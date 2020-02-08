@@ -29,6 +29,7 @@ class Bot(commands.Cog):
 
     def __init__(self, bot):
         self.__bot = bot
+        self.__game = False
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -77,6 +78,9 @@ class Bot(commands.Cog):
 
     @commands.command()
     async def notplaying(self, ctx):
+        if self.__game:
+            await ctx.send("You can't stop now!")
+            return
         await ctx.author.edit(roles=[])
         await ctx.send(f"{ctx.author.mention} is not playing.")
 
@@ -103,6 +107,7 @@ class Bot(commands.Cog):
                 await player.edit(roles=roles_assignment)
             game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=False)
             self.__bot.add_cog(game_cog)
+            self.__game = True
             read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
             for x in ctx.guild.members:
                 if alive_role in x.roles:
@@ -113,6 +118,7 @@ class Bot(commands.Cog):
                         await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
         await ctx.send("Let the games begin!")
         await game_future
+        self.__game = False
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         winner = game_future.result()
@@ -144,7 +150,9 @@ class Bot(commands.Cog):
         alive_role = discord.utils.get(
             ctx.guild.roles, name="Alive")
         for member in ctx.guild.members:
-            if owner_role not in member.roles and alive_role not in member.roles:
+            if len(member.roles) == 1:
+                continue
+            if owner_role not in member.roles:
                 await member.edit(roles=[playing_role])
             for x in channels_config["channels"]:
                 channel = discord.utils.get(ctx.guild.channels, name=x)
