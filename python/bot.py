@@ -104,7 +104,7 @@ class Bot(commands.Cog):
                 return
             for player in players:
                 await player.edit(roles=roles_assignment)
-            game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=False)
+            game_cog = Game(self.__bot, members=players, future=game_future, roles=args)
             self.__bot.add_cog(game_cog)
             self.__game = True
             read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
@@ -115,6 +115,7 @@ class Bot(commands.Cog):
                         channel_name = channels_config["character-to-channel"][character]
                         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                         await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+
         await ctx.send("Let the games begin!")
         await game_future
         self.__game = False
