@@ -38,12 +38,17 @@ class Bot(commands.Cog):
 
     @commands.command()
     async def echo(self, ctx, *args):
-        output = ''
-        for x in args:
-            output += x
-            output += ' '
-        print(output)
-        await ctx.send(output)
+        if len(args) > 0:
+            output = ''
+            for x in args:
+                output += x
+                output += ' '
+            print(output)
+            await ctx.send(output)
+
+    @commands.command()
+    async def tickle(self, ctx):
+        await ctx.send(":rofl: Stop it! :rofl::rofl:")
 
     @commands.command()
     @can_clear()
@@ -63,6 +68,18 @@ class Bot(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         await ctx.send(":ping_pong: Pong!")
+
+    @commands.command()
+    async def playing(self, ctx):
+        playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
+        await ctx.author.edit(roles={playing_role})
+        await ctx.send(f"{ctx.author.mention} is now playing.")
+
+    @commands.command()
+    async def notplaying(self, ctx):
+        await ctx.author.edit(roles=[])
+        await ctx.send(f"{ctx.author.mention} is not playing.")
+
 
     @commands.command(pass_context=True)
     @is_admin()
