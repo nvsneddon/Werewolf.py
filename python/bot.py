@@ -48,7 +48,7 @@ class Bot(commands.Cog):
 
     @commands.command()
     async def tickle(self, ctx):
-        await ctx.send(":rofl: Stop it! :rofl::rofl:")
+        await ctx.send(":rofl:  Stop it!  :rofl: :rofl:")
 
     @commands.command()
     @can_clear()
@@ -141,8 +141,10 @@ class Bot(commands.Cog):
             ctx.guild.roles, name="Playing")
         owner_role = discord.utils.get(
             ctx.guild.roles, name="Owner")
+        alive_role = discord.utils.get(
+            ctx.guild.roles, name="Alive")
         for member in ctx.guild.members:
-            if owner_role not in member.roles:
+            if owner_role not in member.roles and alive_role not in member.roles:
                 await member.edit(roles=[playing_role])
             for x in channels_config["channels"]:
                 channel = discord.utils.get(ctx.guild.channels, name=x)
