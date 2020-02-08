@@ -50,15 +50,25 @@
   "sendhint": {
     "alias": ["sendhelp"],
     "brief": "Send a hint about the last message to the masons.",
-    "sendhint": "Send a hint to help the masons decipher the last message. You can give one hint or message per night. The ability renews every sunset."
+    "help": "Send a hint to help the masons decipher the last message. You can give one hint or message per night. The ability renews every sunset."
   },
   "echo": {
-    "brief": "Repeats everything typed after."
+    "brief": "Repeats everything typed after"
   },
   "ping": {
     "brief": "Try it out"
   },
   "search": {
-    "brief": "Searches for the person on the server and displays their name. "
+    "brief": "Searches for the person on the server and displays their name"
+  },
+  "tickle": {
+    "brief": "Don't you think about doing this!",
+    "help": "Seriously! Don't do it! You'll regret this!!!"
+  },
+  "playing": {
+    "brief": "Mark yourself as playing"
+  },
+  "notplaying": {
+    "brief": "Mark yourself as not playing"
   }
 }

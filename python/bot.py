@@ -7,7 +7,7 @@ from game import Game
 import asyncio
 import os
 import json
-from files import getChannelId, channels_config, roles_config, readJsonFromConfig, werewolfMessages
+from files import getChannelId, channels_config, roles_config, readJsonFromConfig, werewolfMessages, command_parameters
 
 
 def can_clear():
@@ -37,7 +37,7 @@ class Bot(commands.Cog):
             await ctx.send(str(error))
         print(error)
 
-    @commands.command()
+    @commands.command(**command_parameters['echo'])
     async def echo(self, ctx, *args):
         if len(args) > 0:
             output = ''
@@ -47,7 +47,7 @@ class Bot(commands.Cog):
             print(output)
             await ctx.send(output)
 
-    @commands.command()
+    @commands.command(**command_parameters['tickle'])
     async def tickle(self, ctx):
         await ctx.send(":rofl:  Stop it!  :rofl: :rofl:")
 
@@ -66,24 +66,23 @@ class Bot(commands.Cog):
                 counter += 1
                 await asyncio.sleep(0.4)
 
-    @commands.command()
+    @commands.command(**command_parameters["ping"])
     async def ping(self, ctx):
         await ctx.send(":ping_pong: Pong!")
 
-    @commands.command()
+    @commands.command(**command_parameters['playing'])
     async def playing(self, ctx):
         playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
         await ctx.author.edit(roles={playing_role})
         await ctx.send(f"{ctx.author.mention} is now playing.")
 
-    @commands.command()
+    @commands.command(**command_parameters['notplaying'])
     async def notplaying(self, ctx):
         if self.__game:
             await ctx.send("You can't stop now!")
             return
         await ctx.author.edit(roles=[])
         await ctx.send(f"{ctx.author.mention} is not playing.")
-
 
     @commands.command(pass_context=True)
     @is_admin()
@@ -158,7 +157,7 @@ class Bot(commands.Cog):
                 channel = discord.utils.get(ctx.guild.channels, name=x)
                 await channel.set_permissions(member, overwrite=None)
 
-    @commands.command()
+    @commands.command(**command_parameters['search'])
     async def search(self, ctx, *args):
         user = findPerson(ctx, args)
         if user is not None:
