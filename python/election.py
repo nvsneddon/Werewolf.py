@@ -21,11 +21,11 @@ class Election(commands.Cog):
         for x in people:
             self.__casted_votes[x.Name] = 0
 
-    @commands.command()
-    @is_vote_leader()
-    @is_vote_channel()
-    async def endvote(self, ctx):
-        self.stop_vote()
+    # @commands.command()
+    # @is_vote_leader()
+    # @is_vote_channel()
+    # async def endvote(self, ctx):
+    #     self.stop_vote()
 
     @commands.command()
     @is_vote_channel()

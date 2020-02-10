@@ -393,17 +393,18 @@ class Game(commands.Cog):
             return
         await town_square_channel.send("The voting has closed.")
         self.__has_lynched = True
-        for x in result:
+        if len(result) > 1:
+            await town_square_channel.send("You couldn't decide on only one person. No one died.")
+        else:
+            x = result[0]
             dead_villager: Villager = self.findVillager(x)
             print("The dead villager", dead_villager)
             await self.die(ctx, dead_villager)
             dead_villager.die()
             lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await town_square_channel.send(lynched_message)
-        if len(result) > 1:
-            await town_square_channel.send("We had a bloodbath because we had a tie.")
-        if self.Winner != "":
-            self.__game_future.set_result(self.Winner)
+            if self.Winner != "":
+                self.__game_future.set_result(self.Winner)
 
     def cog_unload(self):
         schedule.clear("game")
