@@ -17,6 +17,10 @@
     "brief": "Vote on people without lynching.",
     "help": "This is very similar to the lynch voting, except that this vote doesn't kill anyone. Perfect for werewolves who want to talk about who they want to kill."
   },
+  "vote": {
+    "brief": "Cast a vote for the person",
+    "help": "Cast your vote for the person of your choosing."
+  },
   "investigate": {
     "aliases": ["see", "look", "suspect"],
     "brief": "Use this to investigate someone",

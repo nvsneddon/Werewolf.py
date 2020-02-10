@@ -380,7 +380,7 @@ class Game(commands.Cog):
             alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
             if alive_role in discordPerson.roles:
                 to_vote.append(i)
-        self.__election_cog = Election(self.__bot, future, to_vote, voteleader=str(ctx.message.author))
+        self.__election_cog = Election(self.__bot, future, to_vote, channel=town_square_channel, voteleader=str(ctx.message.author))
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("The lynching vote has now begun.")
         await future

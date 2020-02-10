@@ -21,11 +21,11 @@ class Election(commands.Cog):
         for x in people:
             self.__casted_votes[x.Name] = 0
 
-    # @commands.command()
-    # @is_vote_leader()
-    # @is_vote_channel()
-    # async def endvote(self, ctx):
-    #     self.stop_vote()
+    @commands.command()
+    @is_vote_leader()
+    @is_vote_channel()
+    async def endvote(self, ctx):
+        self.stop_vote()
 
     @commands.command()
     @is_vote_channel()
@@ -62,6 +62,11 @@ class Election(commands.Cog):
             await ctx.send(f"Your vote for {votee.Mention} has been confirmed")
         else:
             await ctx.send("You can't vote for that person. Please try again.")
+
+    @commands.command()
+    @is_vote_channel()
+    async def showvote(self, ctx):
+        await ctx.send(self.__casted_votes)
 
     @commands.command(aliases=["show_score"])
     @is_vote_channel()
