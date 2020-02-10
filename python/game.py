@@ -145,11 +145,11 @@ class Game(commands.Cog):
             town_square_id = getChannelId("town-square")
             town_square_channel = ctx.guild.get_channel(town_square_id)
             await town_square_channel.send(werewolfMessages[target.Character]["killed"].format(target.Mention))
-            await self.die(ctx, target)
+            await self.die(ctx.guild, target)
         if self.Winner != "":
             self.__game_future.set_result(self.Winner)
 
-    async def die(self, ctx, target: Villager):
+    async def die(self, guild, target: Villager):
         if target.die():
             self.__numWerewolves -= 1
         else:
@@ -166,19 +166,19 @@ class Game(commands.Cog):
             other: Villager = self.__inlove[0]
             self.__inlove.remove(other)
             town_square_id = getChannelId("town-square")
-            town_square_channel = ctx.guild.get_channel(town_square_id)
+            town_square_channel = guild.get_channel(town_square_id)
             await town_square_channel.send(werewolfMessages[other.Character]["inlove"].format(other.Mention))
-            await self.die(ctx, other)
+            await self.die(guild, other)
 
-        dead_role = discord.utils.get(ctx.guild.roles, name="Dead")
+        dead_role = discord.utils.get(guild.roles, name="Dead")
         # await channel.set_permissions(member, overwrite=None)
 
         for x in channels_config["channels"]:
-            channel = ctx.guild.get_channel(getChannelId(x))
-            member = ctx.guild.get_member_named(target.DiscordTag)
+            channel = guild.get_channel(getChannelId(x))
+            member = guild.get_member_named(target.DiscordTag)
             await channel.set_permissions(member, overwrite=None)
 
-        target_user = ctx.message.guild.get_member_named(target.DiscordTag)
+        target_user = guild.get_member_named(target.DiscordTag)
         await target_user.edit(roles=[dead_role])
 
     @commands.command(**command_parameters['countpeople'])
@@ -210,7 +210,7 @@ class Game(commands.Cog):
         lynched_message = werewolfMessages[dead_villager.Character]["hunter"].format(dead_villager.Mention)
         town_square_channel = ctx.guild.get_channel(getChannelId("town-square"))
         await town_square_channel.send(lynched_message)
-        await self.die(ctx, dead_villager)
+        await self.die(ctx.guild, dead_villager)
         self.__hunter_future.set_result("dead")
         self.__bot.remove_command("shoot")
 
@@ -258,8 +258,8 @@ class Game(commands.Cog):
         # if not the_protected_one.Werewolf:
         # await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
-    @commands.command(**command_parameters['sendinstructions'])
-    async def sendinstructions(self, ctx):
+    @commands.command(**command_parameters['getinstructions'])
+    async def getinstructions(self, ctx):
         await ctx.send('\n'.join(werewolfMessages["help"]))
 
     @commands.command(**command_parameters['sendmessage'])
@@ -330,59 +330,53 @@ class Game(commands.Cog):
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
 
-    @commands.command(**command_parameters['startvote'])
-    async def startvote(self, ctx):
-        if self.__election_cog is not None:
-            await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
-            return
-        author = ctx.message.author
-        future = self.__bot.loop.create_future()
-        to_vote = []
-        for i in self.__players:
-            discordPerson = ctx.message.guild.get_member_named(i.DiscordTag)
-            alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
-            if alive_role in discordPerson.roles:
-                to_vote.append(i)
-        self.__election_cog = Election(self.__bot, future, to_vote, voteleader=str(author), channel=ctx.channel)
-        self.__bot.add_cog(self.__election_cog)
-        await ctx.send("Voting time")
-        await future
-        self.__bot.remove_cog("Election")
-        self.__election_cog = None
-        result = future.result()
-        if result == "cancel":
-            await ctx.send("Vote has been cancelled")
-            return
-        await ctx.send("The voting has closed.")
-        if len(result) == 0:
-            await ctx.send("No results")
-        elif len(result) == 1:
-            await ctx.send(f"The winner is: {result[0]}")
-        else:
-            await ctx.send("The winners are:" + '\n' + '\n'.join(result))
+    # @commands.command(**command_parameters['startvote'])
+    # async def startvote(self, ctx):
+    #     if self.__election_cog is not None:
+    #         await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
+    #         return
+    #     author = ctx.message.author
+    #     future = self.__bot.loop.create_future()
+    #     to_vote = []
+    #     for i in self.__players:
+    #         discordPerson = ctx.message.guild.get_member_named(i.DiscordTag)
+    #         alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
+    #         if alive_role in discordPerson.roles:
+    #             to_vote.append(i)
+    #     self.__election_cog = Election(self.__bot, future, to_vote, voteleader=str(author), channel=ctx.channel)
+    #     self.__bot.add_cog(self.__election_cog)
+    #     await ctx.send("Voting time")
+    #     await future
+    #     self.__bot.remove_cog("Election")
+    #     self.__election_cog = None
+    #     result = future.result()
+    #     if result == "cancel":
+    #         await ctx.send("Vote has been cancelled")
+    #         return
+    #     await ctx.send("The voting has closed.")
+    #     if len(result) == 0:
+    #         await ctx.send("No results")
+    #     elif len(result) == 1:
+    #         await ctx.send(f"The winner is: {result[0]}")
+    #     else:
+    #         await ctx.send("The winners are:" + '\n' + '\n'.join(result))
 
-    @commands.command(**command_parameters["startlynch"])
-    async def startlynch(self, ctx):
-        if self.__election_cog is not None:
-            await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
-            return
-        if self.__has_lynched:
-            await ctx.send("You cannot have more than one election at one time.")
-            return
-        author = ctx.message.author
+    # @commands.command(**command_parameters["startlynch"])
+
+    async def startvote(self, guild):
         self.__lynching = True
         town_square_id = getChannelId("town-square")
-        town_square_channel = ctx.guild.get_channel(town_square_id)
+        town_square_channel = guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
         to_vote = []
         for i in self.__players:
-            discordPerson = ctx.message.guild.get_member_named(i.DiscordTag)
-            alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
+            discordPerson = guild.get_member_named(i.DiscordTag)
+            alive_role = discord.utils.get(guild.roles, name="Alive")
             if alive_role in discordPerson.roles:
                 to_vote.append(i)
-        self.__election_cog = Election(self.__bot, future, to_vote, channel=town_square_channel, voteleader=str(ctx.message.author))
+        self.__election_cog = Election(self.__bot, future, to_vote, channel=town_square_channel)
         self.__bot.add_cog(self.__election_cog)
-        await town_square_channel.send("The lynching vote has now begun.")
+        await town_square_channel.send("You can now vote to lynch.")
         await future
         self.__lynching = False
         self.__bot.remove_cog("Election")
@@ -399,7 +393,7 @@ class Game(commands.Cog):
             x = result[0]
             dead_villager: Villager = self.findVillager(x)
             print("The dead villager", dead_villager)
-            await self.die(ctx, dead_villager)
+            await self.die(guild, dead_villager)
             dead_villager.die()
             lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await town_square_channel.send(lynched_message)
@@ -423,19 +417,20 @@ class Game(commands.Cog):
         self.__abilities.daytime()
         self.__bot.loop.create_task(self.daytimeannounce())
 
-    async def daytimeannounce(self, ):
+    async def daytimeannounce(self):
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         await town_square_channel.send("It is daytime")
         if self.__bakerdead and self.__daysleft > 0:
             await town_square_channel.send(f"You have {self.__daysleft} days left")
+        await self.startvote(town_square_channel.guild)
 
     def nighttime(self):
         # self.__killed = False
+        self.__bot.loop.create_task(self.nighttimeannounce())
         self.__abilities.nighttime()
         if self.__election_cog is not None:
             self.__election_cog.stop_vote()
-        self.__bot.loop.create_task(self.nighttimeannounce())
 
     async def nighttimeannounce(self):
         town_square_id = getChannelId("town-square")

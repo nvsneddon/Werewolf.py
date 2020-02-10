@@ -1,5 +1,5 @@
 {
-  "sendinstructions": {
+  "getinstructions": {
     "brief": "Use this to get instructions.",
     "help": "If you don't understand how to play the game, use this command and the bot will tell you what you need to do."
   },
