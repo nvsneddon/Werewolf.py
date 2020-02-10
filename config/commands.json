@@ -21,6 +21,10 @@
     "brief": "Cast a vote for the person",
     "help": "Cast your vote for the person of your choosing."
   },
+  "getleading":{
+    "brief": "Shows you who is in the lead",
+    "help": "Shows you who is in the lead."
+  },
   "investigate": {
     "aliases": ["see", "look", "suspect"],
     "brief": "Use this to investigate someone",
