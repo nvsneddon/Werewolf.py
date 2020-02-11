@@ -43,7 +43,7 @@ class Election(commands.Cog):
             if ctx.message.author.name not in self.__voted:
                 await ctx.send("You haven't voted for someone yet. You can't lock a vote for no one.")
                 return
-            await ctx.send(f"You have locked your vote for {self.__voted[ctx.message.author.display_name]}")
+            await ctx.send(f"You have locked your vote for {self.__voted[ctx.message.author.name]}")
             self.__locked.append(str(ctx.message.author))
             if len(self.__locked) == len(self.__people):
                 if len(self.__Leading) > 1:
