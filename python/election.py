@@ -50,8 +50,9 @@ class Election(commands.Cog):
                     await ctx.send(f"The vote is tied between {' and '.join(self.__Leading)}.\n"
                                    f"You can still change your mind and unlock your vote with !unlock. "
                                    f"If nighttime falls and there is still a tie, no one will die.")
-                await ctx.send("Everyone locked their votes in. Ending vote")
-                self.stop_vote()
+                else:
+                    await ctx.send("Everyone locked their votes in. Ending vote")
+                    self.stop_vote()
         else:
             await ctx.send("You've already locked your vote.")
 
