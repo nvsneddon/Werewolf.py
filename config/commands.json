@@ -39,6 +39,10 @@
     "brief": "Locks your vote so that you cannot change it.",
     "help": "Locks your vote so that you cannot change it. If everyone locks their vote the vote will be over early."
   },
+  "unlock": {
+    "brief": "Unlocks your vote.",
+    "help": "Use this if you locked your vote and you want to change your mind."
+  },
   "investigate": {
     "alias": ["see", "look", "suspect"],
     "brief": "Use this to investigate someone",

@@ -46,12 +46,17 @@ class Election(commands.Cog):
             await ctx.send(f"You have locked your vote for {self.__voted[ctx.message.author.name]}")
             self.__locked.append(str(ctx.message.author))
             if len(self.__locked) == len(self.__people):
-                await ctx.send("Everyone locked their votes in. Ending vote")
-                self.stop_vote()
+                if len(self.__Leading) > 1:
+                    await ctx.send(f"The vote is tied between {' and '.join(self.__Leading)}.\n"
+                                   f"You can still change your mind and unlock your vote with !unlock. "
+                                   f"If nighttime falls and there is still a tie, no one will die.")
+                else:
+                    await ctx.send("Everyone locked their votes in. Ending vote")
+                    self.stop_vote()
         else:
             await ctx.send("You've already locked your vote.")
 
-    @commands.command()
+    @commands.command(**command_parameters['unlock'])
     @is_vote_channel()
     async def unlock(self, ctx):
         if str(ctx.message.author) not in self.__locked:

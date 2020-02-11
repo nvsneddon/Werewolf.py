@@ -360,8 +360,7 @@ class Game(commands.Cog):
         else:
             x = result[0]
             dead_villager: Villager = self.findVillager(x)
-            print("The dead villager", dead_villager)
-            await self.die(guild, dead_villager)
+            await self.die(guild, dead_villager )
             dead_villager.die()
             lynched_message = werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await town_square_channel.send(lynched_message)
