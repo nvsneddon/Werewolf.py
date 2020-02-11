@@ -5,11 +5,11 @@ from discord.ext import commands
 from decorators import is_vote_channel
 from files import command_parameters
 from villager import Villager
-import asyncio
+
 
 class Election(commands.Cog):
 
-    def __init__(self, bot, future, people, voteleader=None, channel=None):
+    def __init__(self, bot, future, people, vote_leader=None, channel=None):
         self.__bot = bot
         self.__people: [Villager] = people
         self.__casted_votes = {}
@@ -18,8 +18,7 @@ class Election(commands.Cog):
         self.__future = future
         self.__result = None
         self.__channel = channel
-        self.__vote_leader = voteleader
-        print(self.__channel, "is the channel")
+        self.__vote_leader = vote_leader
         for x in people:
             self.__casted_votes[x.Name] = 0
 
@@ -89,7 +88,7 @@ class Election(commands.Cog):
     @is_vote_channel()
     async def showvote(self, ctx):
         voted_people = ""
-        for x in sorted(self.__voted, key=self.__voted.get):
+        for x in sorted(self.__voted, key=lambda x: self.__voted.get(x).lower()):
             v = self.findCandidate(x)
             x_villager = self.findCandidate(self.__voted[x])
             voted_people += "{} voted for {}\n".format(v.ProperName, x_villager.ProperName)
@@ -108,7 +107,6 @@ class Election(commands.Cog):
         await ctx.send(sorted_people)
 
     def findCandidate(self, name: str) -> Optional[Villager]:
-        print(name)
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
             name = name[3:-1]
         elif name[0:2] == "<@":
