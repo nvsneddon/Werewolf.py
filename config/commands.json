@@ -29,7 +29,7 @@
   "showvote" : {
     "alias": ["show_score"],
     "brief": "Shows you who everyone voted for.",
-    "help": "Shows you who everyone voted for."
+    "help": "Shows you who everyone voted for. For example:\nJane voted for Bob\nJohn voted for Jane\nBob voted for Jane"
   },
   "showscore": {
     "brief": "Shows you how many people voted for each person.",
