@@ -31,7 +31,6 @@ def is_vote_channel():
     return commands.check(predicate)
 
 
-
 def is_from_channel(channel_name: str):
     async def predicate(ctx):
         return ctx.channel == discord.utils.get(ctx.guild.channels, name=channel_name)

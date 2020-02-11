@@ -203,22 +203,6 @@ class Bot(commands.Cog):
 
     @commands.command()
     @is_admin()
-    async def testroles(self, ctx):
-        roles = [discord.utils.get(ctx.guild.roles, name="Not Playing"),
-                 discord.utils.get(ctx.guild.roles, name="Playing"), discord.utils.get(ctx.guild.roles, name="Dead"),
-                 discord.utils.get(ctx.guild.roles, name="Alive"), discord.utils.get(ctx.guild.roles, name="Mayor")]
-
-        for i in range(len(roles)):
-            for j in range(i + 1, len(roles)):
-                if roles[i].permissions == roles[j].permissions:
-                    print("These permissions are equal in these roles:",
-                          roles[i], roles[j])
-                else:
-                    print("These permissions are not equal in these roles:",
-                          roles[i], roles[j])
-
-    @commands.command()
-    @is_admin()
     async def addcategory(self, ctx):
         c = await ctx.guild.create_category_channel(channels_config["category-name"])
         for i, j in channels_config["category-permissions"].items():
