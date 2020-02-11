@@ -46,13 +46,6 @@ class Election(commands.Cog):
             await ctx.send(f"You have locked your vote for {self.__voted[ctx.message.author.name]}")
             self.__locked.append(str(ctx.message.author))
             if len(self.__locked) == len(self.__people):
-                # if len(self.__Leading) > 1:
-                #     mention = ctx.guild.default_role.mention
-                #     await ctx.send(f"{mention} There is a tie. I'll give you one to think about changing the vote. If it is still a tie, no one will die.\n"
-                #                    f"You can unlock your vote by using the !unlock command to change your vote")
-                #     await asyncio.sleep(300)
-                #     if len(self.__locked) != len(self.__people):
-                #         await ctx.send("")
                 await ctx.send("Everyone locked their votes in. Ending vote")
                 self.stop_vote()
         else:
@@ -65,6 +58,7 @@ class Election(commands.Cog):
             await ctx.send("You haven't locked your vote, so you can't unlock.")
         else:
             self.__locked.remove(str(ctx.message.author))
+            await ctx.send("Vote has been unlocked.")
 
     @commands.command(**command_parameters['vote'])
     @is_vote_channel()
