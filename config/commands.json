@@ -1,5 +1,5 @@
 {
-  "sendinstructions": {
+  "getinstructions": {
     "brief": "Use this to get instructions.",
     "help": "If you don't understand how to play the game, use this command and the bot will tell you what you need to do."
   },
@@ -13,32 +13,54 @@
     "brief": "Start a vote to kill someone.",
     "help": "Start the voting process. The vote will close at night time automatically if the vote hasn't been closed yet."
   },
-  "startvote": {
-    "brief": "Vote on people without lynching.",
-    "help": "This is very similar to the lynch voting, except that this vote doesn't kill anyone. Perfect for werewolves who want to talk about who they want to kill."
+  "startgame": {
+    "brief": "Starts a game of werewolf",
+    "help": "The parameters are numbers that represent the following roles:\nwerewolf, seer, bodyguard, cupid, hunter, baker, mason"
+  },
+  "vote": {
+    "alias": ["castvote"],
+    "brief": "Cast a vote for the person",
+    "help": "Cast your vote for the person of your choosing."
+  },
+  "showleading":{
+    "brief": "Shows you who is in the lead",
+    "help": "Shows you who is in the lead."
+  },
+  "showvote" : {
+    "alias": ["show_score"],
+    "brief": "Shows you who everyone voted for.",
+    "help": "Shows you who everyone voted for."
+  },
+  "showscore": {
+    "brief": "Shows you how many people voted for each person.",
+    "help": "Shows you how many people voted for each person."
+  },
+  "lock": {
+    "brief": "Locks your vote so that you cannot change it.",
+    "help": "Locks your vote so that you cannot change it. If everyone locks their vote the vote will be over early."
   },
   "investigate": {
-    "aliases": ["see", "look", "suspect"],
+    "alias": ["see", "look", "suspect"],
     "brief": "Use this to investigate someone",
     "help": "In order to investigate, you must also say who you want to investigate after invoking the command. You will see if that person is a werewolf or not. You can only investigate once per day. The ability to investigate renews every morning."
   },
   "shoot": {
-    "aliases": ["fireaway"],
+    "alias": ["fireaway"],
     "brief": "Shoot anyone of your choice before you die.",
     "help": "As you're now dying, you have the opportunity to kill someone. Just type this command along with the person's name and you'll be able to take someone down with you."
   },
   "kill": {
-    "aliases" :["murder"],
+    "alias" :["murder"],
     "brief": "Kill someone of your choice. Only once per night.",
     "help": "Because you're a werewolf, you get to kill someone every night as a team. Once someone uses this command, it can't be used until the beginning of the next night. Once nighttime is over, it's too late to kill someone."
   },
   "protect": {
-    "aliases": ["save", "defend", "shield"],
+    "alias": ["save", "defend", "shield"],
     "brief": "Use this to protect someone from the werewolves.",
     "help": "Protect anyone of your choice from the werewolves. Your ability renews every sunrise. Also remember, you can protect yourself, but you can't protect the same person twice in a row. "
   },
   "match": {
-    "aliases": ["matchlove", "makeinlove"],
+    "alias": ["matchlove", "makeinlove"],
     "brief": "Make two people fall in love",
     "help": "Make two people of your choice fall in love so strong that they'd rather die than live without their love. You only have two arrows, so don't mess up."
   },
@@ -59,7 +81,7 @@
     "brief": "Try it out"
   },
   "search": {
-    "brief": "Searches for the person on the server and displays their name"
+    "brief": "Searches for the person on the server"
   },
   "tickle": {
     "brief": "Don't you think about doing this!",

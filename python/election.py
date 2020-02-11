@@ -2,9 +2,10 @@ from typing import Optional
 
 from discord.ext import commands
 
-from decorators import is_vote_leader, is_vote_channel
+from decorators import is_vote_channel
+from files import command_parameters
 from villager import Villager
-
+import asyncio
 
 class Election(commands.Cog):
 
@@ -13,6 +14,7 @@ class Election(commands.Cog):
         self.__people: [Villager] = people
         self.__casted_votes = {}
         self.__voted = {}
+        self.__locked = []
         self.__future = future
         self.__result = None
         self.__channel = channel
@@ -21,15 +23,9 @@ class Election(commands.Cog):
         for x in people:
             self.__casted_votes[x.Name] = 0
 
-    @commands.command()
-    @is_vote_leader()
+    @commands.command(**command_parameters['showleading'])
     @is_vote_channel()
-    async def endvote(self, ctx):
-        self.stop_vote()
-
-    @commands.command()
-    @is_vote_channel()
-    async def getleading(self, ctx):
+    async def showleading(self, ctx):
         if len(self.__Leading) == 0:
             await ctx.send("No vote has been cast yet. No one is in the lead.")
             return
@@ -40,15 +36,42 @@ class Election(commands.Cog):
     def stop_vote(self):
         self.__future.set_result(self.__Leading)
 
-    @commands.command()
-    @is_vote_leader()
+    @commands.command(**command_parameters['lock'])
     @is_vote_channel()
-    async def cancelvote(self, ctx):
-        self.__future.set_result("cancel")
+    async def lock(self, ctx):
+        if str(ctx.message.author) not in self.__locked:
+            if ctx.message.author.name not in self.__voted:
+                await ctx.send("You haven't voted for someone yet. You can't lock a vote for no one.")
+                return
+            await ctx.send(f"You have locked your vote for {self.__voted[ctx.message.author.name]}")
+            self.__locked.append(str(ctx.message.author))
+            if len(self.__locked) == len(self.__people):
+                # if len(self.__Leading) > 1:
+                #     mention = ctx.guild.default_role.mention
+                #     await ctx.send(f"{mention} There is a tie. I'll give you one to think about changing the vote. If it is still a tie, no one will die.\n"
+                #                    f"You can unlock your vote by using the !unlock command to change your vote")
+                #     await asyncio.sleep(300)
+                #     if len(self.__locked) != len(self.__people):
+                #         await ctx.send("")
+                await ctx.send("Everyone locked their votes in. Ending vote")
+                self.stop_vote()
+        else:
+            await ctx.send("You've already locked your vote.")
 
-    @commands.command(aliases=["castvote"])
+    @commands.command()
+    @is_vote_channel()
+    async def unlock(self, ctx):
+        if str(ctx.message.author) not in self.__locked:
+            await ctx.send("You haven't locked your vote, so you can't unlock.")
+        else:
+            self.__locked.remove(str(ctx.message.author))
+
+    @commands.command(**command_parameters['vote'])
     @is_vote_channel()
     async def vote(self, ctx, voteestring: str):
+        if str(ctx.message.author) in self.__locked:
+            await ctx.send("You've already locked your vote")
+            return
         votee = self.findCandidate(voteestring)
         if votee is None:
             await ctx.send("Couldn't find the candidate's name. Please make sure there was no typo with your answer.")
@@ -63,12 +86,26 @@ class Election(commands.Cog):
         else:
             await ctx.send("You can't vote for that person. Please try again.")
 
-    @commands.command(aliases=["show_score"])
+    @commands.command(**command_parameters['showvote'])
+    @is_vote_channel()
+    async def showvote(self, ctx):
+        voted_people = ""
+        for x in sorted(self.__voted, key=self.__voted.get):
+            v = self.findCandidate(x)
+            x_villager = self.findCandidate(self.__voted[x])
+            voted_people += "{} voted for {}\n".format(v.ProperName, x_villager.ProperName)
+        if voted_people == "":
+            await ctx.send("No one voted yet.")
+        else:
+            await ctx.send(voted_people)
+
+    @commands.command(**command_parameters['showscore'])
     @is_vote_channel()
     async def showscore(self, ctx):
         sorted_people = ""
         for x in sorted(self.__casted_votes, key=self.__casted_votes.get, reverse=True):
-            sorted_people += "{}: {}\n".format(x, self.__casted_votes[x])
+            v = self.findCandidate(x)
+            sorted_people += "{}: {}\n".format(v.ProperName, self.__casted_votes[x])
         await ctx.send(sorted_people)
 
     def findCandidate(self, name: str) -> Optional[Villager]:
@@ -79,7 +116,7 @@ class Election(commands.Cog):
             name = name[2:-1]
         for x in self.__people:
             if x.Name.lower() == name.lower() or str(
-                    x.UserID) == name.lower() or x.DiscordTag == name.lower() or x.NickName == name.lower():
+                    x.UserID).lower() == name.lower() or x.DiscordTag.lower() == name.lower() or x.NickName.lower() == name.lower():
                 return x
         return None
 
@@ -93,16 +130,18 @@ class Election(commands.Cog):
 
     @property
     def __Leading(self):
-        maxTally = 0
+        max_tally = 0
         leading = []
         for name, votes in self.__casted_votes.items():
             if votes == 0:
                 continue
-            if maxTally < votes:
-                leading = [name]
-                maxTally = votes
-            elif maxTally == votes:
-                leading.append(name)
+            if max_tally < votes:
+                v = self.findCandidate(name)
+                leading = [v.Mention]
+                max_tally = votes
+            elif max_tally == votes:
+                v = self.findCandidate(name)
+                leading.append(v.Mention)
         return leading
 
     @property
