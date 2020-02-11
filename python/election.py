@@ -88,10 +88,21 @@ class Election(commands.Cog):
     @is_vote_channel()
     async def showvote(self, ctx):
         voted_people = ""
+        who_voted = {}
         for x in sorted(self.__voted, key=lambda x: self.__voted.get(x).lower()):
+
+            person = self.__voted[x]
+            if person not in who_voted:
+                who_voted[person] = []
+            who_voted[person].append(x)
             v = self.findCandidate(x)
-            x_villager = self.findCandidate(self.__voted[x])
-            voted_people += "{} voted for {}\n".format(v.ProperName, x_villager.ProperName)
+            x_villager = self.findCandidate(person)
+            # voted_people += "{} voted for {}\n".format(v.ProperName, x_villager.ProperName)
+        for x, y in who_voted.items():
+            voting_list = [self.findCandidate(a).ProperName for a in y]
+            if len(voting_list) > 1:
+                voting_list[-1] = 'and ' + voting_list[-1]
+            voted_people += ', '.join(voting_list) + f' voted for {self.findCandidate(x).ProperName}\n'
         if voted_people == "":
             await ctx.send("No one voted yet.")
         else:
