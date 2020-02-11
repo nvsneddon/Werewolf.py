@@ -84,14 +84,13 @@ class Bot(commands.Cog):
         await ctx.author.edit(roles=[])
         await ctx.send(f"{ctx.author.mention} is not playing.")
 
-    @commands.command(pass_context=True)
+    @commands.command(**command_parameters["startgame"])
     @is_admin()
     async def startgame(self, ctx, *args: int):
         with ctx.typing():
             game_future = self.__bot.loop.create_future()
             alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
             playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
-            roles_assignment = [alive_role]
             if len(args) == 0:
                 await ctx.send("Please add game parameters to the game")
                 return
@@ -103,7 +102,7 @@ class Bot(commands.Cog):
                 await ctx.send("You gave out too many roles for the number of people. Please try again.")
                 return
             for player in players:
-                await player.edit(roles=roles_assignment)
+                await player.edit(roles=[alive_role])
             game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=False)
             self.__bot.add_cog(game_cog)
             self.__game = True
@@ -116,11 +115,12 @@ class Bot(commands.Cog):
                         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                         await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
-        await ctx.send("Let the games begin!")
-        await game_future
-        self.__game = False
         town_square_id = getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
+        await town_square_channel.send("Let the games begin!")
+        await ctx.send("The game has started!")
+        await game_future
+        self.__game = False
         winner = game_future.result()
         if winner == "werewolves":
             await town_square_channel.send("Werewolves outnumber the villagers. Werewolves won.")
@@ -158,15 +158,7 @@ class Bot(commands.Cog):
                 channel = discord.utils.get(ctx.guild.channels, name=x)
                 await channel.set_permissions(member, overwrite=None)
 
-    @commands.command(**command_parameters['search'])
-    async def search(self, ctx, *args):
-        user = findPerson(ctx, args)
-        if user is not None:
-            await ctx.send(user.display_name)
-        else:
-            await ctx.send("That person has not been found")
-
-    @commands.command()
+    @commands.command(brief="Exits the game")
     @is_admin()
     async def exit(self, ctx):
         with ctx.typing():

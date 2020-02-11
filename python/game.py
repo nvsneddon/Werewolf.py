@@ -253,7 +253,6 @@ class Game(commands.Cog):
         await ctx.send("You've protected {}".format(the_protected_one.Mention))
         the_protected_one.Protected = True
         self.__last_protected = person_name
-        protector.UsedAbility = True
         protected_member = ctx.guild.get_member_named(the_protected_one.DiscordTag)
         # if not the_protected_one.Werewolf:
         # await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
@@ -330,39 +329,6 @@ class Game(commands.Cog):
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
 
-    # @commands.command(**command_parameters['startvote'])
-    # async def startvote(self, ctx):
-    #     if self.__election_cog is not None:
-    #         await ctx.send("There's another vote happening. Only one electoion can happen at a time.")
-    #         return
-    #     author = ctx.message.author
-    #     future = self.__bot.loop.create_future()
-    #     to_vote = []
-    #     for i in self.__players:
-    #         discordPerson = ctx.message.guild.get_member_named(i.DiscordTag)
-    #         alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
-    #         if alive_role in discordPerson.roles:
-    #             to_vote.append(i)
-    #     self.__election_cog = Election(self.__bot, future, to_vote, voteleader=str(author), channel=ctx.channel)
-    #     self.__bot.add_cog(self.__election_cog)
-    #     await ctx.send("Voting time")
-    #     await future
-    #     self.__bot.remove_cog("Election")
-    #     self.__election_cog = None
-    #     result = future.result()
-    #     if result == "cancel":
-    #         await ctx.send("Vote has been cancelled")
-    #         return
-    #     await ctx.send("The voting has closed.")
-    #     if len(result) == 0:
-    #         await ctx.send("No results")
-    #     elif len(result) == 1:
-    #         await ctx.send(f"The winner is: {result[0]}")
-    #     else:
-    #         await ctx.send("The winners are:" + '\n' + '\n'.join(result))
-
-    # @commands.command(**command_parameters["startlynch"])
-
     async def startvote(self, guild):
         self.__lynching = True
         town_square_id = getChannelId("town-square")
@@ -389,6 +355,8 @@ class Game(commands.Cog):
         self.__has_lynched = True
         if len(result) > 1:
             await town_square_channel.send("You couldn't decide on only one person. No one died.")
+        elif len(result) == 0:
+            await town_square_channel.send("All of you guys forgot to vote. Too bad!")
         else:
             x = result[0]
             dead_villager: Villager = self.findVillager(x)
@@ -410,6 +378,7 @@ class Game(commands.Cog):
             self.__daysleft -= 1
             if self.Winner != "":
                 self.__game_future.set_result(self.Winner)
+                return
 
         for x in self.__players:
             x.Protected = False
