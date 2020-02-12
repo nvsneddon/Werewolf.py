@@ -89,8 +89,7 @@ class Election(commands.Cog):
     async def showvote(self, ctx):
         voted_people = ""
         who_voted = {}
-        for x in sorted(self.__voted, key=lambda x: self.__voted.get(x).lower()):
-
+        for x in sorted(self.__voted, key=self.__casted_votes.get, reverse=True):
             person = self.__voted[x]
             if person not in who_voted:
                 who_voted[person] = []
@@ -98,11 +97,15 @@ class Election(commands.Cog):
             v = self.findCandidate(x)
             x_villager = self.findCandidate(person)
             # voted_people += "{} voted for {}\n".format(v.ProperName, x_villager.ProperName)
-        for x, y in who_voted.items():
+        for x in sorted(who_voted, key=self.__casted_votes.get, reverse=True):
+            y = who_voted[x]
             voting_list = [self.findCandidate(a).ProperName for a in y]
-            if len(voting_list) > 1:
-                voting_list[-1] = 'and ' + voting_list[-1]
-            voted_people += ', '.join(voting_list) + f' voted for {self.findCandidate(x).ProperName}\n'
+            # if len(voting_list) > 1:
+            #     voting_list[-1] = 'and ' + voting_list[-1]
+            # voted_people += ', '.join(voting_list) + f' voted for {self.findCandidate(x).ProperName}\n'
+            voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for {self.findCandidate(x).ProperName}"
+            voted_people += "\n\t"
+            voted_people += '\n\t'.join(voting_list) + '\n'
         if voted_people == "":
             await ctx.send("No one voted yet.")
         else:
