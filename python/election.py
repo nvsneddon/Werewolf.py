@@ -111,14 +111,14 @@ class Election(commands.Cog):
         else:
             await ctx.send(voted_people)
 
-    @commands.command(**command_parameters['showscore'])
-    @is_vote_channel()
-    async def showscore(self, ctx):
-        sorted_people = ""
-        for x in sorted(self.__casted_votes, key=self.__casted_votes.get, reverse=True):
-            v = self.findCandidate(x)
-            sorted_people += "{}: {}\n".format(v.ProperName, self.__casted_votes[x])
-        await ctx.send(sorted_people)
+    # @commands.command(**command_parameters['showscore'])
+    # @is_vote_channel()
+    # async def showscore(self, ctx):
+    #     sorted_people = ""
+    #     for x in sorted(self.__casted_votes, key=self.__casted_votes.get, reverse=True):
+    #         v = self.findCandidate(x)
+    #         sorted_people += "{}: {}\n".format(v.ProperName, self.__casted_votes[x])
+    #     await ctx.send(sorted_people)
 
     def findCandidate(self, name: str) -> Optional[Villager]:
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @

@@ -27,9 +27,9 @@
     "help": "Shows you who is in the lead."
   },
   "showvote" : {
-    "alias": ["show_score"],
+    "alias": ["showscore"],
     "brief": "Shows you who everyone voted for.",
-    "help": "Shows you who everyone voted for. For example:\nJane voted for Bob\nJohn voted for Jane\nBob voted for Jane"
+    "help": "Shows you who everyone voted for and how many votes everyone got"
   },
   "showscore": {
     "brief": "Shows you how many people voted for each person.",
