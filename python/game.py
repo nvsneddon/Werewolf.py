@@ -369,7 +369,9 @@ class Game(commands.Cog):
 
     def cog_unload(self):
         schedule.clear("game")
-        # self.__bot.remove_cog("Election")
+        self.__bot.remove_cog("Election")
+        if self.__election_cog is not None:
+            self.__bot.remove_cog("Election")
         return super().cog_unload()
 
     def daytime(self):
