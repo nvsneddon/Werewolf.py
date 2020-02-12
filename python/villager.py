@@ -64,20 +64,6 @@ class Villager:
     def Werewolf(self) -> bool:
         return self.__is_werewolf
 
-    # @property
-    # def UsedAbility(self):
-    #     return self.__usedAbility
-    #
-    # def useAbility(self):
-    #     if self.__usedAbility:
-    #         return False
-    #     self.__usedAbility = True
-    #     return True
-
-    # @UsedAbility.setter
-    # def UsedAbility(self, value):
-    #     self.__usedAbility = value
-
     @Protected.setter
     def Protected(self, value):
         self.__protected = value

@@ -54,7 +54,7 @@
             "You are a person living on the outskirts of town. Your greatness is loved by the community.",
             "You as a villager have to save yourselves from the werewolves.",
             "Though you are ordinary, that doesn't mean that you have to be an ordinary player.",
-            "Help your team win. Find out which one of your friends can andn can't be trusted.",
+            "Help your team win. Find out which one of your friends can and can't be trusted.",
             "Good luck and don't die!"
         ],
         "killed": "The nice villager {} has died. This person will surely be missed.",
@@ -132,7 +132,7 @@
         "town-square": [
             "This place is for everyone to chat and stuff here. We also hold our elections here.",
             "If you need help, please type !help or !help [Command] for extra guidance.",
-            "You can always just send the narrator (me) a personal message and I'll pass it onto him anonymously.",
+            "You can always just send the narrator (me) a personal message and I'll pass it onto Nathaniel anonymously.",
             "He'll be able to respond to you quickly."
         ],
         "werewolves":  [
