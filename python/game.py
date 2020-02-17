@@ -58,7 +58,7 @@ class Game(commands.Cog):
         self.__lynching = False
         self.__has_lynched = False
         self.__last_protected = None
-        self.__daysleft = 4
+        self.__daysleft = 6
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__running = True
         self.__numWerewolves = 0
