@@ -56,26 +56,6 @@ class Election(commands.Cog):
             if votes > len(self.__casted_votes)/2:
                 await ctx.send("Half of the people locked their votes for one person, so the voting will end now.")
                 self.stop_vote()
-            # if len(self.__locked) == len(self.__people):
-            #     if len(self.__Leading) > 1:
-            #         await ctx.send(f"The vote is tied between {' and '.join(self.__Leading)}.\n"
-            #                        f"You can still change your mind and unlock your vote with !unlock. "
-            #                        f"If nighttime falls and there is still a tie, no one will die.")
-            #     else:
-            #         await ctx.send("Everyone locked their votes in. Ending vote")
-            #         self.stop_vote()
-            # who_voted = {}
-            # for i in self.__locked:
-            #     who_voted = {}
-            #     for x in sorted(self.__voted, key=self.__casted_votes.get, reverse=True):
-            #         person = self.__voted[x]
-            #         if person not in who_voted:
-            #             who_voted[person] = []
-            #         who_voted[person].append(x)
-            #     who_voted = sorted(who_voted, key=len, reverse=True)
-            #     if len(who_voted[0]) > len(self.__casted_votes) / 2:
-            #         await ctx.send("Half of the all of the votes are locked to convict one person. Ending vote")
-            #         self.stop_vote()
         else:
             await ctx.send("You've already locked your vote.")
 
@@ -121,9 +101,6 @@ class Election(commands.Cog):
         for x in sorted(who_voted, key=self.__casted_votes.get, reverse=True):
             y = who_voted[x]
             voting_list = [self.findCandidate(a).ProperName for a in y]
-            # if len(voting_list) > 1:
-            #     voting_list[-1] = 'and ' + voting_list[-1]
-            # voted_people += ', '.join(voting_list) + f' voted for {self.findCandidate(x).ProperName}\n'
             voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for {self.findCandidate(x).ProperName}"
             voted_people += "\n\t"
             voted_people += '\n\t'.join(voting_list) + '\n'
@@ -131,15 +108,6 @@ class Election(commands.Cog):
             await ctx.send("No one voted yet.")
         else:
             await ctx.send(voted_people)
-
-    # @commands.command(**command_parameters['showscore'])
-    # @is_vote_channel()
-    # async def showscore(self, ctx):
-    #     sorted_people = ""
-    #     for x in sorted(self.__casted_votes, key=self.__casted_votes.get, reverse=True):
-    #         v = self.findCandidate(x)
-    #         sorted_people += "{}: {}\n".format(v.ProperName, self.__casted_votes[x])
-    #     await ctx.send(sorted_people)
 
     def findCandidate(self, name: str) -> Optional[Villager]:
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
