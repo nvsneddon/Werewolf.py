@@ -27,6 +27,11 @@ def update_channels(server, channels):
     else:
         print("Oops!")
 
+def deleteChannels(server):
+    mydb = myclient["games"]
+    mycol = mydb["channels"]
+    query = {"server": server}
+    mycol.delete_one(query)
 
 def getChannels(server):
     mydb = myclient["games"]

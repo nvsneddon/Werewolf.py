@@ -5,6 +5,7 @@ from decorators import is_admin, findPerson
 from election import Election
 from game import Game
 import asyncio
+import database
 import os
 import json
 import files
@@ -217,14 +218,17 @@ class Bot(commands.Cog):
             async for x in (channel.history(limit=1)):
                 await x.pin()
 
-        try:
-            dirname = os.path.dirname(__file__)
-            f = open(os.path.join(dirname, '../config/channel_id_list.json'), "w")
-            f.write(json.dumps(channel_id_dict))
-            f.close()
-        except:
-            print("Channel_id_list.json not found. Exiting now!")
-            exit()
+
+        database.update_channels(server=ctx.guild.id, channels=channel_id_dict)
+
+        # try:
+        #     dirname = os.path.dirname(__file__)
+        #     f = open(os.path.join(dirname, '../config/channel_id_list.json'), "w")
+        #     f.write(json.dumps(channel_id_dict))
+        #     f.close()
+        # except:
+        #     print("Channel_id_list.json not found. Exiting now!")
+        #     exit()
 
         for i, j in files.channels_config["channel-permissions"].items():
             ch = discord.utils.get(c.channels, name=i)
@@ -244,7 +248,8 @@ class Bot(commands.Cog):
             await i.delete()
         await c.delete()
 
-        dirname = os.path.dirname(__file__)
-        path = os.path.join(dirname, '../config/channel_id_list.json')
-        if os.path.exists(path):
-            os.remove(path)
+        database.deleteChannels(ctx.guild.id)
+        # dirname = os.path.dirname(__file__)
+        # path = os.path.join(dirname, '../config/channel_id_list.json')
+        # if os.path.exists(path):
+        #     os.remove(path)
