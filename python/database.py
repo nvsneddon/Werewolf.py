@@ -13,10 +13,8 @@ def update_channels(server, channels):
 
     query = {"server": server}
     if mycol.count_documents(query) == 1:
-        # doc = mycol.find_one(query)
         mycol.update_one(query, {"$set": {"channels": channels}})
 
-        # print(doc["channels"])
     elif mycol.count_documents(query) == 0:
         doc = {
             "server": server,
@@ -26,6 +24,7 @@ def update_channels(server, channels):
         print(x.inserted_id)
     else:
         print("Oops!")
+        raise ValueError
 
 def deleteChannels(server):
     mydb = myclient["games"]
@@ -54,8 +53,3 @@ if __name__ == "__main__":
     for x, y in getChannels(1400).items():
         print(x, y)
 
-    # query = {"server": 25}
-    # x = mycol.find(query)
-    # print(mycol.count_documents(query))
-    # for i in x:
-    #     print(i)
