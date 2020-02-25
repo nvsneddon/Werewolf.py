@@ -44,14 +44,38 @@ class Election(commands.Cog):
                 return
             await ctx.send(f"You have locked your vote for {self.__voted[ctx.message.author.name]}")
             self.__locked.append(str(ctx.message.author))
-            if len(self.__locked) == len(self.__people):
-                if len(self.__Leading) > 1:
-                    await ctx.send(f"The vote is tied between {' and '.join(self.__Leading)}.\n"
-                                   f"You can still change your mind and unlock your vote with !unlock. "
-                                   f"If nighttime falls and there is still a tie, no one will die.")
+            vote_counts = {}
+            for i in self.__locked:
+                votee = self.__voted[self.findCandidate(i).Name]
+                if votee in vote_counts:
+                    vote_counts[votee] += 1
                 else:
-                    await ctx.send("Everyone locked their votes in. Ending vote")
-                    self.stop_vote()
+                    vote_counts[votee] = 1
+            vote_counts_sorted_keys = sorted(vote_counts, key=vote_counts.get, reverse=True)
+            votes = vote_counts[vote_counts_sorted_keys[0]]
+            if votes > len(self.__casted_votes)/2:
+                await ctx.send("Half of the people locked their votes for one person, so the voting will end now.")
+                self.stop_vote()
+            # if len(self.__locked) == len(self.__people):
+            #     if len(self.__Leading) > 1:
+            #         await ctx.send(f"The vote is tied between {' and '.join(self.__Leading)}.\n"
+            #                        f"You can still change your mind and unlock your vote with !unlock. "
+            #                        f"If nighttime falls and there is still a tie, no one will die.")
+            #     else:
+            #         await ctx.send("Everyone locked their votes in. Ending vote")
+            #         self.stop_vote()
+            # who_voted = {}
+            # for i in self.__locked:
+            #     who_voted = {}
+            #     for x in sorted(self.__voted, key=self.__casted_votes.get, reverse=True):
+            #         person = self.__voted[x]
+            #         if person not in who_voted:
+            #             who_voted[person] = []
+            #         who_voted[person].append(x)
+            #     who_voted = sorted(who_voted, key=len, reverse=True)
+            #     if len(who_voted[0]) > len(self.__casted_votes) / 2:
+            #         await ctx.send("Half of the all of the votes are locked to convict one person. Ending vote")
+            #         self.stop_vote()
         else:
             await ctx.send("You've already locked your vote.")
 
@@ -94,9 +118,6 @@ class Election(commands.Cog):
             if person not in who_voted:
                 who_voted[person] = []
             who_voted[person].append(x)
-            v = self.findCandidate(x)
-            x_villager = self.findCandidate(person)
-            # voted_people += "{} voted for {}\n".format(v.ProperName, x_villager.ProperName)
         for x in sorted(who_voted, key=self.__casted_votes.get, reverse=True):
             y = who_voted[x]
             voting_list = [self.findCandidate(a).ProperName for a in y]
@@ -134,6 +155,10 @@ class Election(commands.Cog):
     @property
     def VoteLeader(self):
         return self.__vote_leader
+
+    @property
+    def Locked(self):
+        return self.__locked
 
     @property
     def VoteChannel(self):

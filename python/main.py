@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from files import config, writeJsonToConfig, readJsonFromConfig
+import files
 from bot import Bot
 
 bot = commands.Bot(command_prefix='!')
@@ -15,9 +15,9 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):
-    writeJsonToConfig("server_config.json", {"server_id": str(guild.id)})
+    files.writeJsonToConfig("server_config.json", {"server_id": str(guild.id)})
     if not discord.utils.get(guild.channels, name="bot-admin"):
-        permissions = readJsonFromConfig('permissions.json')
+        permissions = files.readJsonFromConfig('permissions.json')
         overwrite = {
             guild.default_role: discord.PermissionOverwrite(**permissions['none'])
         }
@@ -50,4 +50,4 @@ async def on_message(message):
 
 
 if __name__ == "__main__":
-    bot.run(config["token"])
+    bot.run(files.config["token"])
