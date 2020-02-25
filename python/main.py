@@ -2,18 +2,18 @@ import discord
 from discord.ext import commands
 
 import files
-from bot import Bot
+import bot
 
-bot = commands.Bot(command_prefix='!')
+client = commands.Bot(command_prefix='!')
 
 
-@bot.event
+@client.event
 async def on_ready():
-    bot.add_cog(Bot(bot))
+    client.add_cog(bot.Bot(client))
     print("The werewolves are howling!")
 
 
-@bot.event
+@client.event
 async def on_guild_join(guild):
     files.writeJsonToConfig("server_config.json", {"server_id": str(guild.id)})
     if not discord.utils.get(guild.channels, name="bot-admin"):
@@ -30,24 +30,24 @@ async def on_guild_join(guild):
         # TODO Test to see if this works before deploying to other servers
 
 
-@bot.event
+@client.event
 async def on_message(message):
-    if message.guild is None and (message.author != bot.user):
+    if message.guild is None and (message.author != client.user):
         if message.content.startswith("!respond"):
             delimiter = '#'
             response = message.content.split(delimiter)
             user_id = response[1]
             response_message = delimiter.join(response[2:])
             await message.author.send("The message has been sent!")
-            await bot.get_guild(523892810319921157).get_member(int(user_id)).send(
+            await client.get_guild(523892810319921157).get_member(int(user_id)).send(
                 f"Response from Nathaniel: {response_message}")
         else:
             question = message.content + "\n" + str(message.author.id)
             await message.author.send("Thanks for submitting. Your question will be answered shortly.")
-            await bot.get_guild(523892810319921157).get_member(352141925635063818).send(question)
+            await client.get_guild(523892810319921157).get_member(352141925635063818).send(question)
     else:
-        await bot.process_commands(message)
+        await client.process_commands(message)
 
 
 if __name__ == "__main__":
-    bot.run(files.config["token"])
+    client.run(files.config["token"])

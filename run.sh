@@ -2,7 +2,6 @@
 
 # shellcheck disable=SC2164
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-echo $SCRIPTPATH
 
 cd "$SCRIPTPATH"
 if [[ -f "./venv/bin/activate" ]]
