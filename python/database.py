@@ -3,8 +3,7 @@ import files
 
 database_config = files.readJsonFromConfig("../config/database_config.json")
 
-myclient = pymongo.MongoClient(
-    f"mongodb+srv://{database_config['user']}:{database_config['password']}@werewolf-game-cluster-xxi0b.mongodb.net/test?retryWrites=true&w=majority")
+myclient = pymongo.MongoClient(database_config["url"].format(database_config["user"], database_config["password"]))
 
 
 def update_channels(server, channels):
