@@ -2,6 +2,7 @@
 config/discord-config.json
 config/channel_id_list.json
 config/server_config.json
+config/database_config.json
 python/test.py
 
 # Byte-compiled / optimized / DLL files
