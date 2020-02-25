@@ -23,7 +23,6 @@ class Election(commands.Cog):
             self.__casted_votes[x.Name] = 0
 
     @commands.command(**command_parameters['showleading'])
-    @is_vote_channel()
     async def showleading(self, ctx):
         if len(self.__Leading) == 0:
             await ctx.send("No vote has been cast yet. No one is in the lead.")
@@ -89,7 +88,6 @@ class Election(commands.Cog):
             await ctx.send("You can't vote for that person. Please try again.")
 
     @commands.command(**command_parameters['showvote'])
-    @is_vote_channel()
     async def showvote(self, ctx):
         voted_people = ""
         who_voted = {}
