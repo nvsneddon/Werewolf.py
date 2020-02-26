@@ -117,7 +117,7 @@ class Bot(commands.Cog):
                         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                         await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
-        town_square_id = files.getChannelId("town-square")
+        town_square_id = files.getChannelId("town-square", ctx.guild.id)
         town_square_channel = self.__bot.get_channel(town_square_id)
         await town_square_channel.send("Let the games begin!")
         await ctx.send("The game has started!")

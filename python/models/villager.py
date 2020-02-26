@@ -1,18 +1,14 @@
 import mongothon
-import files
-import pymongo
 
-database_config = files.readJsonFromConfig("../config/database_config.json")
-
-my_client = pymongo.MongoClient(database_config["url"].format(database_config["user"], database_config["password"]))
-my_db = my_client["games"]
+from models.dbconnect import my_db
 
 villager_schema = mongothon.Schema({
     "name": {"type": str, "required": True},
-    "alive": {"type": bool, "required": True},
+    "server": {"type": int, "required": True},
+    "alive": {"type": bool, "default": True},
     "character": {"type": str, "required": True},
     "werewolf": {"type": bool, "required": True},
-    "inlove": {"type": bool, "required": True}
+    "inlove": {"type": bool, "default": False}
 })
 
 Villager = mongothon.create_model(villager_schema, my_db['villager'])

@@ -9,11 +9,13 @@ import schedule
 from discord.ext import commands
 
 import decorators
-from election import Election
+import election
+import models.election
 import files
 from villager import Villager
 from abilities import Abilities
 from cipher import Cipher
+from exceptions import DocumentFoundException
 
 
 
@@ -322,7 +324,7 @@ class Game(commands.Cog):
         await ctx.send("{} and {} are in love now".format(person1, person2))
         self.__bot.remove_command("match")
         read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
-        love_channel = ctx.guild.get_channel(files.getChannelId("lovebirds"))
+        love_channel = ctx.guild.get_channel(files.getChannelId("lovebirds", ctx.guild.id))
         for x in self.__inlove:
             await love_channel.set_permissions(ctx.guild.get_member_named(x.DiscordTag),
                                                overwrite=discord.PermissionOverwrite(**read_write_permission))
@@ -331,7 +333,7 @@ class Game(commands.Cog):
 
     async def startvote(self, guild):
         self.__lynching = True
-        town_square_id = files.getChannelId("town-square")
+        town_square_id = files.getChannelId("town-square", guild.id)
         town_square_channel = guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
         to_vote = []
@@ -340,10 +342,21 @@ class Game(commands.Cog):
             alive_role = discord.utils.get(guild.roles, name="Alive")
             if alive_role in discordPerson.roles:
                 to_vote.append(i)
-        self.__election_cog = Election(self.__bot, future, to_vote, channel=town_square_channel)
+        m = models.election.Election.find_one({"server": guild.id})
+        if m is not None:
+            raise DocumentFoundException
+        m = models.election.Election({
+            "server": guild.id,
+            "people": to_vote,
+            "future": future,
+            "channel": town_square_channel.id
+        })
+        m.save()
+        self.__election_cog = election.Election(self.__bot, future, to_vote, channel=town_square_channel)
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("You can now vote to lynch.")
         await future
+        m.remove()
         self.__lynching = False
         self.__bot.remove_cog("Election")
         self.__election_cog = None
@@ -356,7 +369,6 @@ class Game(commands.Cog):
         if len(result) == 0:
             await town_square_channel.send("All of you guys forgot to vote. Too bad!")
         else:
-
             x = random.choice(result)
             dead_villager: Villager = self.findVillager(x)
             if len(result) > 1:

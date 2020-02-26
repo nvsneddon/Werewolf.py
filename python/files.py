@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+import models.channels
 
 dirname = os.path.dirname(__file__)
 try:
@@ -95,18 +96,19 @@ def fileFoundInConfig(filename: str) -> bool:
     dir_name = os.path.dirname(__file__)
     return os.path.exists(os.path.join(dir_name, "../config/" + filename))
 
+#
+# def get_channel_ids() -> dict:
+#     try:
+#         dir_name = os.path.dirname(__file__)
+#         f = open(os.path.join(dir_name, "../config/channel_id_list.json"))
+#         readfile = json.loads(f.read())
+#         f.close()
+#         return readfile
+#
+#     except:
+#         return {}
 
-def get_channel_ids() -> dict:
-    try:
-        dir_name = os.path.dirname(__file__)
-        f = open(os.path.join(dir_name, "../config/channel_id_list.json"))
-        readfile = json.loads(f.read())
-        f.close()
-        return readfile
 
-    except:
-        return {}
-
-
-def getChannelId(channel: str) -> int:
-    return get_channel_ids()[channel]
+def getChannelId(channel: str, server=681696629224505376) -> int:
+    x = models.channels.Channels.find_one({"server": server})
+    return x["channels"][channel]
