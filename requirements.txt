@@ -9,9 +9,12 @@ dnspython==1.16.0
 dnspython3==1.15.0
 idna==2.9
 idna-ssl==1.1.0
+inflection==0.2.0
+Mongothon3==0.7.20
 multidict==4.7.5
 pymongo==3.10.1
 schedule==0.6.0
+Schemer3==0.2.11.post1
 typing-extensions==3.7.4.1
 websockets==8.1
 yarl==1.4.2
