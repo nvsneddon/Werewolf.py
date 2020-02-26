@@ -46,7 +46,7 @@ async def on_message(message):
     #         await message.author.send("Thanks for submitting. Your question will be answered shortly.")
     #         await bot.get_guild(523892810319921157).owner.send(question)
     # else:
-    await bot.process_commands(message)
+    await client.process_commands(message)
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ from election import Election
 from game import Game
 import asyncio
 import database
+import models.channels
 import os
 import json
 import files
@@ -219,16 +220,17 @@ class Bot(commands.Cog):
                 await x.pin()
 
 
-        database.update_channels(server=ctx.guild.id, channels=channel_id_dict)
+        # database.update_channels(server=ctx.guild.id, channels=channel_id_dict)
+        channels = models.channels.Channels.find_one({"server": ctx.guild.id})
+        if channels is None:
+            channels = models.channels.Channels({
+                "server": ctx.guild.id,
+                "channels": channel_id_dict
+            })
+            channels.save()
+        else:
+            channels.update_instance({"channels": channel_id_dict})
 
-        # try:
-        #     dirname = os.path.dirname(__file__)
-        #     f = open(os.path.join(dirname, '../config/channel_id_list.json'), "w")
-        #     f.write(json.dumps(channel_id_dict))
-        #     f.close()
-        # except:
-        #     print("Channel_id_list.json not found. Exiting now!")
-        #     exit()
 
         for i, j in files.channels_config["channel-permissions"].items():
             ch = discord.utils.get(c.channels, name=i)
@@ -248,8 +250,5 @@ class Bot(commands.Cog):
             await i.delete()
         await c.delete()
 
-        database.deleteChannels(ctx.guild.id)
-        # dirname = os.path.dirname(__file__)
-        # path = os.path.join(dirname, '../config/channel_id_list.json')
-        # if os.path.exists(path):
-        #     os.remove(path)
+        channel = models.channels.Channels.find_one({"server": ctx.guild.id})
+        channel.remove()
