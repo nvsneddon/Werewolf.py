@@ -17,6 +17,13 @@ if __name__ == "__main__":
             "yeah": 26
         }
     })
-    # x = Channels.find_one({"server": 123456})
-    # x.remove()
+    test.save()
+    x = Channels.find_one({"server": 123456})
+    print(type(x['_id']))
+    id_string = str(x['_id'])
+    print(id_string)
+    print(x)
+    y = Channels.find_by_id(id_string)
+    print("The thing is", y)
+    x.remove()
     # test.save()

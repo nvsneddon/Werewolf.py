@@ -1,6 +1,8 @@
 import models.villager
 from exceptions import DocumentFoundException
 
+
+
 class Villager:
 
     def __init__(self, discord_tag: str, character: str, id: int, nickname=None, server=0):

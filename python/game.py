@@ -33,6 +33,26 @@ class Game(commands.Cog):
     # roles is a list of numbers of all of the characters that will be playing
     # raises ValueError Exception when too many roles are handed out
 
+    async def die_from_db(self, villager_tag: str, server: int):
+        v = models.villager.Villager.find_one({
+            "server": server,
+            "name": villager_tag
+        })
+
+        guild = self.__bot.get_guild(server)
+        member = guild.get_member_named(villager_tag)
+        if v["werewolf"]:
+            self.__numWerewolves -= 1
+        else:
+            self.__numVillagers -= 1
+        if v["character"] == "hunter":
+            self.__hunter = True
+            self.__pending_death = villager_tag
+        v.update_instance({"alive": False})
+        if v["character"] == 'baker':
+            self.__bakerdead = True
+
+
     def timer(self):
         while not self.schedstop.is_set():
             schedule.run_pending()
@@ -342,16 +362,16 @@ class Game(commands.Cog):
             alive_role = discord.utils.get(guild.roles, name="Alive")
             if alive_role in discordPerson.roles:
                 to_vote.append(i)
-        m = models.election.Election.find_one({"server": guild.id})
-        if m is not None:
-            raise DocumentFoundException
-        m = models.election.Election({
-            "server": guild.id,
-            "people": to_vote,
-            "future": future,
-            "channel": town_square_channel.id
-        })
-        m.save()
+        # m = models.election.Election.find_one({"server": guild.id})
+        # if m is not None:
+        #     raise DocumentFoundException
+        # m = models.election.Election({
+        #     "server": guild.id,
+        #     "people": to_vote,
+        #     "future": future,
+        #     "channel": town_square_channel.id
+        # })
+        # m.save()
         self.__election_cog = election.Election(self.__bot, future, to_vote, channel=town_square_channel)
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("You can now vote to lynch.")
