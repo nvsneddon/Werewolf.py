@@ -21,7 +21,7 @@ from cipher import Cipher
 class Game(commands.Cog):
     __cipher: typing.Optional[Cipher]
     __last_protected: str
-    __daysleft: int
+    __bakerdays: int
     __bakerdead: bool
     __voted: bool
     __inlove: typing.List[Villager]
@@ -58,7 +58,8 @@ class Game(commands.Cog):
         self.__lynching = False
         self.__has_lynched = False
         self.__last_protected = None
-        self.__daysleft = 6
+        self.__bakerdays = 0
+        self.__starving_people = []
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__running = True
         self.__numWerewolves = 0
@@ -152,6 +153,7 @@ class Game(commands.Cog):
     async def die(self, guild, target: Villager):
         if target.die():
             self.__numWerewolves -= 1
+            self.__bakerdays -= 1
         else:
             self.__numVillagers -= 1
         if target.Character == "hunter":
@@ -160,7 +162,28 @@ class Game(commands.Cog):
             self.__hunter_future = self.__bot.loop.create_future()
             await self.__hunter_future
         elif target.Character == "baker":
+            villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
+            max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
+            s_people = [[] for i in range(max_death_day)]
+            random.shuffle(villager_players)
+            n = 0
+            while len(villager_players) != 0:
+                p = villager_players[:3]
+                for i in p:
+                    r = random.choice(range(3)) + n
+                    s_people[r].append(i)
+                villager_players = villager_players[3:]
+                n += 3
+
             self.__bakerdead = True
+            self.__starving_people = s_people
+
+            for i in range(len(self.__starving_people)):
+                for j in self.__starving_people[i]:
+                    print(i, j.Name)
+
+
+
         if target in self.__inlove:
             self.__inlove.remove(target)
             other: Villager = self.__inlove[0]
@@ -174,6 +197,8 @@ class Game(commands.Cog):
         # await channel.set_permissions(member, overwrite=None)
 
         for x in files.channels_config["channels"]:
+            if x == "announcements":
+                continue
             channel = guild.get_channel(files.getChannelId(x))
             member = guild.get_member_named(target.DiscordTag)
             await channel.set_permissions(member, overwrite=None)
@@ -263,9 +288,9 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters['sendmessage'])
     @decorators.is_from_channel("afterlife")
-    @decorators.is_not_character("werewolf")
     async def sendmessage(self, ctx, word: str):
-        if not self.__abilities.check_ability("spirits"):
+        is_werewolf = self.findVillager(str(ctx.author)).Werewolf
+        if not self.__abilities.check_ability("dead_wolves" if is_werewolf else "spirits"):
             await ctx.send("You've already sent a message or a hint. Wait until the next night.")
             return
         if len(word.split(' ')) > 1:
@@ -274,26 +299,14 @@ class Game(commands.Cog):
         if decorators.findPerson(ctx, word) is not None:
             await ctx.send("You cannot use the name as the actual word.")
             return
-        self.__abilities.use_ability("spirits")
-        self.__cipher = Cipher(word)
+        if is_werewolf:
+            self.__abilities.use_ability("dead_wolves")
+        else:
+            self.__abilities.use_ability("spirits")
+        # self.__cipher = Cipher(word)
         channel = ctx.guild.get_channel(files.getChannelId("mason"))
         await channel.send("You have received a message from above.")
-        await channel.send(self.__cipher.Decode)
-
-    @commands.command(**files.command_parameters["sendhint"])
-    @decorators.is_from_channel("afterlife")
-    @decorators.is_not_character("werewolf")
-    async def sendhint(self, ctx):
-        if not self.__abilities.check_ability("spirits"):
-            await ctx.send("You've already sent a message or a hint. Wait until the next night.")
-            return
-        if self.__cipher == None:
-            await ctx.send("There is no cipher that you can give out. Give out a hint instead.")
-            return
-        self.__abilities.use_ability("spirits")
-        channel = ctx.guild.get_channel(files.getChannelId("mason"))
-        await channel.send("You have received a hint from above. Hopefully this will help you decipher the code.")
-        await channel.send(self.__cipher.Hint)
+        await channel.send(word)
 
     def cupidWinner(self):
         for x in self.__players:
@@ -378,8 +391,12 @@ class Game(commands.Cog):
         return super().cog_unload()
 
     def daytime(self):
+        guild_id = files.getChannelId("guild")
+        guild = self.__bot.get_guild(guild_id)
         if self.__bakerdead:
-            self.__daysleft -= 1
+            self.__bot.loop.create_task(self.starve_die(self.__starving_people[self.__bakerdays], guild))
+
+            self.__bakerdays += 1
             if self.Winner != "":
                 self.__game_future.set_result(self.Winner)
                 return
@@ -394,9 +411,17 @@ class Game(commands.Cog):
         town_square_id = files.getChannelId("town-square")
         town_square_channel = self.__bot.get_channel(town_square_id)
         await town_square_channel.send("It is daytime")
-        if self.__bakerdead and self.__daysleft > 0:
-            await town_square_channel.send(f"You have {self.__daysleft} days left")
+        # if self.__bakerdead and self.__bakerdays > 0:
+        #     await town_square_channel.send(f"You have {self.__bakerdays} days left")
         await self.startvote(town_square_channel.guild)
+
+    async def starve_die(self, dead_people, guild):
+        town_square_id = files.getChannelId("town-square")
+        town_square_channel = guild.get_channel(town_square_id)
+        for x in dead_people:
+            if not x.Dead:
+                await self.die(guild, x)
+                await town_square_channel.send(files.werewolfMessages[x.Character]["starve"].format(x.Mention))
 
     def nighttime(self):
         # self.__killed = False
@@ -448,8 +473,8 @@ class Game(commands.Cog):
             return "werewolves"
         elif self.GameStats["werewolves"] == 0:
             return "villagers"
-        elif self.__daysleft <= 0:
-            return "bakerdead"
+        # elif self.__bakerdays < 0:
+        #     return "bakerdead"
         return ""
 
     @property
