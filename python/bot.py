@@ -228,7 +228,6 @@ class Bot(commands.Cog):
                 await x.pin()
 
 
-        # database.update_channels(server=ctx.guild.id, channels=channel_id_dict)
         channels = models.channels.Channels.find_one({"server": ctx.guild.id})
         if channels is None:
             channels = models.channels.Channels({
