@@ -11,6 +11,17 @@
         "afterlife"
     ],
     "category-permissions": {
+        "Owner": {
+            "read_messages": true,
+            "send_messages": true,
+            "send_tts_messages": true,
+            "embed_links": true,
+            "attach_files": true,
+            "read_message_history": true,
+            "mention_everyone": true,
+            "external_emojis": true,
+            "add_reactions": true
+        },
         "Alive": {
             "read_messages": false,
             "send_messages": false,
