@@ -175,9 +175,7 @@ class Game(commands.Cog):
                     s_people[r].append(i)
                 villager_players = villager_players[3:]
                 n += 3
-            for i in range(len(s_people)):
-                for j in s_people[i]:
-                    print(i, j.Name)
+
             self.__bakerdead = True
 
         if target in self.__inlove:
