@@ -5,7 +5,7 @@ from decorators import is_admin, findPerson
 from election import Election
 from game import Game
 import asyncio
-import database
+# import database
 import models.channels
 import os
 import json
