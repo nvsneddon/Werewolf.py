@@ -152,6 +152,7 @@ class Game(commands.Cog):
     async def die(self, guild, target: Villager):
         if target.die():
             self.__numWerewolves -= 1
+            self.__daysleft -= 1
         else:
             self.__numVillagers -= 1
         if target.Character == "hunter":
@@ -263,9 +264,9 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters['sendmessage'])
     @decorators.is_from_channel("afterlife")
-    @decorators.is_not_character("werewolf")
     async def sendmessage(self, ctx, word: str):
-        if not self.__abilities.check_ability("spirits"):
+        is_werewolf = self.findVillager(str(ctx.author)).Werewolf
+        if not self.__abilities.check_ability("dead_wolves" if is_werewolf else "spirits"):
             await ctx.send("You've already sent a message or a hint. Wait until the next night.")
             return
         if len(word.split(' ')) > 1:
@@ -274,26 +275,14 @@ class Game(commands.Cog):
         if decorators.findPerson(ctx, word) is not None:
             await ctx.send("You cannot use the name as the actual word.")
             return
-        self.__abilities.use_ability("spirits")
-        self.__cipher = Cipher(word)
+        if is_werewolf:
+            self.__abilities.use_ability("dead_wolves")
+        else:
+            self.__abilities.use_ability("spirits")
+        # self.__cipher = Cipher(word)
         channel = ctx.guild.get_channel(files.getChannelId("mason"))
         await channel.send("You have received a message from above.")
-        await channel.send(self.__cipher.Decode)
-
-    @commands.command(**files.command_parameters["sendhint"])
-    @decorators.is_from_channel("afterlife")
-    @decorators.is_not_character("werewolf")
-    async def sendhint(self, ctx):
-        if not self.__abilities.check_ability("spirits"):
-            await ctx.send("You've already sent a message or a hint. Wait until the next night.")
-            return
-        if self.__cipher == None:
-            await ctx.send("There is no cipher that you can give out. Give out a hint instead.")
-            return
-        self.__abilities.use_ability("spirits")
-        channel = ctx.guild.get_channel(files.getChannelId("mason"))
-        await channel.send("You have received a hint from above. Hopefully this will help you decipher the code.")
-        await channel.send(self.__cipher.Hint)
+        await channel.send(word)
 
     def cupidWinner(self):
         for x in self.__players:

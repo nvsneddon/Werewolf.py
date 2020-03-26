@@ -103,7 +103,7 @@ class Bot(commands.Cog):
                 return
             for player in players:
                 await player.edit(roles=[alive_role])
-            game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=False)
+            game_cog = Game(self.__bot, randomshuffle=False, members=players, future=game_future, roles=args, send_message_flag=False)
             self.__bot.add_cog(game_cog)
             self.__game = True
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
@@ -149,14 +149,19 @@ class Bot(commands.Cog):
             ctx.guild.roles, name="Owner")
         alive_role = discord.utils.get(
             ctx.guild.roles, name="Alive")
+        dead_role = discord.utils.get(
+            ctx.guild.roles, name="Dead")
         for member in ctx.guild.members:
-            if len(member.roles) == 1:
+            # if member.bot:
+            #     continue
+            if alive_role not in member.roles and dead_role not in member.roles :
                 continue
             if owner_role not in member.roles:
                 await member.edit(roles=[playing_role])
             for x in files.channels_config["channels"]:
                 channel = discord.utils.get(ctx.guild.channels, name=x)
                 await channel.set_permissions(member, overwrite=None)
+
 
     @commands.command(brief="Exits the game")
     @is_admin()
