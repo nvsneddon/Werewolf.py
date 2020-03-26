@@ -68,10 +68,10 @@
             "You are armed with a sweet rifle that will be able to take anyone down before you go to your grave.",
             "To use this gift of yours, once you die, you tell the town-square who you're going to shoot with !shoot <person>"
         ],
-        "killed": "The hunter {} has died. It's now time for his moment to shine and for him to kill someone else.",
-        "lynched": "You just voted to kill the great hunter {}. The hunter's understandably angry and will kill one of you before the hunter dies.",
-        "inlove": "The hunter decided that life without a loved one is not a life worth living. The hunter {} will shoot someone before taking their own life.",
-        "hunter": "You shot a fellow hunter!{}."
+        "killed": "The hunter {} has died. It's now time for his moment to shine and for him to kill someone else. To kill someone now, please go to the town-square and type !shoot person",
+        "lynched": "You just voted to kill the great hunter {}. The hunter's understandably angry and will kill one of you before the hunter dies. To kill someone now, please go to the town-square and type !shoot person",
+        "inlove": "The hunter decided that life without a loved one is not a life worth living. The hunter {} will shoot someone before taking their own life. To kill someone now, please go to the town-square and type !shoot person",
+        "hunter": "You shot a fellow hunter!{}. To kill someone now, please go to the town-square and type !shoot person"
     },
     "baker": {
         "welcome":[
@@ -79,7 +79,7 @@
             "You may be ordinary, but your skills are needed. If you die, we will all starve to death in a couple of days. So please do everything you can to stay alive.",
             "Good luck and may you beat the werewolves!"
         ],
-        "killed": "Our fantastic baker, {}, has died. That's not good at all. Now you only have three days until you starve to death.",
+        "killed": "Our fantastic baker, {}, has died. That's not good at all. Now some of you will starve to death.",
         "lynched": "You just killed the baker {}! I don't know why you did that, but great job.", 
         "inlove": "When the baker lost his buns, he went on a hunger strike. Then {} died grieving his loss!",
         "hunter": "You shot a fellow hunter {}. Why would you shoot one of your own?"

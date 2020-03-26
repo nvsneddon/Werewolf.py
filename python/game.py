@@ -59,6 +59,7 @@ class Game(commands.Cog):
         self.__has_lynched = False
         self.__last_protected = None
         self.__daysleft = 6
+        self.__starving_people = []
         self.__hunter = False  # Variable to turn on the hunter's power
         self.__running = True
         self.__numWerewolves = 0
@@ -100,6 +101,7 @@ class Game(commands.Cog):
             cards += roles[1] * ["seer"]
         if len(roles) >= 1:
             cards += roles[0] * ["werewolf"]
+            self.__daysleft = roles[0] + 2
 
         if len(members) > len(cards):
             cards += (len(members) - len(cards)) * ["villager"]
@@ -161,7 +163,23 @@ class Game(commands.Cog):
             self.__hunter_future = self.__bot.loop.create_future()
             await self.__hunter_future
         elif target.Character == "baker":
+            villager_players = [y for y in self.__players if not y.Werewolf]
+            max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
+            s_people = [[] for i in range(max_death_day)]
+            random.shuffle(villager_players)
+            n = 0
+            while len(villager_players) != 0:
+                p = villager_players[:3]
+                for i in p:
+                    r = random.choice(range(3)) + n
+                    s_people[r].append(i)
+                villager_players = villager_players[3:]
+                n += 3
+            for i in range(len(s_people)):
+                for j in s_people[i]:
+                    print(i, j.Name)
             self.__bakerdead = True
+
         if target in self.__inlove:
             self.__inlove.remove(target)
             other: Villager = self.__inlove[0]
