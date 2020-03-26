@@ -206,13 +206,13 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addcategory(self, ctx):
-        c = await ctx.guild.create_category_channel(files.channels_config["category-name"])
+        town_square_category = await ctx.guild.create_category_channel(files.channels_config["category-name"])
         for i, j in files.channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
-            await c.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+            await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
         channel_id_dict = dict()
         for i in files.channels_config["channels"]:
-            await ctx.guild.create_text_channel(name=i, category=c)
+            await ctx.guild.create_text_channel(name=i, category=town_square_category)
             channel = discord.utils.get(ctx.guild.channels, name=i)
             await channel.send('\n'.join(files.werewolfMessages["channel_messages"][i]))
             channel_id_dict[i] = channel.id
@@ -233,7 +233,9 @@ class Bot(commands.Cog):
 
 
         for i, j in files.channels_config["channel-permissions"].items():
-            ch = discord.utils.get(c.channels, name=i)
+            ch = discord.utils.get(town_square_category.channels, name=i)
+            if ch is None:
+                print("The name is", i)
             for k, l in j.items():
                 target = discord.utils.get(ctx.guild.roles, name=k)
                 await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
