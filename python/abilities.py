@@ -10,8 +10,8 @@ class Abilities:
             "cupid": True
         }
 
-        self.__night = ("spirits", "werewolves")
-        self.__day = ("seer", "bodyguard", "villager")
+        self.__night = {"seer", "spirits", "werewolves"}
+        self.__day = {"bodyguard", "villager"}
 
     def __reset_abilities(self):
         for x in self.__roles:
