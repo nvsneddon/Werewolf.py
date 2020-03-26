@@ -1,6 +1,6 @@
 import mongothon
 
-from models.dbconnect import my_db
+from dbconnect import my_db
 
 election_schema = mongothon.Schema({
     "server": {"type": int, "required": True},

@@ -1,7 +1,6 @@
 import mongothon
-import pymongo
 
-from models.dbconnect import my_db
+from dbconnect import my_db
 
 game_schema = mongothon.Schema({
     "server": {"type": int, "required": True},

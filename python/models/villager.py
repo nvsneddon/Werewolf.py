@@ -1,6 +1,6 @@
 import mongothon
 
-from models.dbconnect import my_db
+from dbconnect import my_db
 
 villager_schema = mongothon.Schema({
     "name": {"type": str, "required": True},
