@@ -128,7 +128,6 @@ class Game(commands.Cog):
             cards += (len(members) - len(cards)) * ["villager"]
         if randomshuffle:
             random.shuffle(cards)
-
         for x in members:
             y = Villager(str(x), cards[0], x.id, x.nick)
             if cards[0] in ("werewolf"):
@@ -141,8 +140,21 @@ class Game(commands.Cog):
             if send_message_flag:
                 self.__bot.loop.create_task(self.__sendPM(x, message))
 
+
+        afterlife_message = ""
+
         for i in self.__players:
+            afterlife_message += f"{i.Mention} is a {i.Character}\n"
             print(i)
+
+        self.__bot.loop.create_task(self.__afterlife_message(afterlife_message))
+
+    async def __afterlife_message(self, message):
+        afterlife_id = files.getChannelId("afterlife")
+        afterlife_channel = self.__bot.get_channel(afterlife_id)
+        await afterlife_channel.send(message)
+        async for x in (afterlife_channel.history(limit=1)):
+            await x.pin()
 
     async def __sendPM(self, member, message):
         await member.send(message)

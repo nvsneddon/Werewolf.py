@@ -137,6 +137,10 @@
         "The Masons are two people in a secret group. They know and trust each other with their lives. They also can talk with the dead to figure some cool stuff out."
     ],
     "channel_messages": {
+        "announcements": [
+            "This place is for any announcements from me. You'll get the latest news on who died!",
+            "I'll also let you know when it's day and night and when voting opens and closes."
+        ],
 
         "town-square": [
             "This place is for everyone to chat and stuff here. We also hold our elections here.",
