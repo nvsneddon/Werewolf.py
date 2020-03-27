@@ -397,7 +397,7 @@ class Game(commands.Cog):
         #     "channel": town_square_channel.id
         # })
         # m.save()
-        self.__election_cog = election.Election(self.__bot, future, to_vote, channel=town_square_channel)
+        self.__election_cog = election.Election(self.__bot, future, to_vote, channel=town_square_channel, guild_id=guild.id)
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("You can now vote to lynch.")
         await future
@@ -435,8 +435,7 @@ class Game(commands.Cog):
         return super().cog_unload()
 
     def daytime(self):
-        guild_id = files.getChannelId("guild")
-        guild = self.__bot.get_guild(guild_id)
+        guild = self.__bot.get_guild(681696629224505376)
         if self.__bakerdead:
             self.__bot.loop.create_task(self.starve_die(self.__starving_people[self.__bakerdays], guild))
 

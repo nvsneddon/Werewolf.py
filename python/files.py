@@ -110,5 +110,20 @@ def fileFoundInConfig(filename: str) -> bool:
 
 
 def getChannelId(channel: str, server=681696629224505376) -> int:
+
     x = models.channels.Channels.find_one({"server": server})
+    if x is None:
+        dir_name = os.path.dirname(__file__)
+        f = open(os.path.join(dir_name, "../config/channel_id_list.json"))
+        channels = {}
+        channels["channels"] = {}
+        channels["server"] = server
+        read_file = json.loads(f.read())
+        for x, y in read_file.items():
+            if x == "guild":
+                continue
+            channels["channels"][x] = y
+        f.close()
+        x = models.channels.Channels(channels)
+        x.save()
     return x["channels"][channel]

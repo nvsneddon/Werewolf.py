@@ -5,11 +5,12 @@ from discord.ext import commands
 from decorators import is_vote_channel
 from files import command_parameters
 from villager import Villager
+import models.election
 
 
 class Election(commands.Cog):
 
-    def __init__(self, bot, future, people, vote_leader=None, channel=None):
+    def __init__(self, bot, future, people, guild_id, channel=None):
         self.__bot = bot
         self.__people: [Villager] = people
         self.__casted_votes = {}
@@ -18,9 +19,19 @@ class Election(commands.Cog):
         self.__future = future
         self.__result = None
         self.__channel = channel
-        self.__vote_leader = vote_leader
         for x in people:
             self.__casted_votes[x.Name] = 0
+        x = models.election.Election.find({
+            "server": guild_id
+        })
+        if x is not None:
+            for y in x:
+                y.remove()
+        models.election.Election({
+            "server": guild_id,
+            "people": [x.UserID for x in self.__people],
+            "channel": channel.id
+        }).save()
 
     @commands.command(**command_parameters['showleading'])
     async def showleading(self, ctx):
@@ -37,15 +48,17 @@ class Election(commands.Cog):
     @commands.command(**command_parameters['lock'])
     @is_vote_channel()
     async def lock(self, ctx):
-        if str(ctx.message.author) not in self.__locked:
+        db_election = models.election.Election.find_one({"server": ctx.guild.id})
+        voter = str(ctx.message.author)
+        if ctx.message.author.id not in db_election["locked"]:
             if ctx.message.author.name not in self.__voted:
                 await ctx.send("You haven't voted for someone yet. You can't lock a vote for no one.")
                 return
             await ctx.send(f"You have locked your vote for {self.__voted[ctx.message.author.name]}")
-            self.__locked.append(str(ctx.message.author))
+            db_election["locked"].append(ctx.message.author.id)
             vote_counts = {}
-            for i in self.__locked:
-                votee = self.__voted[self.findCandidate(i).Name]
+            for i in db_election["locked"]:
+                votee = self.__voted[self.findCandidateId(i).Name]
                 if votee in vote_counts:
                     vote_counts[votee] += 1
                 else:
@@ -55,22 +68,27 @@ class Election(commands.Cog):
             if votes > len(self.__casted_votes)/2:
                 await ctx.send("Half of the people locked their votes for one person, so the voting will end now.")
                 self.stop_vote()
+            db_election.save()
         else:
             await ctx.send("You've already locked your vote.")
+
 
     @commands.command(**command_parameters['unlock'])
     @is_vote_channel()
     async def unlock(self, ctx):
-        if str(ctx.message.author) not in self.__locked:
+        db_election = models.election.Election.find_one({"server": ctx.guild.id})
+        if ctx.message.author.id not in db_election["locked"]:
             await ctx.send("You haven't locked your vote, so you can't unlock.")
         else:
-            self.__locked.remove(str(ctx.message.author))
+            db_election["locked"].remove(ctx.message.author.id)
             await ctx.send("Vote has been unlocked.")
+            db_election.save()
 
     @commands.command(**command_parameters['vote'])
     @is_vote_channel()
     async def vote(self, ctx, voteestring: str):
-        if str(ctx.message.author) in self.__locked:
+        db_election = models.election.Election.find_one({"server": ctx.guild.id})
+        if ctx.message.author.id in db_election["locked"]:
             await ctx.send("You've already locked your vote")
             return
         votee = self.findCandidate(voteestring)
@@ -118,9 +136,11 @@ class Election(commands.Cog):
                 return x
         return None
 
-    @property
-    def VoteLeader(self):
-        return self.__vote_leader
+    def findCandidateId(self, id: int) -> Optional[Villager]:
+        for x in self.__people:
+            if x.UserID == id:
+                return x
+        return None
 
     @property
     def Locked(self):
