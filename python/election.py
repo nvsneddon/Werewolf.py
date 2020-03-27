@@ -105,7 +105,7 @@ class Election(commands.Cog):
             db_election["casted_votes"][str(votee_id)] += 1
             db_election["voted"][str(voter_id)] = votee_id
             votee = ctx.guild.get_member(votee_id)
-            await ctx.send(f"Your vote for {votee.Mention} has been confirmed")
+            await ctx.send(f"Your vote for {votee.mention} has been confirmed")
             db_election.save()
         else:
             await ctx.send("You can't vote for that person. Please try again.")
@@ -115,15 +115,18 @@ class Election(commands.Cog):
         db_election = models.election.Election.find_one({"server": ctx.guild.id})
         voted_people = ""
         who_voted = {}
-        for x in sorted(self.__voted, key=self.__casted_votes.get, reverse=True):
-            person = self.__voted[x]
+        for x in sorted(db_election['voted'], key=db_election["casted_votes"].get, reverse=True):
+            person = db_election['voted'][str(x)]
             if person not in who_voted:
                 who_voted[person] = []
             who_voted[person].append(x)
-        for x in sorted(who_voted, key=self.__casted_votes.get, reverse=True):
+        for x in sorted(who_voted, key=db_election["casted_votes"].get, reverse=True):
             y = who_voted[x]
-            voting_list = [self.findCandidate(a).ProperName for a in y]
-            voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for {self.findCandidate(x).ProperName}"
+            for a in y:
+                print(type(a), a)
+            voting_list = [ctx.guild.get_member(int(a)).display_name for a in y]
+            voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for " \
+                            f"{ctx.guild.get_member(x).display_name} "
             voted_people += "\n\t"
             voted_people += '\n\t'.join(voting_list) + '\n'
         if voted_people == "":
