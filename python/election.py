@@ -122,8 +122,6 @@ class Election(commands.Cog):
             who_voted[person].append(x)
         for x in sorted(who_voted, key=db_election["casted_votes"].get, reverse=True):
             y = who_voted[x]
-            for a in y:
-                print(type(a), a)
             voting_list = [ctx.guild.get_member(int(a)).display_name for a in y]
             voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for " \
                             f"{ctx.guild.get_member(x).display_name} "
