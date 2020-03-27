@@ -5,8 +5,8 @@ from decorators import is_admin, findPerson
 from election import Election
 from game import Game
 import asyncio
-import database
 import models.channels
+import models.villager
 import os
 import json
 import files
@@ -105,7 +105,7 @@ class Bot(commands.Cog):
                 return
             for player in players:
                 await player.edit(roles=[alive_role])
-            game_cog = Game(self.__bot, randomshuffle=False, members=players, future=game_future, roles=args, send_message_flag=False)
+            game_cog = Game(self.__bot, randomshuffle=False, members=players, guild_id=ctx.guild.id, future=game_future, roles=args, send_message_flag=False)
             self.__bot.add_cog(game_cog)
             self.__game = True
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
@@ -117,7 +117,7 @@ class Bot(commands.Cog):
                         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                         await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
-        town_square_id = files.getChannelId("town-square")
+        town_square_id = files.getChannelId("town-square", ctx.guild.id)
         town_square_channel = self.__bot.get_channel(town_square_id)
         await town_square_channel.send("Let the games begin!")
         await ctx.send("The game has started!")
@@ -147,24 +147,32 @@ class Bot(commands.Cog):
         self.__bot.remove_cog("Game")
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
-        owner_role = discord.utils.get(
-            ctx.guild.roles, name="Owner")
-        alive_role = discord.utils.get(
-            ctx.guild.roles, name="Alive")
-        dead_role = discord.utils.get(
-            ctx.guild.roles, name="Dead")
-        for member in ctx.guild.members:
+        # owner_role = discord.utils.get(
+        #     ctx.guild.roles, name="Owner")
+        # alive_role = discord.utils.get(
+        #     ctx.guild.roles, name="Alive")
+        # dead_role = discord.utils.get(
+        #     ctx.guild.roles, name="Dead")
+
+        villagers = models.villager.Villager.find({"server": ctx.guild.id})
+        for v in villagers:
+        #     v.remove()
+        # for member in ctx.guild.members:
             # if member.bot:
             #     continue
-            if alive_role not in member.roles and dead_role not in member.roles :
-                continue
-            if owner_role not in member.roles:
-                await member.edit(roles=[playing_role])
+            member = ctx.guild.get_member(v["discord_id"])
+            # if alive_role not in member.roles and dead_role not in member.roles :
+            #     continue
+            # if owner_role not in member.roles:
+            await member.edit(roles=[playing_role])
             for x in files.channels_config["channels"]:
                 if x == "announcements":
                     continue
                 channel = discord.utils.get(ctx.guild.channels, name=x)
                 await channel.set_permissions(member, overwrite=None)
+            v.remove()
+        # models.villager.removeAll({"server": ctx.guild.id})
+
 
 
     @commands.command(brief="Exits the game")
@@ -213,6 +221,10 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addcategory(self, ctx):
+        x = models.channels.Channels.find_one({"server": ctx.guild.id})
+        if x is not None:
+            await ctx.send("You already have the channels set up.")
+            return
         town_square_category = await ctx.guild.create_category_channel(files.channels_config["category-name"])
         for i, j in files.channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
@@ -228,7 +240,6 @@ class Bot(commands.Cog):
                 await x.pin()
 
 
-        # database.update_channels(server=ctx.guild.id, channels=channel_id_dict)
         channels = models.channels.Channels.find_one({"server": ctx.guild.id})
         if channels is None:
             channels = models.channels.Channels({

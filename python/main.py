@@ -39,12 +39,12 @@ async def on_message(message):
     #         user_id = response[1]
     #         response_message = delimiter.join(response[2:])
     #         await message.author.send("The message has been sent!")
-    #         await bot.get_guild(523892810319921157).get_member(int(user_id)).send(
-    #             f"Response from Nathaniel: {response_message}")
+    #         await bot.get_guild().get_member(int(user_id)).send(
+    #             f"Response : {response_message}")
     #     else:
     #         question = message.content + "\n" + str(message.author.id)
     #         await message.author.send("Thanks for submitting. Your question will be answered shortly.")
-    #         await bot.get_guild(523892810319921157).owner.send(question)
+    #         await bot.get_guild().owner.send(question)
     # else:
     await client.process_commands(message)
 

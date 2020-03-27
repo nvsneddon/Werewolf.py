@@ -1,6 +1,11 @@
+import models.villager
+from exceptions import DocumentFoundException
+
+
+
 class Villager:
 
-    def __init__(self, discord_tag: str, character: str, id: int, nickname=None):
+    def __init__(self, discord_tag: str, character: str, id: int, nickname=None, server=0):
         # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
         self.__name: str = discord_tag.split("#")[0]
         self.__discordTag: str = discord_tag
@@ -9,10 +14,22 @@ class Villager:
         self.__is_werewolf: bool = (character == "werewolf")
         self.__killer: bool = (character == "werewolf" or character == "hunter")
         self.__alive: bool = True
-        # self.__usedAbility = False
         self.__inLove: bool = False
         self.__userID = id
         self.__protected = False
+        self.__id = 0
+
+        schema = {
+            "discord_id": id,
+            "server": server,
+            "character": character,
+            "werewolf": self.__is_werewolf
+        }
+        v = models.villager.Villager.find_one(schema)
+        if v is not None:
+            raise DocumentFoundException
+        v = models.villager.Villager(schema)
+        v.save()
 
         # self.__inSpecialChannel = bool(character in specialChannel)
 

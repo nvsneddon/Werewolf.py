@@ -1,11 +1,6 @@
 import mongothon
-import files
-import pymongo
 
-database_config = files.readJsonFromConfig("../config/database_config.json")
-
-my_client = pymongo.MongoClient(database_config["url"].format(database_config["user"], database_config["password"]))
-my_db = my_client["games"]
+from dbconnect import my_db
 
 channels_schema = mongothon.Schema({
     "server": {"type": int, "required": True},
@@ -14,3 +9,21 @@ channels_schema = mongothon.Schema({
 
 Channels = mongothon.create_model(channels_schema, my_db["channels"])
 
+if __name__ == "__main__":
+    test = Channels({
+        "server": 123456,
+        "channels": {
+            "town-square": 264,
+            "yeah": 26
+        }
+    })
+    test.save()
+    x = Channels.find_one({"server": 123456})
+    print(type(x['_id']))
+    id_string = str(x['_id'])
+    print(id_string)
+    print(x)
+    y = Channels.find_by_id(id_string)
+    print("The thing is", y)
+    x.remove()
+    # test.save()
