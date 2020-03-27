@@ -65,7 +65,7 @@ class Game(commands.Cog):
 
         return commands.check(predicate)
 
-    def __init__(self, bot, members, future, roles, randomshuffle=True, send_message_flag=True):
+    def __init__(self, bot, members, future, roles, randomshuffle=True, send_message_flag=True, guild_id = 0):
         self.__bot = bot
         self.__hunter_future = None
         self.__cipher = None
@@ -129,7 +129,7 @@ class Game(commands.Cog):
         if randomshuffle:
             random.shuffle(cards)
         for x in members:
-            y = Villager(str(x), cards[0], x.id, x.nick)
+            y = Villager(str(x), cards[0], x.id, x.nick, server=guild_id)
             if cards[0] in ("werewolf"):
                 self.__numWerewolves += 1;
             else:
