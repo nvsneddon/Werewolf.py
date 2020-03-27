@@ -6,6 +6,7 @@ from decorators import is_vote_channel
 from files import command_parameters
 from villager import Villager
 import models.election
+import models.villager
 
 
 class Election(commands.Cog):
@@ -90,16 +91,18 @@ class Election(commands.Cog):
             await ctx.send("You've already locked your vote")
             return
         votee = self.findCandidate(voteestring)
-        if votee is None:
+        votee_id = self.getCandidateID(voteestring, ctx.guild.id)
+        if votee_id == -1:
             await ctx.send("Couldn't find the candidate's name. Please make sure there was no typo with your answer.")
             return
-        if votee.Name in self.__casted_votes:
-            voter_name = ctx.message.author.name
-            if voter_name in self.__voted:
-                self.__casted_votes[self.__voted[voter_name]] -= 1
-            self.__casted_votes[votee.Name] += 1
-            self.__voted[voter_name] = votee.Name
+        if votee_id in db_election["casted_votes"]:
+            voter_id = ctx.message.author.id
+            if voter_id in self.__voted:
+                db_election["casted_votes"][self.__voted[voter_id]] -= 1
+            db_election["casted_votes"][votee.Name] += 1
+            self.__voted[voter_id] = votee.Name
             await ctx.send(f"Your vote for {votee.Mention} has been confirmed")
+            db_election.save()
         else:
             await ctx.send("You can't vote for that person. Please try again.")
 
@@ -133,6 +136,19 @@ class Election(commands.Cog):
                     x.UserID).lower() == name.lower() or x.DiscordTag.lower() == name.lower() or x.NickName.lower() == name.lower():
                 return x
         return None
+
+    def getCandidateID(self, name: str, server_id: int) -> int:
+        # if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
+        #     name = name[3:-1]
+        # elif name[0:2] == "<@":
+        #     name = name[2:-1]
+        people = models.villager.Villager.find_many({"server": server_id})
+        for x in people:
+            member = self.__bot.get_guild(server_id).get_member(x["discord_id"])
+            if name.lower() == member.display_name.lower() or name.lower() == member.mention or name.lower() == member.name.lower() or name.lower() == str(member).lower():
+                return member.id
+        return -1
+
 
     def findCandidateId(self, id: int) -> Optional[Villager]:
         for x in self.__people:
