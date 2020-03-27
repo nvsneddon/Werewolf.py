@@ -24,9 +24,7 @@ class Election(commands.Cog):
         x = models.election.Election.find({
             "server": guild_id
         })
-        if x is not None:
-            for y in x:
-                y.remove()
+        models.election.delete_many({"server": guild_id})
         models.election.Election({
             "server": guild_id,
             "people": [x.UserID for x in self.__people],

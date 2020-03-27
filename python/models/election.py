@@ -2,6 +2,9 @@ import mongothon
 
 from dbconnect import my_db
 
+def delete_many(filter):
+    my_db['elections'].delete_many(filter)
+
 election_schema = mongothon.Schema({
     "server": {"type": int, "required": True},
     "people": {"type": list, "required": True},

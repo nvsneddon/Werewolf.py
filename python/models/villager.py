@@ -2,7 +2,7 @@ import mongothon
 
 from dbconnect import my_db
 
-def removeAll(filter):
+def delete_many(filter):
     my_db['villager'].delete_many(filter)
 
 villager_schema = mongothon.Schema({
