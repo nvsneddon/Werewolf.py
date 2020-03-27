@@ -20,14 +20,17 @@ class Election(commands.Cog):
         self.__future = future
         self.__result = None
         self.__channel = channel
+        casted_votes = {}
         for x in people:
             self.__casted_votes[x.Name] = 0
+            casted_votes[str(x.UserID)] = 0
         x = models.election.Election.find({
             "server": guild_id
         })
         models.election.delete_many({"server": guild_id})
         models.election.Election({
             "server": guild_id,
+            "casted_votes": casted_votes,
             "people": [x.UserID for x in self.__people],
             "channel": channel.id
         }).save()
@@ -90,17 +93,18 @@ class Election(commands.Cog):
         if ctx.message.author.id in db_election["locked"]:
             await ctx.send("You've already locked your vote")
             return
-        votee = self.findCandidate(voteestring)
+        # votee = self.findCandidate(voteestring)
         votee_id = self.getCandidateID(voteestring, ctx.guild.id)
         if votee_id == -1:
             await ctx.send("Couldn't find the candidate's name. Please make sure there was no typo with your answer.")
             return
-        if votee_id in db_election["casted_votes"]:
+        if str(votee_id) in db_election["casted_votes"]:
             voter_id = ctx.message.author.id
-            if voter_id in self.__voted:
-                db_election["casted_votes"][self.__voted[voter_id]] -= 1
-            db_election["casted_votes"][votee.Name] += 1
-            self.__voted[voter_id] = votee.Name
+            if voter_id in db_election["voted"]:
+                db_election["casted_votes"][str(db_election[str(voter_id)])] -= 1
+            db_election["casted_votes"][str(votee_id)] += 1
+            db_election["voted"][str(voter_id)] = votee_id
+            votee = ctx.guild.get_member(votee_id)
             await ctx.send(f"Your vote for {votee.Mention} has been confirmed")
             db_election.save()
         else:
@@ -108,6 +112,7 @@ class Election(commands.Cog):
 
     @commands.command(**command_parameters['showvote'])
     async def showvote(self, ctx):
+        db_election = models.election.Election.find_one({"server": ctx.guild.id})
         voted_people = ""
         who_voted = {}
         for x in sorted(self.__voted, key=self.__casted_votes.get, reverse=True):
@@ -142,7 +147,7 @@ class Election(commands.Cog):
         #     name = name[3:-1]
         # elif name[0:2] == "<@":
         #     name = name[2:-1]
-        people = models.villager.Villager.find_many({"server": server_id})
+        people = models.villager.Villager.find({"server": server_id})
         for x in people:
             member = self.__bot.get_guild(server_id).get_member(x["discord_id"])
             if name.lower() == member.display_name.lower() or name.lower() == member.mention or name.lower() == member.name.lower() or name.lower() == str(member).lower():
