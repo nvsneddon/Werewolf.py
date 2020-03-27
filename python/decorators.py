@@ -14,9 +14,10 @@ def is_admin():
 def is_vote_channel():
     async def predicate(ctx):
         cog = ctx.bot.get_cog("Election")
-        if cog.VoteChannel is None:
+        channel_id = cog.get_vote_channel(ctx.guild.id)
+        if channel_id is None:
             return True
-        return cog.VoteChannel == ctx.channel
+        return channel_id == ctx.channel.id
 
     return commands.check(predicate)
 

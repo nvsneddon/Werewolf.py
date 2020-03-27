@@ -1,4 +1,5 @@
 import mongothon
+import pymongo
 
 from dbconnect import my_db
 
@@ -35,5 +36,5 @@ if __name__ == "__main__":
     x.save()
     y = Election.find_by_id(id_string)
     print("The thing is", y)
-    x.remove()
+    # x.remove()
     # test.save()

@@ -401,7 +401,7 @@ class Game(commands.Cog):
         self.__bot.add_cog(self.__election_cog)
         await town_square_channel.send("You can now vote to lynch.")
         await future
-        m.remove()
+        # m.remove()
         self.__lynching = False
         self.__bot.remove_cog("Election")
         self.__election_cog = None
@@ -420,7 +420,7 @@ class Game(commands.Cog):
                 await town_square_channel.send(
                 f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
                 f"I'll pick {dead_villager.Mention}! No hard feelings!")
-            await self.die(guild, dead_villager )
+            await self.die(guild, dead_villager)
             dead_villager.die()
             lynched_message = files.werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await town_square_channel.send(lynched_message)
