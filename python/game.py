@@ -18,7 +18,8 @@ from cipher import Cipher
 from exceptions import DocumentFoundException
 
 
-
+def test():
+    print("Hi there")
 
 class Game(commands.Cog):
     __cipher: typing.Optional[Cipher]
@@ -95,21 +96,7 @@ class Game(commands.Cog):
         self.__election_cog = election.Election(self.__bot)
         self.__bot.add_cog(self.__election_cog)
 
-        schedule.every().day.at(files.config["daytime"]).do(self.daytime).tag("game")
-        warn_voting_time = datetime.datetime(1, 1, 1, int(
-            files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0, files.config['minutes-before-warning'])
-        schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime).tag("game")
-        schedule.every().day.at(files.config["nighttime"]).do(self.nighttime).tag("game")
-        # schedule.every(3).seconds.do(self.daytime).tag("game")
-
-        night_array = files.config["nighttime"].split(':')
-        day_array = files.config["daytime"].split(':')
-
-        check_time = datetime.datetime.now().time()
-        if datetime.time(int(day_array[0]), int(day_array[1])) <= check_time <= datetime.time(int(night_array[0]), int(night_array[1])):
-            self.__abilities.start_game()
-        else:
-            self.__abilities.start_game(True)
+        self.schedule_day_and_night()
 
         cards = []
         if len(roles) >= 7:
@@ -152,6 +139,24 @@ class Game(commands.Cog):
             print(i)
 
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message))
+
+    def schedule_day_and_night(self, guild_id=681696629224505376):
+        schedule.every().day.at(files.config["daytime"]).do(self.daytime).tag("game", guild_id)
+        warn_voting_time = datetime.datetime(1, 1, 1, int(
+            files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0,
+                                                                                                     files.config[
+                                                                                                         'minutes-before-warning'])
+        schedule.every(5).seconds.do(test).tag("game", guild_id)
+        schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime).tag("game", guild_id)
+        schedule.every().day.at(files.config["nighttime"]).do(self.nighttime).tag("game", guild_id)
+        night_array = files.config["nighttime"].split(':')
+        day_array = files.config["daytime"].split(':')
+        check_time = datetime.datetime.now().time()
+        if datetime.time(int(day_array[0]), int(day_array[1])) <= check_time <= datetime.time(int(night_array[0]),
+                                                                                              int(night_array[1])):
+            self.__abilities.start_game()
+        else:
+            self.__abilities.start_game(True)
 
     async def __afterlife_message(self, message):
         afterlife_id = files.getChannelId("afterlife")
@@ -439,28 +444,29 @@ class Game(commands.Cog):
                 self.__game_future.set_result(self.Winner)
 
     def cog_unload(self):
-        schedule.clear("game")
+        self.stop_game()
+        return super().cog_unload()
+
+    def stop_game(self, tag="game"):
+        schedule.clear(tag)
         self.__bot.remove_cog("Election")
         if self.__election_cog is not None:
             self.__bot.remove_cog("Election")
-        return super().cog_unload()
 
-    def daytime(self):
-        guild = self.__bot.get_guild(681696629224505376)
+    def daytime(self, guild_id):
+        guild = self.__bot.get_guild(guild_id)
         for x in self.__players:
             x.Protected = False
         self.__has_lynched = False
         self.__abilities.daytime()
-        self.__bot.loop.create_task(self.daytimeannounce())
+        self.__bot.loop.create_task(self.daytimeannounce(guild_id))
         if self.__bakerdead:
             self.__bot.loop.create_task(self.starve_die(self.__starving_people[self.__bakerdays], guild))
 
-            if self.Winner != "":
-                self.__game_future.set_result(self.Winner)
-                return
 
-    async def daytimeannounce(self):
-        announcements_id = files.getChannelId("announcements")
+
+    async def daytimeannounce(self, guild_id):
+        announcements_id = files.getChannelId("announcements", 681696629224505376)
         announcements_channel = self.__bot.get_channel(announcements_id)
 
         await announcements_channel.send("It is daytime")
@@ -476,24 +482,27 @@ class Game(commands.Cog):
                 await self.die(guild, x)
                 await town_square_channel.send(files.werewolfMessages[x.Character]["starve"].format(x.Mention))
         self.__bakerdays += 1
+        if self.Winner != "":
+            self.__game_future.set_result(self.Winner)
+            return
 
-    def nighttime(self):
+    def nighttime(self, guild_id):
         # self.__killed = False
         self.__bot.loop.create_task(self.nighttimeannounce())
         self.__abilities.nighttime()
-        if election.is_vote(681696629224505376):
-            self.__bot.loop.create_task(self.stopvote(self.__bot.get_guild(681696629224505376)))
+        if election.is_vote(guild_id):
+            self.__bot.loop.create_task(self.stopvote(self.__bot.get_guild(guild_id)))
 
-    async def nighttimeannounce(self):
-        announcements_id = files.getChannelId("announcements")
+    async def nighttimeannounce(self, guild_id):
+        announcements_id = files.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         await announcements_channel.send("It is nighttime")
 
-    def almostnighttime(self):
-        self.__bot.loop.create_task(self.almostnighttimeannounce())
+    def almostnighttime(self, guid_id):
+        self.__bot.loop.create_task(self.almostnighttimeannounce(guild_id))
 
-    async def almostnighttimeannounce(self):
-        town_square_id = files.getChannelId("town-square")
+    async def almostnighttimeannounce(self, guild_id):
+        town_square_id = files.getChannelId("town-square", 681696629224505376)
         town_square_channel = self.__bot.get_channel(town_square_id)
         x = files.config["minutes-before-warning"]
         await town_square_channel.send(f"{x} minute{'s' if x > 1 else ''} left until nighttime.")
