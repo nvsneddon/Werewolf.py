@@ -107,7 +107,7 @@ class Game(commands.Cog):
         if randomshuffle:
             random.shuffle(cards)
         for x in members:
-            y = Villager(str(x), cards[0], x.id, x.nick)
+            y = Villager(str(x), cards[0], x.id, nickname=x.nick)
             if cards[0] in ("werewolf"):
                 self.__numWerewolves += 1;
             else:
@@ -152,7 +152,7 @@ class Game(commands.Cog):
             await ctx.send("That person has been protected. You just wasted your kill!")
             announcement_id = files.getChannelId("announcements")
             announcements_channel = ctx.guild.get_channel(announcement_id)
-            await announcements_channel.send(f"The werewolves have tried to kill {target.Mention} but has been protected. We're glad you're alive.")
+            await announcements_channel.send(f"The werewolves have tried to kill {target.Mention} who was protected. We're glad you're alive.")
         else:
             await ctx.send("Killing {}".format(target.Mention))
             announcement_id = files.getChannelId("announcements")
@@ -246,6 +246,8 @@ class Game(commands.Cog):
             return
         lynched_message = files.werewolfMessages[dead_villager.Character]["hunter"].format(dead_villager.Mention)
         town_square_channel = ctx.guild.get_channel(files.getChannelId("town-square"))
+        announcements_channel = ctx.guild.get_channel(files.getChannelId("announcements"))
+        await announcements_channel.send(lynched_message)
         await town_square_channel.send(lynched_message)
         await self.die(ctx.guild, dead_villager)
         self.__hunter_future.set_result("dead")
@@ -359,7 +361,7 @@ class Game(commands.Cog):
         announcements_id = files.getChannelId("announcements")
         announcements_channel = guild.get_channel(announcements_id)
         town_square_id = files.getChannelId("town-square")
-        town_square_channel = guild.get_channel(announcements_id)
+        town_square_channel = guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
         to_vote = []
         for i in self.__players:
@@ -383,17 +385,16 @@ class Game(commands.Cog):
         if len(result) == 0:
             await announcements_channel.send("All of you guys forgot to vote. Too bad!")
         else:
-
             x = random.choice(result)
             dead_villager: Villager = self.findVillager(x)
             if len(result) > 1:
                 await announcements_channel.send(
                 f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
                 f"I'll pick {dead_villager.Mention}! No hard feelings!")
-            await self.die(guild, dead_villager )
             dead_villager.die()
             lynched_message = files.werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await announcements_channel.send(lynched_message)
+            await self.die(guild, dead_villager )
             if self.Winner != "":
                 self.__game_future.set_result(self.Winner)
 
@@ -433,8 +434,8 @@ class Game(commands.Cog):
         town_square_channel = guild.get_channel(town_square_id)
         for x in dead_people:
             if not x.Dead:
-                await self.die(guild, x)
                 await town_square_channel.send(files.werewolfMessages[x.Character]["starve"].format(x.Mention))
+                await self.die(guild, x)
         self.__bakerdays += 1
 
     def nighttime(self):

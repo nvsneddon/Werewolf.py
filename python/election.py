@@ -69,8 +69,7 @@ class Election(commands.Cog):
 
     @commands.command(**command_parameters['vote'])
     @is_vote_channel()
-    async def vote(self, ctx, *args):
-        voteestring = " ".join(args)
+    async def vote(self, ctx, voteestring):
         if str(ctx.message.author) in self.__locked:
             await ctx.send("You've already locked your vote")
             return
