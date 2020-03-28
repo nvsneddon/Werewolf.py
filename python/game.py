@@ -92,6 +92,9 @@ class Game(commands.Cog):
         self.schedthread = threading.Thread(target=self.timer)
         self.schedthread.start()
 
+        self.__election_cog = election.Election(self.__bot)
+        self.__bot.add_cog(self.__election_cog)
+
         schedule.every().day.at(files.config["daytime"]).do(self.daytime).tag("game")
         warn_voting_time = datetime.datetime(1, 1, 1, int(
             files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0, files.config['minutes-before-warning'])
@@ -139,6 +142,7 @@ class Game(commands.Cog):
             message = '\n'.join(files.werewolfMessages[y.Character]["welcome"])
             if send_message_flag:
                 self.__bot.loop.create_task(self.__sendPM(x, message))
+
 
 
         afterlife_message = ""
@@ -382,7 +386,9 @@ class Game(commands.Cog):
         town_square_channel = guild.get_channel(town_square_id)
         announcements_id = files.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
-        future = self.__bot.loop.create_future()
+        town_square_id = files.getChannelId("town-square")
+        town_square_channel = guild.get_channel(town_square_id)
+        # future = self.__bot.loop.create_future()
         to_vote = []
         for i in self.__players:
             discordPerson = guild.get_member_named(i.DiscordTag)
@@ -399,18 +405,21 @@ class Game(commands.Cog):
         #     "channel": town_square_channel.id
         # })
         # m.save()
-        self.__election_cog = election.Election(self.__bot, future, to_vote, channel=town_square_channel, guild_id=guild.id)
-        self.__bot.add_cog(self.__election_cog)
+
+        election.start_vote(town_square_channel, guild.id, to_vote)
         await announcements_channel.send("You can now vote to lynch.")
-        await future
+        # await future
         # m.remove()
+
+    async def stopvote(self, guild):
         self.__lynching = False
-        self.__bot.remove_cog("Election")
-        self.__election_cog = None
-        result = future.result()
-        if result == "cancel":
-            await announcements_channel.send("The lynching vote has been cancelled")
-            return
+        cog = self.__bot.get_cog("Election")
+        result = cog.stop_vote(guild.id)
+        # self.__bot.remove_cog("Election")
+        # self.__election_cog = None
+
+        announcements_id = files.getChannelId("announcements", guild.id)
+        announcements_channel = guild.get_channel(announcements_id)
         await announcements_channel.send("The voting has closed.")
         self.__has_lynched = True
         if len(result) == 0:
@@ -420,8 +429,8 @@ class Game(commands.Cog):
             dead_villager: Villager = self.findVillager(x)
             if len(result) > 1:
                 await announcements_channel.send(
-                f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
-                f"I'll pick {dead_villager.Mention}! No hard feelings!")
+                    f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
+                    f"I'll pick {dead_villager.Mention}! No hard feelings!")
             await self.die(guild, dead_villager)
             dead_villager.die()
             lynched_message = files.werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
@@ -453,6 +462,7 @@ class Game(commands.Cog):
     async def daytimeannounce(self):
         announcements_id = files.getChannelId("announcements")
         announcements_channel = self.__bot.get_channel(announcements_id)
+
         await announcements_channel.send("It is daytime")
         # if self.__bakerdead and self.__bakerdays > 0:
         #     await announcements_channel.send(f"You have {self.__bakerdays} days left")
@@ -471,8 +481,8 @@ class Game(commands.Cog):
         # self.__killed = False
         self.__bot.loop.create_task(self.nighttimeannounce())
         self.__abilities.nighttime()
-        if self.__election_cog is not None:
-            self.__election_cog.stop_vote()
+        if election.is_vote(681696629224505376):
+            self.__bot.loop.create_task(self.stopvote(self.__bot.get_guild(681696629224505376)))
 
     async def nighttimeannounce(self):
         announcements_id = files.getChannelId("announcements")

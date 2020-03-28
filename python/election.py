@@ -8,23 +8,28 @@ from villager import Villager
 import models.election
 import models.villager
 
+def is_vote(guild_id):
+    db_election = models.election.Election.find_one({"server": guild_id})
+    return db_election is not None
+
+def start_vote(channel, guild_id, people):
+    casted_votes = {}
+    for x in people:
+        casted_votes[str(x.UserID)] = 0
+    models.election.delete_many({"server": guild_id})
+    models.villager.Villager.find({"server": guild_id})
+    models.election.Election({
+        "server": guild_id,
+        "casted_votes": casted_votes,
+        "people": [x.UserID for x in people],
+        "channel": channel.id
+    }).save()
+
 
 class Election(commands.Cog):
 
-    def __init__(self, bot, future, people, guild_id, channel=None):
+    def __init__(self, bot):
         self.__bot = bot
-        self.__future = future
-        casted_votes = {}
-        for x in people:
-            casted_votes[str(x.UserID)] = 0
-        models.election.delete_many({"server": guild_id})
-        models.villager.Villager.find({"server": guild_id})
-        models.election.Election({
-            "server": guild_id,
-            "casted_votes": casted_votes,
-            "people": [x.UserID for x in people],
-            "channel": channel.id
-        }).save()
 
     @commands.command(**command_parameters['showleading'])
     async def showleading(self, ctx):
@@ -37,7 +42,7 @@ class Election(commands.Cog):
 
     # TODO Figure out how to get the guild_id at nighttime
     def stop_vote(self, guild_id=681696629224505376):
-        self.__future.set_result(self.__get_leading(guild_id))
+        return self.__get_leading(guild_id)
 
     @commands.command(**command_parameters['lock'])
     @is_vote_channel()
@@ -124,17 +129,6 @@ class Election(commands.Cog):
             await ctx.send("No one voted yet.")
         else:
             await ctx.send(voted_people)
-
-    # def findCandidate(self, name: str) -> Optional[Villager]:
-    #     if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
-    #         name = name[3:-1]
-    #     elif name[0:2] == "<@":
-    #         name = name[2:-1]
-    #     for x in self.__people:
-    #         if x.Name.lower() == name.lower() or str(
-    #                 x.UserID).lower() == name.lower() or x.DiscordTag.lower() == name.lower() or x.NickName.lower() == name.lower():
-    #             return x
-    #     return None
 
     def getCandidateID(self, name: str, server_id: int) -> int:
         people = models.villager.Villager.find({"server": server_id})
