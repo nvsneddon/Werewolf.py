@@ -381,7 +381,7 @@ class Game(commands.Cog):
         announcements_id = files.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
         town_square_id = files.getChannelId("town-square")
-        town_square_channel = guild.get_channel(announcements_id, guild.id)
+        town_square_channel = guild.get_channel(announcements_id)
         future = self.__bot.loop.create_future()
         to_vote = []
         for i in self.__players:
