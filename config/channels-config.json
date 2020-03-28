@@ -68,6 +68,26 @@
                 "external_emojis": true,
                 "add_reactions": true
             },
+            "Dead": {
+                "read_messages": true,
+                "send_messages": false,
+                "send_tts_messages": false,
+                "embed_links": false,
+                "attach_files": false,
+                "mention_everyone": false,
+                "external_emojis": false,
+                "add_reactions": true
+            },
+            "Alive": {
+                "read_messages": true,
+                "send_messages": false,
+                "send_tts_messages": false,
+                "embed_links": false,
+                "attach_files": false,
+                "mention_everyone": false,
+                "external_emojis": false,
+                "add_reactions": true
+            },
             "@everyone": {
                 "read_messages": true,
                 "send_messages": false,
