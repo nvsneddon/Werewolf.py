@@ -105,7 +105,7 @@ class Bot(commands.Cog):
                 return
             for player in players:
                 await player.edit(roles=[alive_role])
-            game_cog = Game(self.__bot, randomshuffle=False, members=players, guild_id=ctx.guild.id, future=game_future, roles=args, send_message_flag=False)
+            game_cog = Game(self.__bot, randomshuffle=True, members=players, future=game_future, roles=args, send_message_flag=False)
             self.__bot.add_cog(game_cog)
             self.__game = True
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
@@ -117,7 +117,7 @@ class Bot(commands.Cog):
                         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                         await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
-        town_square_id = files.getChannelId("town-square", ctx.guild.id)
+        town_square_id = files.getChannelId("announcements", ctx.guild.id)
         town_square_channel = self.__bot.get_channel(town_square_id)
         await town_square_channel.send("Let the games begin!")
         await ctx.send("The game has started!")

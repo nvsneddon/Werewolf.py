@@ -161,7 +161,7 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters['kill'])
     @decorators.is_from_channel("werewolves")
-    async def kill(self, ctx, person_name: str):
+    async def kill(self, ctx, person_name):
         if not self.__abilities.check_ability("werewolves"):
             await ctx.send("You already killed. Get some rest and don't get caught.")
             return
@@ -172,14 +172,14 @@ class Game(commands.Cog):
         self.__abilities.use_ability("werewolves")
         if target.Protected:
             await ctx.send("That person has been protected. You just wasted your kill!")
-            town_square_id = files.getChannelId("town-square")
-            town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(f"The werewolves have tried to kill {target.Mention} but has been protected. We're glad you're alive.")
+            announcement_id = files.getChannelId("announcements")
+            announcements_channel = ctx.guild.get_channel(announcement_id)
+            await announcements_channel.send(f"The werewolves have tried to kill {target.Mention} but has been protected. We're glad you're alive.")
         else:
             await ctx.send("Killing {}".format(target.Mention))
-            town_square_id = files.getChannelId("town-square")
-            town_square_channel = ctx.guild.get_channel(town_square_id)
-            await town_square_channel.send(files.werewolfMessages[target.Character]["killed"].format(target.Mention))
+            announcement_id = files.getChannelId("announcements")
+            announcements_channel = ctx.guild.get_channel(announcement_id)
+            await announcements_channel.send(files.werewolfMessages[target.Character]["killed"].format(target.Mention))
             await self.die(ctx.guild, target)
         if self.Winner != "":
             self.__game_future.set_result(self.Winner)
@@ -222,7 +222,7 @@ class Game(commands.Cog):
             self.__inlove.remove(target)
             other: Villager = self.__inlove[0]
             self.__inlove.remove(other)
-            town_square_id = files.getChannelId("town-square")
+            town_square_id = files.getChannelId("announcements")
             town_square_channel = guild.get_channel(town_square_id)
             await town_square_channel.send(files.werewolfMessages[other.Character]["inlove"].format(other.Mention))
             await self.die(guild, other)
@@ -277,9 +277,9 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters['investigate'])
     @decorators.is_from_channel("seer")
-    async def investigate(self, ctx, person_name: str):
+    async def investigate(self, ctx, person_name):
         if not self.__abilities.check_ability("seer"):
-            await ctx.send("The future is hazy, but tomorrow you could have a better chance. If you don't die before!")
+            await ctx.send("The future is hazy, but when it's night again you may have a better chance. If you don't die before!")
             return
         target = self.findVillager(person_name)
         if target is None:
@@ -288,12 +288,12 @@ class Game(commands.Cog):
         if not self.__abilities.check_ability("seer"):
             await ctx.send("You already used your ability. Try again after the next sunrise.")
             return
-        await ctx.send("{} is {} a werewolf".format(target.Mention, "" if target.Werewolf else "not"))
+        await ctx.send("{} is {}a werewolf".format(target.Mention, "" if target.Werewolf else "not "))
         self.__abilities.use_ability("seer")
 
     @commands.command(**files.command_parameters['protect'])
     @decorators.is_from_channel("bodyguard")
-    async def protect(self, ctx, person_name: str):
+    async def protect(self, ctx, person_name):
         if not self.__abilities.check_ability("bodyguard"):
             await ctx.send("You've been protecting someone and now you're tired. Get some rest until the next morning.")
             return
@@ -380,6 +380,8 @@ class Game(commands.Cog):
         self.__lynching = True
         town_square_id = files.getChannelId("town-square", guild.id)
         town_square_channel = guild.get_channel(town_square_id)
+        announcements_id = files.getChannelId("announcements", guild.id)
+        announcements_channel = guild.get_channel(announcements_id)
         future = self.__bot.loop.create_future()
         to_vote = []
         for i in self.__players:
@@ -399,7 +401,7 @@ class Game(commands.Cog):
         # m.save()
         self.__election_cog = election.Election(self.__bot, future, to_vote, channel=town_square_channel, guild_id=guild.id)
         self.__bot.add_cog(self.__election_cog)
-        await town_square_channel.send("You can now vote to lynch.")
+        await announcements_channel.send("You can now vote to lynch.")
         await future
         m.remove()
         self.__lynching = False
@@ -407,23 +409,23 @@ class Game(commands.Cog):
         self.__election_cog = None
         result = future.result()
         if result == "cancel":
-            await town_square_channel.send("The lynching vote has been cancelled")
+            await announcements_channel.send("The lynching vote has been cancelled")
             return
-        await town_square_channel.send("The voting has closed.")
+        await announcements_channel.send("The voting has closed.")
         self.__has_lynched = True
         if len(result) == 0:
-            await town_square_channel.send("All of you guys forgot to vote. Too bad!")
+            await announcements_channel.send("All of you guys forgot to vote. Too bad!")
         else:
             x = random.choice(result)
             dead_villager: Villager = self.findVillager(x)
             if len(result) > 1:
-                await town_square_channel.send(
+                await announcements_channel.send(
                 f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
                 f"I'll pick {dead_villager.Mention}! No hard feelings!")
             await self.die(guild, dead_villager )
             dead_villager.die()
             lynched_message = files.werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
-            await town_square_channel.send(lynched_message)
+            await announcements_channel.send(lynched_message)
             if self.Winner != "":
                 self.__game_future.set_result(self.Winner)
 
@@ -436,35 +438,34 @@ class Game(commands.Cog):
 
     def daytime(self):
         guild = self.__bot.get_guild(681696629224505376)
-        if self.__bakerdead:
-            self.__bot.loop.create_task(self.starve_die(self.__starving_people[self.__bakerdays], guild))
-
-            self.__bakerdays += 1
-            if self.Winner != "":
-                self.__game_future.set_result(self.Winner)
-                return
-
         for x in self.__players:
             x.Protected = False
         self.__has_lynched = False
         self.__abilities.daytime()
         self.__bot.loop.create_task(self.daytimeannounce())
+        if self.__bakerdead:
+            self.__bot.loop.create_task(self.starve_die(self.__starving_people[self.__bakerdays], guild))
+
+            if self.Winner != "":
+                self.__game_future.set_result(self.Winner)
+                return
 
     async def daytimeannounce(self):
-        town_square_id = files.getChannelId("town-square")
-        town_square_channel = self.__bot.get_channel(town_square_id)
-        await town_square_channel.send("It is daytime")
+        announcements_id = files.getChannelId("announcements")
+        announcements_channel = self.__bot.get_channel(announcements_id)
+        await announcements_channel.send("It is daytime")
         # if self.__bakerdead and self.__bakerdays > 0:
-        #     await town_square_channel.send(f"You have {self.__bakerdays} days left")
-        await self.startvote(town_square_channel.guild)
+        #     await announcements_channel.send(f"You have {self.__bakerdays} days left")
+        await self.startvote(announcements_channel.guild)
 
     async def starve_die(self, dead_people, guild):
-        town_square_id = files.getChannelId("town-square")
+        town_square_id = files.getChannelId("announcements")
         town_square_channel = guild.get_channel(town_square_id)
         for x in dead_people:
             if not x.Dead:
                 await self.die(guild, x)
                 await town_square_channel.send(files.werewolfMessages[x.Character]["starve"].format(x.Mention))
+        self.__bakerdays += 1
 
     def nighttime(self):
         # self.__killed = False
@@ -474,9 +475,9 @@ class Game(commands.Cog):
             self.__election_cog.stop_vote()
 
     async def nighttimeannounce(self):
-        town_square_id = files.getChannelId("town-square")
-        town_square_channel = self.__bot.get_channel(town_square_id)
-        await town_square_channel.send("It is nighttime")
+        announcements_id = files.getChannelId("announcements")
+        announcements_channel = self.__bot.get_channel(announcements_id)
+        await announcements_channel.send("It is nighttime")
 
     def almostnighttime(self):
         self.__bot.loop.create_task(self.almostnighttimeannounce())
