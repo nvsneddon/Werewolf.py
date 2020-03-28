@@ -381,7 +381,7 @@ class Game(commands.Cog):
         announcements_id = files.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
         town_square_id = files.getChannelId("town-square")
-        town_square_channel = guild.get_channel(announcements_id)
+        town_square_channel = guild.get_channel(town_square_id)
         future = self.__bot.loop.create_future()
         to_vote = []
         for i in self.__players:
@@ -454,6 +454,7 @@ class Game(commands.Cog):
     async def daytimeannounce(self):
         announcements_id = files.getChannelId("announcements")
         announcements_channel = self.__bot.get_channel(announcements_id)
+
         await announcements_channel.send("It is daytime")
         # if self.__bakerdead and self.__bakerdays > 0:
         #     await announcements_channel.send(f"You have {self.__bakerdays} days left")

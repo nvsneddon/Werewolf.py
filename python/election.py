@@ -9,22 +9,26 @@ import models.election
 import models.villager
 
 
+def start_vote(channel, guild_id, people):
+    casted_votes = {}
+    for x in people:
+        casted_votes[str(x.UserID)] = 0
+    models.election.delete_many({"server": guild_id})
+    models.villager.Villager.find({"server": guild_id})
+    models.election.Election({
+        "server": guild_id,
+        "casted_votes": casted_votes,
+        "people": [x.UserID for x in people],
+        "channel": channel.id
+    }).save()
+
+
 class Election(commands.Cog):
 
     def __init__(self, bot, future, people, guild_id, channel=None):
         self.__bot = bot
         self.__future = future
-        casted_votes = {}
-        for x in people:
-            casted_votes[str(x.UserID)] = 0
-        models.election.delete_many({"server": guild_id})
-        models.villager.Villager.find({"server": guild_id})
-        models.election.Election({
-            "server": guild_id,
-            "casted_votes": casted_votes,
-            "people": [x.UserID for x in people],
-            "channel": channel.id
-        }).save()
+        start_vote(channel, guild_id, people)
 
     @commands.command(**command_parameters['showleading'])
     async def showleading(self, ctx):
