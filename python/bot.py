@@ -7,7 +7,7 @@ from game import Game
 import asyncio
 import os
 import json
-from files import getChannelId, channels_config, roles_config, readJsonFromConfig, werewolfMessages, command_parameters
+import files
 
 
 def can_clear():
@@ -37,7 +37,7 @@ class Bot(commands.Cog):
             await ctx.send(str(error))
         print(error)
 
-    @commands.command(**command_parameters['echo'])
+    @commands.command(**files.command_parameters['echo'])
     async def echo(self, ctx, *args):
         if len(args) > 0:
             output = ''
@@ -47,7 +47,7 @@ class Bot(commands.Cog):
             print(output)
             await ctx.send(output)
 
-    @commands.command(**command_parameters['tickle'])
+    @commands.command(**files.command_parameters['tickle'])
     async def tickle(self, ctx):
         await ctx.send(":rofl:  Stop it!  :rofl: :rofl:")
 
@@ -66,17 +66,17 @@ class Bot(commands.Cog):
                 counter += 1
                 await asyncio.sleep(0.4)
 
-    @commands.command(**command_parameters["ping"])
+    @commands.command(**files.command_parameters["ping"])
     async def ping(self, ctx):
         await ctx.send(":ping_pong: Pong!")
 
-    @commands.command(**command_parameters['playing'])
+    @commands.command(**files.command_parameters['playing'])
     async def playing(self, ctx):
         playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
         await ctx.author.edit(roles={playing_role})
         await ctx.send(f"{ctx.author.mention} is now playing.")
 
-    @commands.command(**command_parameters['notplaying'])
+    @commands.command(**files.command_parameters['notplaying'])
     async def notplaying(self, ctx):
         if self.__game:
             await ctx.send("You can't stop now!")
@@ -84,7 +84,7 @@ class Bot(commands.Cog):
         await ctx.author.edit(roles=[])
         await ctx.send(f"{ctx.author.mention} is not playing.")
 
-    @commands.command(**command_parameters["startgame"])
+    @commands.command(**files.command_parameters["startgame"])
     @is_admin()
     async def startgame(self, ctx, *args: int):
         with ctx.typing():
@@ -103,19 +103,19 @@ class Bot(commands.Cog):
                 return
             for player in players:
                 await player.edit(roles=[alive_role])
-            game_cog = Game(self.__bot, members=players, future=game_future, roles=args, send_message_flag=True)
+            game_cog = Game(self.__bot, randomshuffle=True, members=players, future=game_future, roles=args, send_message_flag=False)
             self.__bot.add_cog(game_cog)
             self.__game = True
-            read_write_permission = readJsonFromConfig("permissions.json")["read_write"]
+            read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
             for x in ctx.guild.members:
                 if alive_role in x.roles:
                     character = game_cog.getVillagerByID(x.id).Character
-                    if character in channels_config["character-to-channel"]:
-                        channel_name = channels_config["character-to-channel"][character]
+                    if character in files.channels_config["character-to-channel"]:
+                        channel_name = files.channels_config["character-to-channel"][character]
                         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                         await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
-        town_square_id = getChannelId("town-square")
+        town_square_id = files.getChannelId("announcements")
         town_square_channel = self.__bot.get_channel(town_square_id)
         await town_square_channel.send("Let the games begin!")
         await ctx.send("The game has started!")
@@ -149,14 +149,21 @@ class Bot(commands.Cog):
             ctx.guild.roles, name="Owner")
         alive_role = discord.utils.get(
             ctx.guild.roles, name="Alive")
+        dead_role = discord.utils.get(
+            ctx.guild.roles, name="Dead")
         for member in ctx.guild.members:
-            if len(member.roles) == 1:
+            # if member.bot:
+            #     continue
+            if alive_role not in member.roles and dead_role not in member.roles :
                 continue
             if owner_role not in member.roles:
                 await member.edit(roles=[playing_role])
-            for x in channels_config["channels"]:
+            for x in files.channels_config["channels"]:
+                if x == "announcements":
+                    continue
                 channel = discord.utils.get(ctx.guild.channels, name=x)
                 await channel.set_permissions(member, overwrite=None)
+
 
     @commands.command(brief="Exits the game")
     @is_admin()
@@ -174,11 +181,11 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addroles(self, ctx):
-        for i, j in roles_config["roles"].items():
+        for i, j in files.roles_config["roles"].items():
             if discord.utils.get(ctx.guild.roles, name=i) is not None:
                 continue
             permission_object = discord.Permissions().none()
-            permission_object.update(**roles_config["general-permissions"])
+            permission_object.update(**files.roles_config["general-permissions"])
             if j["permissions-update"] is not None:
                 permission_object.update(**j["permissions-update"])
             c = discord.Color.from_rgb(*j["color"])
@@ -189,12 +196,12 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def resetrolepermissions(self, ctx):
-        for i, j in roles_config["roles"].items():
+        for i, j in files.roles_config["roles"].items():
             role = discord.utils.get(ctx.guild.roles, name=i)
             if role is None:
                 continue
             permissionObject = discord.Permissions().none()
-            permissionObject.update(**roles_config["general-permissions"])
+            permissionObject.update(**files.roles_config["general-permissions"])
             if j["permissions-update"] is not None:
                 permissionObject.update(**j["permissions-update"])
             await role.edit(permissions=permissionObject)
@@ -204,15 +211,16 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addcategory(self, ctx):
-        c = await ctx.guild.create_category_channel(channels_config["category-name"])
-        for i, j in channels_config["category-permissions"].items():
+        town_square_category = await ctx.guild.create_category_channel(files.channels_config["category-name"])
+        for i, j in files.channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
-            await c.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+            await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
         channel_id_dict = dict()
-        for i in channels_config["channels"]:
-            await ctx.guild.create_text_channel(name=i, category=c)
+        channel_id_dict["guild"] = ctx.guild.id
+        for i in files.channels_config["channels"]:
+            await ctx.guild.create_text_channel(name=i, category=town_square_category)
             channel = discord.utils.get(ctx.guild.channels, name=i)
-            await channel.send('\n'.join(werewolfMessages["channel_messages"][i]))
+            await channel.send('\n'.join(files.werewolfMessages["channel_messages"][i]))
             channel_id_dict[i] = channel.id
             async for x in (channel.history(limit=1)):
                 await x.pin()
@@ -226,8 +234,10 @@ class Bot(commands.Cog):
             print("Channel_id_list.json not found. Exiting now!")
             exit()
 
-        for i, j in channels_config["channel-permissions"].items():
-            ch = discord.utils.get(c.channels, name=i)
+        for i, j in files.channels_config["channel-permissions"].items():
+            ch = discord.utils.get(town_square_category.channels, name=i)
+            if ch is None:
+                print("The name is", i)
             for k, l in j.items():
                 target = discord.utils.get(ctx.guild.roles, name=k)
                 await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
@@ -239,7 +249,7 @@ class Bot(commands.Cog):
     @is_admin()
     async def removecategory(self, ctx):
         c = discord.utils.get(ctx.guild.categories,
-                              name=channels_config["category-name"])
+                              name=files.channels_config["category-name"])
         for i in c.channels:
             await i.delete()
         await c.delete()

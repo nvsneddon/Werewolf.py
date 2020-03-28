@@ -3,6 +3,7 @@ class Abilities:
     def __init__(self):
         self.__roles = {
             "spirits": False,
+            "dead_wolves": False,
             "werewolves": False,
             "seer": False,
             "bodyguard": False,
@@ -10,8 +11,8 @@ class Abilities:
             "cupid": True
         }
 
-        self.__night = ("spirits", "werewolves")
-        self.__day = ("seer", "bodyguard", "villager")
+        self.__night = ("seer", "spirits", "dead_wolves", "werewolves")
+        self.__day = ("bodyguard", "villager")
 
     def __reset_abilities(self):
         for x in self.__roles:

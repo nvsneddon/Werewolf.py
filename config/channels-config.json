@@ -1,6 +1,7 @@
 {
     "category-name": "The Town",
     "channels": [
+        "announcements",
         "town-square",
         "werewolves",
         "seer",
@@ -11,6 +12,17 @@
         "afterlife"
     ],
     "category-permissions": {
+        "Owner": {
+            "read_messages": true,
+            "send_messages": true,
+            "send_tts_messages": true,
+            "embed_links": true,
+            "attach_files": true,
+            "read_message_history": true,
+            "mention_everyone": true,
+            "external_emojis": true,
+            "add_reactions": true
+        },
         "Alive": {
             "read_messages": false,
             "send_messages": false,
@@ -44,6 +56,49 @@
         }
     },
     "channel-permissions": {
+        "announcements": {
+            "Owner": {
+                "read_messages": true,
+                "send_messages": true,
+                "send_tts_messages": true,
+                "embed_links": true,
+                "attach_files": true,
+                "read_message_history": true,
+                "mention_everyone": true,
+                "external_emojis": true,
+                "add_reactions": true
+            },
+            "Dead": {
+                "read_messages": true,
+                "send_messages": false,
+                "send_tts_messages": false,
+                "embed_links": false,
+                "attach_files": false,
+                "mention_everyone": false,
+                "external_emojis": false,
+                "add_reactions": true
+            },
+            "Alive": {
+                "read_messages": true,
+                "send_messages": false,
+                "send_tts_messages": false,
+                "embed_links": false,
+                "attach_files": false,
+                "mention_everyone": false,
+                "external_emojis": false,
+                "add_reactions": true
+            },
+            "@everyone": {
+                "read_messages": true,
+                "send_messages": false,
+                "send_tts_messages": false,
+                "embed_links": false,
+                "attach_files": false,
+                "mention_everyone": false,
+                "external_emojis": false,
+                "add_reactions": true
+            }
+        },
         "afterlife": {
             "Alive": {
                 "read_messages": false,
