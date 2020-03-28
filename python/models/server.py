@@ -27,21 +27,3 @@ server_schema = mongothon.Schema({
 })
 
 Server = mongothon.create_model(server_schema, my_db['server'])
-
-if __name__ == '__main__':
-    test = Server({
-        "server": 123456,
-        "daytime": {
-            "hour": 8,
-            "minute": 30
-        },
-        "nighttime": {
-            "hour": 20,
-            "minute": 0
-        }
-    })
-    test.save()
-    x = Server.find_one({"server": 123456})
-    print(x)
-    test.remove()
-    # y = Channels.find_by_id(id_string)
