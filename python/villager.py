@@ -22,12 +22,13 @@ class Villager:
         schema = {
             "discord_id": id,
             "server": server,
-            "character": character,
-            "werewolf": self.__is_werewolf
         }
         v = models.villager.Villager.find_one(schema)
         if v is not None:
             raise DocumentFoundException
+
+        schema["character"] = character
+        schema["werewolf"] = self.__is_werewolf
         v = models.villager.Villager(schema)
         v.save()
 
