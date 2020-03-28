@@ -71,7 +71,7 @@
         "welcome":[
             "Welcome back from your hunting trip hunter! I hope you had a great time!",
             "You are armed with a sweet rifle that will be able to take anyone down before you go to your grave.",
-            "To use this gift of yours, once you die, you tell the town-square who you're going to shoot with !shoot <person>"
+            "To use this gift of yours, once you die, you tell the town-square who you're going to shoot with !shoot person"
         ],
         "killed": "The hunter {} has died. It's now time for his moment to shine and for him to kill someone else. To kill someone now, please go to the town-square and type !shoot person",
         "lynched": "You just voted to kill the great hunter {}. The hunter's understandably angry and will kill one of you before the hunter dies. To kill someone now, please go to the town-square and type !shoot person",
@@ -150,19 +150,19 @@
         ],
         "werewolves":  [
             "If you see this, it's because you're a werewolf. You have your own spot here to talk with other werewolves.",
-            "Oh yeah, you can also kill using the !kill <person> command."
+            "Oh yeah, you can also kill using the !kill person command."
         ],
         "seer":  [
-            "This is your home. You can investigate people using the !investigate <person> command.",
+            "This is your home. You can investigate people using the !investigate person command.",
             "I hope you use this wisely."
         ],
         "bodyguard":  [
             "You can use this channel to protect someone. You can't pick the same person twice.",
-            "To protect someone, use the !protect <person> command."
+            "To protect someone, use the !protect person command."
         ],
         "cupid":  [
             "The place where you can make people fall in love.",
-            "All you need to do is use the command !match <person1> <person2>"
+            "All you need to do is use the command !match person1 person2"
         ],
         "mason":  [
             "Welcome, fellow Masons to the clan. You can trust everyone in here with your life because they're no werewolf.",
@@ -175,7 +175,7 @@
         ],
         "afterlife": [
             "Welcome to the afterlife! You have died but you have a chance to avenge yourselves of your death.",
-            "You can send a message every night using the !sendmessage <word> command.",
+            "You can send a message every night using the !sendmessage word command.",
             "If the mortals are having a hard time figuring out your message, you can use !sendhint instead."
         ]
     }
