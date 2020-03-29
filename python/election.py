@@ -43,9 +43,7 @@ class Election(commands.Cog):
     # TODO Figure out how to get the guild_id at nighttime
     def stop_vote(self, guild_id=681696629224505376):
         leading = self.__get_leading(guild_id)
-        x = models.election.Election.find({"server": guild_id})
-        for i in x:
-            i.remove()
+        models.election.delete_many({"server": guild_id})
         return leading
 
     @commands.command(**command_parameters['lock'])
