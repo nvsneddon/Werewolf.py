@@ -145,13 +145,13 @@ class Game(commands.Cog):
         return cards
 
     def schedule_day_and_night(self, guild_id=681696629224505376):
-        schedule.every().day.at(files.config["daytime"]).do(self.daytime).tag("game", guild_id)
+        schedule.every().day.at(files.config["daytime"]).do(self.daytime, guild_id=guild_id).tag("game", guild_id)
         warn_voting_time = datetime.datetime(1, 1, 1, int(
             files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0,
                                                                                                      files.config[
                                                                                                          'minutes-before-warning'])
-        schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime).tag("game", guild_id)
-        schedule.every().day.at(files.config["nighttime"]).do(self.nighttime).tag("game", guild_id)
+        schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime, guild_id=guild_id).tag("game", guild_id)
+        schedule.every().day.at(files.config["nighttime"]).do(self.nighttime, guild_id=guild_id).tag("game", guild_id)
         night_array = files.config["nighttime"].split(':')
         day_array = files.config["daytime"].split(':')
         check_time = datetime.datetime.now().time()
