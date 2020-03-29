@@ -6,6 +6,7 @@ from election import Election
 from game import Game
 import asyncio
 import models.channels
+import models.game
 import models.villager
 import os
 import json
@@ -147,23 +148,11 @@ class Bot(commands.Cog):
         self.__bot.remove_cog("Game")
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
-        # owner_role = discord.utils.get(
-        #     ctx.guild.roles, name="Owner")
-        # alive_role = discord.utils.get(
-        #     ctx.guild.roles, name="Alive")
-        # dead_role = discord.utils.get(
-        #     ctx.guild.roles, name="Dead")
 
         villagers = models.villager.Villager.find({"server": ctx.guild.id})
         for v in villagers:
-        #     v.remove()
-        # for member in ctx.guild.members:
-            # if member.bot:
-            #     continue
             member = ctx.guild.get_member(v["discord_id"])
-            # if alive_role not in member.roles and dead_role not in member.roles :
-            #     continue
-            # if owner_role not in member.roles:
+
             await member.edit(roles=[playing_role])
             for x in files.channels_config["channels"]:
                 if x == "announcements":
@@ -171,9 +160,7 @@ class Bot(commands.Cog):
                 channel = discord.utils.get(ctx.guild.channels, name=x)
                 await channel.set_permissions(member, overwrite=None)
             v.remove()
-        # models.villager.removeAll({"server": ctx.guild.id})
-
-
+        models.game.delete_ma
 
     @commands.command(brief="Exits the game")
     @is_admin()

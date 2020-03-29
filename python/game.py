@@ -11,6 +11,7 @@ from discord.ext import commands
 import decorators
 import election
 import models.election
+import models.game
 import files
 from villager import Villager
 from abilities import Abilities
@@ -34,17 +35,19 @@ class Game(commands.Cog):
     # roles is a list of numbers of all of the characters that will be playing
     # raises ValueError Exception when too many roles are handed out
 
-    async def die_from_db(self, villager_tag: str, server: int):
+    async def die_from_db(self, villager_id: str, guild_id: int):
         v = models.villager.Villager.find_one({
-            "server": server,
-            "name": villager_tag
+            "server": guild_id,
+            "discord_id": villager_id
         })
 
-        guild = self.__bot.get_guild(server)
-        member = guild.get_member_named(villager_tag)
+        guild = self.__bot.get_guild(guild_id)
+        member = guild.get_member(villager_tag)
         if v["werewolf"]:
+            answer = True
             self.__numWerewolves -= 1
         else:
+            answer = False
             self.__numVillagers -= 1
         if v["character"] == "hunter":
             self.__hunter = True
@@ -52,6 +55,7 @@ class Game(commands.Cog):
         v.update_instance({"alive": False})
         if v["character"] == 'baker':
             self.__bakerdead = True
+        return answer
 
 
     def timer(self):
@@ -61,6 +65,7 @@ class Game(commands.Cog):
 
     def hunter():
         def predicate(ctx):
+
             cog = ctx.bot.get_cog("Game")
             return cog.Hunter and cog.AlmostDead == str(ctx.message.author)
 
@@ -99,7 +104,7 @@ class Game(commands.Cog):
 
         self.schedule_day_and_night()
 
-        cards = self.distribute_roles(roles)
+        cards = self.__distribute_roles(roles)
 
         if len(members) > len(cards):
             cards += (len(members) - len(cards)) * ["villager"]
@@ -116,9 +121,14 @@ class Game(commands.Cog):
             message = '\n'.join(files.werewolfMessages[y.Character]["welcome"])
             if send_message_flag:
                 self.__bot.loop.create_task(self.__sendPM(x, message))
-
-
-
+        models.game.delete_many({"server": guild_id})
+        game_object = models.game.Game({
+            "server": guild_id,
+            "players": [x.id for x in members],
+            "werewolfcount": self.__numWerewolves,
+            "villagercount": self.__numVillagers
+        })
+        game_object.save()
         afterlife_message = ""
 
         for i in self.__players:
@@ -127,7 +137,7 @@ class Game(commands.Cog):
 
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message))
 
-    def distribute_roles(self, roles):
+    def __distribute_roles(self, roles):
         cards = []
         if len(roles) >= 7:
             cards += roles[6] * ["mason"]
@@ -148,9 +158,8 @@ class Game(commands.Cog):
     def schedule_day_and_night(self, guild_id=681696629224505376):
         schedule.every().day.at(files.config["daytime"]).do(self.daytime, guild_id=guild_id).tag("game", guild_id)
         warn_voting_time = datetime.datetime(1, 1, 1, int(
-            files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0,
-                                                                                                     files.config[
-                                                                                                         'minutes-before-warning'])
+            files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - \
+                           datetime.datetime(1, 1, 1, 0,files.config['minutes-before-warning'])
         schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime, guild_id=guild_id).tag("game", guild_id)
         schedule.every().day.at(files.config["nighttime"]).do(self.nighttime, guild_id=guild_id).tag("game", guild_id)
         night_array = files.config["nighttime"].split(':')
@@ -198,7 +207,7 @@ class Game(commands.Cog):
             self.__game_future.set_result(self.Winner)
 
     async def die(self, guild, target: Villager):
-        if target.die():
+        if target.die(guild.id):
             self.__numWerewolves -= 1
             self.__bakerdays -= 1
         else:
@@ -443,7 +452,7 @@ class Game(commands.Cog):
                     f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
                     f"I'll pick {dead_villager.Mention}! No hard feelings!")
             await self.die(guild, dead_villager)
-            dead_villager.die()
+            # dead_villager.die(guild.id)
             lynched_message = files.werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
             await announcements_channel.send(lynched_message)
             await self.die(guild, dead_villager )

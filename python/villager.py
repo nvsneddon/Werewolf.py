@@ -25,7 +25,7 @@ class Villager:
         }
         v = models.villager.Villager.find_one(schema)
         if v is not None:
-            raise DocumentFoundException
+            v.remove()
 
         schema["character"] = character
         schema["werewolf"] = self.__is_werewolf
