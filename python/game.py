@@ -146,7 +146,6 @@ class Game(commands.Cog):
             files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - datetime.datetime(1, 1, 1, 0,
                                                                                                      files.config[
                                                                                                          'minutes-before-warning'])
-        schedule.every(5).seconds.do(test).tag("game", guild_id)
         schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime).tag("game", guild_id)
         schedule.every().day.at(files.config["nighttime"]).do(self.nighttime).tag("game", guild_id)
         night_array = files.config["nighttime"].split(':')
