@@ -4,7 +4,6 @@ from dbconnect import my_db
 
 game_schema = mongothon.Schema({
     "server": {"type": int, "required": True},
-    "cipher_id": {"type": str, "default": "0"},
     "players": {"type": list, "required": True},
     "inlove": {"type": list, "default": []},
     "bakerdead": {"type": bool, "default": False},

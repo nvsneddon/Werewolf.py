@@ -98,21 +98,7 @@ class Game(commands.Cog):
 
         self.schedule_day_and_night()
 
-        cards = []
-        if len(roles) >= 7:
-            cards += roles[6] * ["mason"]
-        if len(roles) >= 6:
-            cards += roles[5] * ["baker"]
-        if len(roles) >= 5:
-            cards += roles[4] * ["hunter"]
-        if len(roles) >= 4:
-            cards += roles[3] * ["cupid"]
-        if len(roles) >= 3:
-            cards += roles[2] * ["bodyguard"]
-        if len(roles) >= 2:
-            cards += roles[1] * ["seer"]
-        if len(roles) >= 1:
-            cards += roles[0] * ["werewolf"]
+        cards = self.distribute_roles(roles)
 
         if len(members) > len(cards):
             cards += (len(members) - len(cards)) * ["villager"]
@@ -139,6 +125,24 @@ class Game(commands.Cog):
             print(i)
 
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message))
+
+    def distribute_roles(self, roles):
+        cards = []
+        if len(roles) >= 7:
+            cards += roles[6] * ["mason"]
+        if len(roles) >= 6:
+            cards += roles[5] * ["baker"]
+        if len(roles) >= 5:
+            cards += roles[4] * ["hunter"]
+        if len(roles) >= 4:
+            cards += roles[3] * ["cupid"]
+        if len(roles) >= 3:
+            cards += roles[2] * ["bodyguard"]
+        if len(roles) >= 2:
+            cards += roles[1] * ["seer"]
+        if len(roles) >= 1:
+            cards += roles[0] * ["werewolf"]
+        return cards
 
     def schedule_day_and_night(self, guild_id=681696629224505376):
         schedule.every().day.at(files.config["daytime"]).do(self.daytime).tag("game", guild_id)
@@ -260,7 +264,7 @@ class Game(commands.Cog):
     @commands.command(aliases=['nighttime'])
     @decorators.is_admin()
     async def night(self, ctx):
-        self.nighttime()
+        self.nighttime(ctx.guild.id)
 
     @commands.command()
     @decorators.is_admin()
@@ -490,7 +494,7 @@ class Game(commands.Cog):
 
     def nighttime(self, guild_id):
         # self.__killed = False
-        self.__bot.loop.create_task(self.nighttimeannounce())
+        self.__bot.loop.create_task(self.nighttimeannounce(guild_id))
         self.__abilities.nighttime()
         if election.is_vote(guild_id):
             self.__bot.loop.create_task(self.stopvote(self.__bot.get_guild(guild_id)))
