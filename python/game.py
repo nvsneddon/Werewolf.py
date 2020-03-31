@@ -42,7 +42,7 @@ class Game(commands.Cog):
         })
 
         guild = self.__bot.get_guild(guild_id)
-        member = guild.get_member(villager_tag)
+        member = guild.get_member(villager_id)
         if v["werewolf"]:
             answer = True
             self.__numWerewolves -= 1
@@ -51,11 +51,31 @@ class Game(commands.Cog):
             self.__numVillagers -= 1
         if v["character"] == "hunter":
             self.__hunter = True
-            self.__pending_death = villager_tag
-        v.update_instance({"alive": False})
+            self.__pending_death = v["discord_id"]
+            self.__hunter_future = self.__bot.loop.create_future()
+            await self.__hunter_future
+        v["alive"] = False
         if v["character"] == 'baker':
+            villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
+            max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
+            s_people = [[] for i in range(max_death_day)]
+            random.shuffle(villager_players)
+            n = 0
+            while len(villager_players) != 0:
+                p = villager_players[:3]
+                for i in p:
+                    r = random.choice(range(3)) + n
+                    s_people[r].append(i)
+                villager_players = villager_players[3:]
+                n += 3
+
             self.__bakerdead = True
-        return answer
+            self.__starving_people = s_people
+
+            for i in range(len(self.__starving_people)):
+                for j in self.__starving_people[i]:
+                    print(i, j.Name)
+        v.save()
 
 
     def timer(self):
@@ -67,7 +87,7 @@ class Game(commands.Cog):
         def predicate(ctx):
 
             cog = ctx.bot.get_cog("Game")
-            return cog.Hunter and cog.AlmostDead == str(ctx.message.author)
+            return cog.Hunter and cog.AlmostDead == ctx.message.author.id
 
         return commands.check(predicate)
 
@@ -202,16 +222,12 @@ class Game(commands.Cog):
             announcement_id = files.getChannelId("announcements")
             announcements_channel = ctx.guild.get_channel(announcement_id)
             await announcements_channel.send(files.werewolfMessages[target.Character]["killed"].format(target.Mention))
-            await self.die(ctx.guild, target)
+            await self.die_from_db(target.UserID, ctx.guild.id)
         if self.Winner != "":
             self.__game_future.set_result(self.Winner)
 
     async def die(self, guild, target: Villager):
-        if target.die(guild.id):
-            self.__numWerewolves -= 1
-            self.__bakerdays -= 1
-        else:
-            self.__numVillagers -= 1
+        die_from_db(guild.id, target.UserID)
         if target.Character == "hunter":
             self.__hunter = True
             self.__pending_death = target.DiscordTag

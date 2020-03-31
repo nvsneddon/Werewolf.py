@@ -112,7 +112,11 @@ class Bot(commands.Cog):
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
             for x in ctx.guild.members:
                 if alive_role in x.roles:
-                    character = game_cog.getVillagerByID(x.id).Character
+                    v_model = models.villager.Villager.find_one({
+                        "server": ctx.guild.id,
+                        "discord_id": x.id
+                    })
+                    character = v_model["character"]
                     if character in files.channels_config["character-to-channel"]:
                         channel_name = files.channels_config["character-to-channel"][character]
                         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
@@ -160,7 +164,7 @@ class Bot(commands.Cog):
                 channel = discord.utils.get(ctx.guild.channels, name=x)
                 await channel.set_permissions(member, overwrite=None)
             v.remove()
-        models.game.delete_ma
+        models.game.delete_many({"server": ctx.guild.id})
 
     @commands.command(brief="Exits the game")
     @is_admin()
