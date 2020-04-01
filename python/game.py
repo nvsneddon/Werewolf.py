@@ -19,6 +19,13 @@ from cipher import Cipher
 from exceptions import DocumentFoundException
 
 
+def hunter():
+    def predicate(ctx):
+        cog = ctx.bot.get_cog("Game")
+        return cog.Hunter and cog.AlmostDead == ctx.message.author.id
+
+    return commands.check(predicate)
+
 def test():
     print("Hi there")
 
@@ -35,19 +42,16 @@ class Game(commands.Cog):
     # roles is a list of numbers of all of the characters that will be playing
     # raises ValueError Exception when too many roles are handed out
 
-    async def die_from_db(self, villager_id: str, guild_id: int):
+    async def die_from_db(self, villager_id: int, guild_id: int):
         v = models.villager.Villager.find_one({
             "server": guild_id,
             "discord_id": villager_id
         })
 
         guild = self.__bot.get_guild(guild_id)
-        member = guild.get_member(villager_id)
         if v["werewolf"]:
-            answer = True
             self.__numWerewolves -= 1
         else:
-            answer = False
             self.__numVillagers -= 1
         if v["character"] == "hunter":
             self.__hunter = True
@@ -75,7 +79,29 @@ class Game(commands.Cog):
             for i in range(len(self.__starving_people)):
                 for j in self.__starving_people[i]:
                     print(i, j.Name)
+
+        if v["discord_id"] in self.__inlove:
+            self.__inlove.remove(v["discord_id"])
+            other: Villager = self.__inlove[0]
+            self.__inlove.remove(other)
+            town_square_id = files.getChannelId("announcements")
+            town_square_channel = guild.get_channel(town_square_id)
+            await town_square_channel.send(files.werewolfMessages[other.Character]["inlove"].format(other.Mention))
+            await self.die(guild, other)
         v.save()
+
+        dead_role = discord.utils.get(guild.roles, name="Dead")
+
+        for x in files.channels_config["channels"]:
+            print(x)
+            if x == "announcements":
+                continue
+            channel = guild.get_channel(files.getChannelId(x))
+            member = guild.get_member(v["discord_id"])
+            await channel.set_permissions(member, overwrite=None)
+
+        target_user = guild.get_member(v["discord_id"])
+        await target_user.edit(roles=[dead_role])
 
 
     def timer(self):
@@ -83,13 +109,7 @@ class Game(commands.Cog):
             schedule.run_pending()
             time.sleep(3)
 
-    def hunter():
-        def predicate(ctx):
 
-            cog = ctx.bot.get_cog("Game")
-            return cog.Hunter and cog.AlmostDead == ctx.message.author.id
-
-        return commands.check(predicate)
 
     def __init__(self, bot, members, future, roles, randomshuffle=True, send_message_flag=True, guild_id = 0):
 
@@ -227,34 +247,32 @@ class Game(commands.Cog):
             self.__game_future.set_result(self.Winner)
 
     async def die(self, guild, target: Villager):
-        die_from_db(guild.id, target.UserID)
-        if target.Character == "hunter":
-            self.__hunter = True
-            self.__pending_death = target.DiscordTag
-            self.__hunter_future = self.__bot.loop.create_future()
-            await self.__hunter_future
-        elif target.Character == "baker":
-            villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
-            max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
-            s_people = [[] for i in range(max_death_day)]
-            random.shuffle(villager_players)
-            n = 0
-            while len(villager_players) != 0:
-                p = villager_players[:3]
-                for i in p:
-                    r = random.choice(range(3)) + n
-                    s_people[r].append(i)
-                villager_players = villager_players[3:]
-                n += 3
-
-            self.__bakerdead = True
-            self.__starving_people = s_people
-
-            for i in range(len(self.__starving_people)):
-                for j in self.__starving_people[i]:
-                    print(i, j.Name)
-
-
+        # self.die_from_db(target.UserID, guild.id)
+        # if target.Character == "hunter":
+        #     self.__hunter = True
+        #     self.__pending_death = target.DiscordTag
+        #     self.__hunter_future = self.__bot.loop.create_future()
+        #     await self.__hunter_future
+        # elif target.Character == "baker":
+        #     villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
+        #     max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
+        #     s_people = [[] for i in range(max_death_day)]
+        #     random.shuffle(villager_players)
+        #     n = 0
+        #     while len(villager_players) != 0:
+        #         p = villager_players[:3]
+        #         for i in p:
+        #             r = random.choice(range(3)) + n
+        #             s_people[r].append(i)
+        #         villager_players = villager_players[3:]
+        #         n += 3
+        #
+        #     self.__bakerdead = True
+        #     self.__starving_people = s_people
+        #
+        #     for i in range(len(self.__starving_people)):
+        #         for j in self.__starving_people[i]:
+        #             print(i, j.Name)
 
         if target in self.__inlove:
             self.__inlove.remove(target)
@@ -404,8 +422,8 @@ class Game(commands.Cog):
             await ctx.send("You can't match dead villagers. Try again!")
             return
         self.__abilities.use_ability("cupid")
-        self.__inlove.append(villager1)
-        self.__inlove.append(villager2)
+        self.__inlove.append(villager1.DiscordTag)
+        self.__inlove.append(villager2.DiscordTag)
         await ctx.send("{} and {} are in love now".format(person1, person2))
         self.__bot.remove_command("match")
         read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
