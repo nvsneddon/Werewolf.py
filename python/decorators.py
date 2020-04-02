@@ -46,7 +46,7 @@ def is_not_character(character_name: str):
 def has_ability(character_name: str):
     def predicate(ctx):
         cog = ctx.bot.get_cog("Game")
-        return cog.Abilities.check_ability(character_name)
+        return cog.Abilities.check_ability(character_name, ctx.guild.id)
 
     return commands.check(predicate)
 

@@ -1,5 +1,4 @@
 import mongothon
-import pymongo
 
 from dbconnect import my_db
 

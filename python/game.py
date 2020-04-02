@@ -238,7 +238,7 @@ class Game(commands.Cog):
         if game_document is None:
             ctx.send("There's no game right now. You can't kill yet.")
             return
-        if not self.__abilities.check_ability("werewolves"):
+        if not self.__abilities.check_ability("werewolves", ctx.guild.id):
             await ctx.send("You already killed. Get some rest and don't get caught.")
             return
         target = self.findMember(name=person_name, guild_id=ctx.guild.id)
@@ -328,10 +328,10 @@ class Game(commands.Cog):
     @commands.command(**files.command_parameters['investigate'])
     @decorators.is_from_channel("seer")
     async def investigate(self, ctx, person_name):
-        if not self.__abilities.check_ability("seer"):
+        if not self.__abilities.check_ability("seer", ctx.guild.id):
             await ctx.send("You already used your ability. Try again after the next sunrise.")
             return
-        if not self.__abilities.check_ability("seer"):
+        if not self.__abilities.check_ability("seer", ctx.guild.id):
             await ctx.send(
                 "The future is hazy, but when it's night again you may have a better chance. If you don't die before!")
             return
@@ -352,7 +352,7 @@ class Game(commands.Cog):
     @commands.command(**files.command_parameters['protect'])
     @decorators.is_from_channel("bodyguard")
     async def protect(self, ctx, person_name):
-        if not self.__abilities.check_ability("bodyguard"):
+        if not self.__abilities.check_ability("bodyguard", ctx.guild.id):
             await ctx.send("You've been protecting someone and now you're tired. Get some rest until the next morning.")
             return
         # protector: villager.Villager = self.findVillager(ctx.message.author.name)
@@ -397,7 +397,7 @@ class Game(commands.Cog):
             "discord_id": ctx.author.id
         })
         is_werewolf = v["werewolf"]
-        if not self.__abilities.check_ability("dead_wolves" if is_werewolf else "spirits"):
+        if not self.__abilities.check_ability("dead_wolves" if is_werewolf else "spirits", ctx.guild.id):
             await ctx.send("You've already sent a message or a hint. Wait until the next night.")
             return
         if len(word.split(' ')) > 1:
