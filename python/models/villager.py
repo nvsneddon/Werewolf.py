@@ -11,7 +11,6 @@ villager_schema = mongothon.Schema({
     "character": {"type": str, "required": True},
     "werewolf": {"type": bool, "required": True},
     "alive": {"type": bool, "default": True},
-    "inlove": {"type": bool, "default": False}
 })
 
 Villager = mongothon.create_model(villager_schema, my_db['villager'])

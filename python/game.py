@@ -109,8 +109,12 @@ class Game(commands.Cog):
             town_square_id = files.getChannelId("announcements")
             town_square_channel = guild.get_channel(town_square_id)
             other_member = guild.get_member(other_id)
+            other_document = models.villager.Villager.find_one({
+                "server": guild.id,
+                "discord_id": other_id
+            })
             await town_square_channel.send(
-                files.werewolfMessages[v["character"]]["inlove"].format(other_member.mention))
+                files.werewolfMessages[other_document["character"]]["inlove"].format(other_member.mention))
             # await self.die(guild, other)
             await self.die_from_db(other_id, guild.id)
         v["alive"] = False
@@ -458,7 +462,7 @@ class Game(commands.Cog):
         # self.__bot.remove_command("match")
         read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
         love_channel = ctx.guild.get_channel(files.getChannelId("lovebirds", ctx.guild.id))
-        for x in self.__inlove:
+        for x in game_document["inlove"]:
             await love_channel.set_permissions(ctx.guild.get_member(x),
                                                overwrite=discord.PermissionOverwrite(**read_write_permission))
         await love_channel.send("Welcome {} and {}. "
