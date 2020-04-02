@@ -59,7 +59,6 @@ class Game(commands.Cog):
             self.__pending_death = v["discord_id"]
             self.__hunter_future = self.__bot.loop.create_future()
             await self.__hunter_future
-        v["alive"] = False
         if v["character"] == 'baker':
             villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
             max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
@@ -92,20 +91,21 @@ class Game(commands.Cog):
             await town_square_channel.send(files.werewolfMessages[v["character"]]["inlove"].format(other_member.mention))
             # await self.die(guild, other)
             await self.die_from_db(other_id, guild.id)
+        v["alive"] = False
         v.save()
         game_document.save()
+        member = guild.get_member(v["discord_id"])
 
+        await self.mark_dead(guild, member)
+
+    async def mark_dead(self, guild, member):
         dead_role = discord.utils.get(guild.roles, name="Dead")
-
         for x in files.channels_config["channels"]:
             if x == "announcements":
                 continue
             channel = guild.get_channel(files.getChannelId(x))
-            member = guild.get_member(v["discord_id"])
             await channel.set_permissions(member, overwrite=None)
-
-        target_user = guild.get_member(v["discord_id"])
-        await target_user.edit(roles=[dead_role])
+        await member.edit(roles=[dead_role])
 
     def timer(self):
         while not self.schedstop.is_set():
