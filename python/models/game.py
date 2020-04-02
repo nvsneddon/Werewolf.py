@@ -16,6 +16,7 @@ game_schema = mongothon.Schema({
     "last_protected_id": {"type": int, "default": -1},
     "protected": {"type": int, "default": -1},
     "hunter_ids": {"type": list, "default": []},
+    "starving": {"type": list, "default": []},
     "almost_dead_hunter": {"type": int, "default": -1},
     "werewolfcount": {"type": int, "required": True},
     "villagercount": {"type": int, "required": True},

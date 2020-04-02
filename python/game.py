@@ -70,25 +70,14 @@ class Game(commands.Cog):
             game_document.save()
             return
         if v["character"] == "baker":
-            villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
-            max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
-            s_people = [[] for i in range(max_death_day)]
-            random.shuffle(villager_players)
-            n = 0
-            while len(villager_players) != 0:
-                p = villager_players[:3]
-                for i in p:
-                    r = random.choice(range(3)) + n
-                    s_people[r].append(i)
-                villager_players = villager_players[3:]
-                n += 3
-
-            self.__bakerdead = True
-            self.__starving_people = s_people
-
-            for i in range(len(self.__starving_people)):
-                for j in self.__starving_people[i]:
-                    print(i, j.Name)
+            game_document["bakerdead"] = True
+            villagers = models.villager.Villager.find({
+                "server": guild_id
+            })
+            for v in villagers:
+                if v["alive"] and not v["werewolf"] and v["discord_id"] != villager_id:
+                    game_document["starving"].append(v["discord_id"])
+            game_document.save()
 
         await self.die(guild, villager_id)
 
@@ -121,9 +110,6 @@ class Game(commands.Cog):
         v.save()
         game_document.save()
         member = guild.get_member(v["discord_id"])
-    #     await self.mark_dead(guild, member)
-    #
-    # async def mark_dead(self, guild, member):
         dead_role = discord.utils.get(guild.roles, name="Dead")
         for x in files.channels_config["channels"]:
             if x == "announcements":
@@ -322,6 +308,11 @@ class Game(commands.Cog):
         if dead_villager_document is None:
             ctx.send("Please try again. That person wasn't able to be found.")
             return
+        game_document = models.game.Game.find_one({
+            "server": ctx.guild.id
+        })
+        game_document["hunter_ids"].remove(ctx.author.id)
+        game_document.save()
         lynched_message = files.werewolfMessages[dead_villager_document["character"]]["hunter"].format(dead_villager.mention)
         town_square_channel = ctx.guild.get_channel(files.getChannelId("town-square"))
         announcements_channel = ctx.guild.get_channel(files.getChannelId("announcements"))
@@ -547,8 +538,8 @@ class Game(commands.Cog):
         self.__has_lynched = False
         self.__abilities.daytime()
         self.__bot.loop.create_task(self.daytimeannounce(guild_id))
-        if self.__bakerdead:
-            self.__bot.loop.create_task(self.starve_die(self.__starving_people[self.__bakerdays], guild))
+        if game_document["bakerdead"]:
+            self.__bot.loop.create_task(self.starve_die(guild))
 
     async def daytimeannounce(self, guild_id):
         announcements_id = files.getChannelId("announcements", 681696629224505376)
@@ -559,17 +550,34 @@ class Game(commands.Cog):
         #     await announcements_channel.send(f"You have {self.__bakerdays} days left")
         await self.startvote(announcements_channel.guild)
 
-    async def starve_die(self, dead_people, guild):
-        town_square_id = files.getChannelId("announcements")
-        town_square_channel = guild.get_channel(town_square_id)
-        for x in dead_people:
-            if not x.Dead:
-                await town_square_channel.send(files.werewolfMessages[x.Character]["starve"].format(x.Mention))
-                await self.die(guild, x)
-        self.__bakerdays += 1
-        if self.Winner != "":
-            self.__game_future.set_result(self.Winner)
-            return
+    async def starve_die(self, guild):
+        announcements_id = files.getChannelId("announcements")
+        announcements_channel = guild.get_channel(announcements_id)
+        game_document = models.game.Game.find_one({
+            "server": guild.id
+        })
+        for _ in range(random.choice([0,1,1,2,2,3])):
+            dead_id = random.choice(game_document["starving"])
+            dead_villager = models.villager.Villager.find_one({
+                "server": guild.id,
+                "discord_id": dead_id
+            })
+            if not dead_villager["alive"]:
+                continue
+            game_document["starving"].remove(dead_id)
+            game_document.save()
+            await announcements_channel.send(files.werewolfMessages[dead_villager["character"]]["starve"].format(
+                guild.get_member(dead_id).mention))
+            await self.die_from_db(dead_id, guild.id)
+
+        # for x in dead_people:
+        #     if not x.Dead:
+        #         await announcements_channel.send(files.werewolfMessages[x.Character]["starve"].format(x.Mention))
+        #         await self.die(guild, x)
+        # self.__bakerdays += 1
+        # if self.Winner != "":
+        #     self.__game_future.set_result(self.Winner)
+        #     return
 
     def nighttime(self, guild_id):
         # self.__killed = False
