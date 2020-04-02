@@ -22,8 +22,13 @@ from cipher import Cipher
 
 def hunter():
     def predicate(ctx):
-        cog = ctx.bot.get_cog("Game")
-        return cog.Hunter and cog.AlmostDead == ctx.message.author.id
+        game_document = models.game.Game.find_one({
+            "server": ctx.guild.id
+        })
+        if game_document is None:
+            return False
+
+        return ctx.message.author.id in game_document["hunter_ids"]
 
     return commands.check(predicate)
 
@@ -55,11 +60,10 @@ class Game(commands.Cog):
         else:
             game_document["villagercount"] -= 1
         if v["character"] == "hunter":
-            self.__hunter = True
-            self.__pending_death = v["discord_id"]
-            self.__hunter_future = self.__bot.loop.create_future()
-            await self.__hunter_future
-        if v["character"] == 'baker':
+            game_document["hunter_ids"].append(v["discord_id"])
+            game_document.save()
+            return
+        if v["character"] == "baker":
             villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
             max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
             s_people = [[] for i in range(max_death_day)]
@@ -80,6 +84,17 @@ class Game(commands.Cog):
                 for j in self.__starving_people[i]:
                     print(i, j.Name)
 
+        await self.die(guild, villager_id)
+
+
+    async def die(self, guild, villager_id):
+        game_document = models.game.Game.find_one({
+            "server": guild.id
+        })
+        v = models.villager.Villager.find_one({
+            "server": guild.id,
+            "discord_id": villager_id
+        })
         if v["discord_id"] in game_document["inlove"]:
             game_document["inlove"].remove(v["discord_id"])
             other_id: int = game_document["inlove"][0]
@@ -88,17 +103,17 @@ class Game(commands.Cog):
             town_square_id = files.getChannelId("announcements")
             town_square_channel = guild.get_channel(town_square_id)
             other_member = guild.get_member(other_id)
-            await town_square_channel.send(files.werewolfMessages[v["character"]]["inlove"].format(other_member.mention))
+            await town_square_channel.send(
+                files.werewolfMessages[v["character"]]["inlove"].format(other_member.mention))
             # await self.die(guild, other)
             await self.die_from_db(other_id, guild.id)
         v["alive"] = False
         v.save()
         game_document.save()
         member = guild.get_member(v["discord_id"])
-
-        await self.mark_dead(guild, member)
-
-    async def mark_dead(self, guild, member):
+    #     await self.mark_dead(guild, member)
+    #
+    # async def mark_dead(self, guild, member):
         dead_role = discord.utils.get(guild.roles, name="Dead")
         for x in files.channels_config["channels"]:
             if x == "announcements":
@@ -602,10 +617,6 @@ class Game(commands.Cog):
             "werewolves": self.__numWerewolves,
             "villagers": self.__numVillagers
         }
-
-    @property
-    def Hunter(self):
-        return self.__hunter
 
     @property
     def AlmostDead(self):
