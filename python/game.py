@@ -397,15 +397,19 @@ class Game(commands.Cog):
     @commands.command(**files.command_parameters['sendmessage'])
     @decorators.is_from_channel("afterlife")
     async def sendmessage(self, ctx, word: str):
-        is_werewolf = self.findVillager(str(ctx.author)).Werewolf
+        v = models.villager.Villager.find_one({
+            "server": ctx.guild.id,
+            "discord_id": ctx.author.id
+        })
+        is_werewolf = v["werewolf"]
         if not self.__abilities.check_ability("dead_wolves" if is_werewolf else "spirits"):
             await ctx.send("You've already sent a message or a hint. Wait until the next night.")
             return
         if len(word.split(' ')) > 1:
             await ctx.send("You can only send one word at a time")
             return
-        if decorators.findPerson(ctx, word) is not None:
-            await ctx.send("You cannot use the name as the actual word.")
+        if self.findPlayer(word, ctx.guild.id) is not None:
+            await ctx.send("You cannot use a name of someone playing as the actual word.")
             return
         if is_werewolf:
             self.__abilities.use_ability("dead_wolves")
@@ -616,6 +620,15 @@ class Game(commands.Cog):
         else:
             return self.__bot.get_guild(guild_id).get_member_named(name)
 
+    def findPlayer(self, name: str, guild_id: int):
+        member = self.findMember(name, guild_id)
+        if member is None:
+            return None
+        return models.villager.Villager.find_one({
+            "server": guild_id,
+            "discord_id": member.id
+        })
+
     @property
     def Winner(self) -> str:
         # channel = ctx.guild.get_channel(getChannelId("town-square"))
@@ -632,14 +645,3 @@ class Game(commands.Cog):
     @property
     def Abilities(self):
         return self.__abilities
-
-    @property
-    def GameStats(self):
-        return {
-            "werewolves": self.__numWerewolves,
-            "villagers": self.__numVillagers
-        }
-
-    @property
-    def AlmostDead(self):
-        return self.__pending_death
