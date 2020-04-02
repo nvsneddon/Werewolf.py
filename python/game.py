@@ -17,7 +17,6 @@ import villager
 import models.villager
 from abilities import Abilities
 from cipher import Cipher
-from exceptions import DocumentFoundException
 
 
 def hunter():
@@ -85,7 +84,8 @@ class Game(commands.Cog):
             town_square_id = files.getChannelId("announcements")
             town_square_channel = guild.get_channel(town_square_id)
             await town_square_channel.send(files.werewolfMessages[other.Character]["inlove"].format(other.Mention))
-            await self.die(guild, other)
+            # await self.die(guild, other)
+            await self.die_from_db(other.DiscordTag, guild.id)
         v.save()
 
         dead_role = discord.utils.get(guild.roles, name="Dead")
@@ -132,16 +132,13 @@ class Game(commands.Cog):
         self.__numWerewolves = 0
         self.__numVillagers = 0
         self.__abilities = Abilities()
-
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
         self.schedthread.start()
-
         self.__election_cog = election.Election(self.__bot)
         self.__bot.add_cog(self.__election_cog)
 
         self.schedule_day_and_night()
-
         self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
 
     def initialize_game(self, guild_id, members, randomshuffle, roles, send_message_flag):
@@ -257,55 +254,58 @@ class Game(commands.Cog):
         if self.Winner != "":
             self.__game_future.set_result(self.Winner)
 
-    async def die(self, guild, target: villager.Villager):
-        # self.die_from_db(target.UserID, guild.id)
-        # if target.Character == "hunter":
-        #     self.__hunter = True
-        #     self.__pending_death = target.DiscordTag
-        #     self.__hunter_future = self.__bot.loop.create_future()
-        #     await self.__hunter_future
-        # elif target.Character == "baker":
-        #     villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
-        #     max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
-        #     s_people = [[] for i in range(max_death_day)]
-        #     random.shuffle(villager_players)
-        #     n = 0
-        #     while len(villager_players) != 0:
-        #         p = villager_players[:3]
-        #         for i in p:
-        #             r = random.choice(range(3)) + n
-        #             s_people[r].append(i)
-        #         villager_players = villager_players[3:]
-        #         n += 3
-        #
-        #     self.__bakerdead = True
-        #     self.__starving_people = s_people
-        #
-        #     for i in range(len(self.__starving_people)):
-        #         for j in self.__starving_people[i]:
-        #             print(i, j.Name)
+    async def declareWinner(self, winner):
+        pass
 
-        if target in self.__inlove:
-            self.__inlove.remove(target)
-            other: villager.Villager = self.__inlove[0]
-            self.__inlove.remove(other)
-            town_square_id = files.getChannelId("announcements")
-            town_square_channel = guild.get_channel(town_square_id)
-            await town_square_channel.send(files.werewolfMessages[other.Character]["inlove"].format(other.Mention))
-            await self.die(guild, other)
-
-        dead_role = discord.utils.get(guild.roles, name="Dead")
-        # await channel.set_permissions(member, overwrite=None)
-
-        for x in files.channels_config["channels"]:
-            if x == "announcements":
-                continue
-            channel = guild.get_channel(files.getChannelId(x))
-            member = guild.get_member_named(target.DiscordTag)
-            await channel.set_permissions(member, overwrite=None)
-
-        target_user = guild.get_member_named(target.DiscordTag)
-        await target_user.edit(roles=[dead_role])
+    # async def die(self, guild, target: villager.Villager):
+    #     # self.die_from_db(target.UserID, guild.id)
+    #     # if target.Character == "hunter":
+    #     #     self.__hunter = True
+    #     #     self.__pending_death = target.DiscordTag
+    #     #     self.__hunter_future = self.__bot.loop.create_future()
+    #     #     await self.__hunter_future
+    #     # elif target.Character == "baker":
+    #     #     villager_players = [y for y in self.__players if not y.Werewolf and not y.Dead]
+    #     #     max_death_day = (((len(villager_players) - 1) // 3) * 3 + 3)
+    #     #     s_people = [[] for i in range(max_death_day)]
+    #     #     random.shuffle(villager_players)
+    #     #     n = 0
+    #     #     while len(villager_players) != 0:
+    #     #         p = villager_players[:3]
+    #     #         for i in p:
+    #     #             r = random.choice(range(3)) + n
+    #     #             s_people[r].append(i)
+    #     #         villager_players = villager_players[3:]
+    #     #         n += 3
+    #     #
+    #     #     self.__bakerdead = True
+    #     #     self.__starving_people = s_people
+    #     #
+    #     #     for i in range(len(self.__starving_people)):
+    #     #         for j in self.__starving_people[i]:
+    #     #             print(i, j.Name)
+    #
+    #     if target in self.__inlove:
+    #         self.__inlove.remove(target)
+    #         other: villager.Villager = self.__inlove[0]
+    #         self.__inlove.remove(other)
+    #         town_square_id = files.getChannelId("announcements")
+    #         town_square_channel = guild.get_channel(town_square_id)
+    #         await town_square_channel.send(files.werewolfMessages[other.Character]["inlove"].format(other.Mention))
+    #         await self.die(guild, other)
+    #
+    #     dead_role = discord.utils.get(guild.roles, name="Dead")
+    #     # await channel.set_permissions(member, overwrite=None)
+    #
+    #     for x in files.channels_config["channels"]:
+    #         if x == "announcements":
+    #             continue
+    #         channel = guild.get_channel(files.getChannelId(x))
+    #         member = guild.get_member_named(target.DiscordTag)
+    #         await channel.set_permissions(member, overwrite=None)
+    #
+    #     target_user = guild.get_member_named(target.DiscordTag)
+    #     await target_user.edit(roles=[dead_role])
 
     @commands.command(**files.command_parameters['countpeople'])
     async def countpeople(self, ctx):
@@ -421,26 +421,35 @@ class Game(commands.Cog):
     @decorators.is_from_channel("cupid")
     @decorators.has_ability("cupid")
     async def match(self, ctx, person1: str, person2: str):
-        villager1 = self.findVillager(person1)
-        villager2 = self.findVillager(person2)
-        if villager1 is None:
+        member1 = self.findMember(person1, ctx.guild.id)
+        member2 = self.findMember(person2, ctx.guild.id)
+        if member1 is None:
             await ctx.send("The first person could not be found. Try again.")
             return
-        if villager2 is None:
+        if member2 is None:
             await ctx.send("The second villager could not be found. Try again.")
             return
-        if villager1.Dead or villager2.Dead:
+
+        villager1 = models.villager.Villager.find_one({
+            "discord_id": member1.id,
+            "server": ctx.guild.id
+        })
+        villager2 = models.villager.Villager.find_one({
+            "discord_id": member2.id,
+            "server": ctx.guild.id
+        })
+        if not villager1["alive"] or not villager2["alive"]:
             await ctx.send("You can't match dead villagers. Try again!")
             return
         self.__abilities.use_ability("cupid")
-        self.__inlove.append(villager1.DiscordTag)
-        self.__inlove.append(villager2.DiscordTag)
+        self.__inlove.append(villager1["discord_id"])
+        self.__inlove.append(villager2["discord_id"])
         await ctx.send("{} and {} are in love now".format(person1, person2))
-        self.__bot.remove_command("match")
+        # self.__bot.remove_command("match")
         read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
         love_channel = ctx.guild.get_channel(files.getChannelId("lovebirds", ctx.guild.id))
         for x in self.__inlove:
-            await love_channel.set_permissions(ctx.guild.get_member_named(x.DiscordTag),
+            await love_channel.set_permissions(ctx.guild.get_member(x),
                                                overwrite=discord.PermissionOverwrite(**read_write_permission))
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(villager1.Mention, villager2.Mention))
@@ -587,6 +596,19 @@ class Game(commands.Cog):
                     x.DiscordTag.lower() == name.lower() or x.NickName.lower() == name.lower():
                 return x
         return None
+
+    def findMember(self, name: str, guild_id: int):
+        if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
+            id = int(name[3:-1])
+        elif name[0:2] == "<@":
+            id = int(name[2:-1])
+        else:
+            id = 0
+        if id != 0:
+            return self.__bot.get_guild(guild_id).get_member(id)
+        else:
+            return self.__bot.get_guild(guild_id).get_member_named(name)
+
 
     @property
     def Winner(self) -> str:
