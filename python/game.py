@@ -16,7 +16,7 @@ import files
 import villager
 import models.villager
 
-from abilities import Abilities
+import abilities
 from cipher import Cipher
 
 
@@ -144,7 +144,6 @@ class Game(commands.Cog):
         self.__running = True
         self.__numWerewolves = 0
         self.__numVillagers = 0
-        self.__abilities = Abilities()
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
         self.schedthread.start()
@@ -200,7 +199,6 @@ class Game(commands.Cog):
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message))
 
 
-
     def schedule_day_and_night(self, guild_id):
         schedule.every().day.at(files.config["daytime"]).do(self.daytime, guild_id=guild_id).tag("game", str(guild_id))
         warn_voting_time = datetime.datetime(1, 1, 1, int(
@@ -215,9 +213,9 @@ class Game(commands.Cog):
         check_time = datetime.datetime.now().time()
         if datetime.time(int(day_array[0]), int(day_array[1])) <= check_time <= datetime.time(int(night_array[0]),
                                                                                               int(night_array[1])):
-            self.__abilities.start_game()
+            abilities.start_game(guild_id, False)
         else:
-            self.__abilities.start_game(True)
+            abilities.start_game(guild_id, True)
 
     async def __afterlife_message(self, message):
         afterlife_id = files.getChannelId("afterlife")
@@ -238,7 +236,7 @@ class Game(commands.Cog):
         if game_document is None:
             ctx.send("There's no game right now. You can't kill yet.")
             return
-        if not self.__abilities.check_ability("werewolves"):
+        if not abilities.check_ability("werewolves", ctx.guild.id):
             await ctx.send("You already killed. Get some rest and don't get caught.")
             return
         target = self.findMember(name=person_name, guild_id=ctx.guild.id)
@@ -252,7 +250,7 @@ class Game(commands.Cog):
         if target_document is None:
             await ctx.send("That person could not be found. Please try again.")
             return
-        self.__abilities.use_ability("werewolves")
+        abilities.use_ability("werewolves", ctx.guild.id)
         if target.id == game_document["protected"]:
             await ctx.send("That person has been protected. You just wasted your kill!")
             announcement_id = files.getChannelId("announcements")
@@ -328,10 +326,10 @@ class Game(commands.Cog):
     @commands.command(**files.command_parameters['investigate'])
     @decorators.is_from_channel("seer")
     async def investigate(self, ctx, person_name):
-        if not self.__abilities.check_ability("seer"):
+        if not abilities.check_ability("seer", ctx.guild.id):
             await ctx.send("You already used your ability. Try again after the next sunrise.")
             return
-        if not self.__abilities.check_ability("seer"):
+        if not abilities.check_ability("seer", ctx.guild.id):
             await ctx.send(
                 "The future is hazy, but when it's night again you may have a better chance. If you don't die before!")
             return
@@ -347,12 +345,12 @@ class Game(commands.Cog):
             await ctx.send("That person could not be found. Please try again.")
             return
         await ctx.send("{} is {}a werewolf".format(target.mention, "" if target_document['werewolf'] else "not "))
-        self.__abilities.use_ability("seer")
+        abilities.use_ability("seer", ctx.guild.id)
 
     @commands.command(**files.command_parameters['protect'])
     @decorators.is_from_channel("bodyguard")
     async def protect(self, ctx, person_name):
-        if not self.__abilities.check_ability("bodyguard"):
+        if not abilities.check_ability("bodyguard", ctx.guild.id):
             await ctx.send("You've been protecting someone and now you're tired. Get some rest until the next morning.")
             return
         # protector: villager.Villager = self.findVillager(ctx.message.author.name)
@@ -376,7 +374,7 @@ class Game(commands.Cog):
         if not protected_document["alive"]:
             await ctx.send("You should have protected that person sooner. Choose someone else.")
             return
-        self.__abilities.use_ability("bodyguard")
+        abilities.use_ability("bodyguard", ctx.guild.id)
         await ctx.send("You've protected {}".format(the_protected_one.mention))
         game_document["protected"] = the_protected_one.id
         game_document["last_protected_id"] = the_protected_one.id
@@ -397,7 +395,7 @@ class Game(commands.Cog):
             "discord_id": ctx.author.id
         })
         is_werewolf = v["werewolf"]
-        if not self.__abilities.check_ability("dead_wolves" if is_werewolf else "spirits"):
+        if not abilities.check_ability("dead_wolves" if is_werewolf else "spirits", ctx.guild.id):
             await ctx.send("You've already sent a message or a hint. Wait until the next night.")
             return
         if len(word.split(' ')) > 1:
@@ -407,9 +405,9 @@ class Game(commands.Cog):
             await ctx.send("You cannot use a name of someone playing as the actual word.")
             return
         if is_werewolf:
-            self.__abilities.use_ability("dead_wolves")
+            abilities.use_ability("dead_wolves", ctx.guild.id)
         else:
-            self.__abilities.use_ability("spirits")
+            abilities.use_ability("spirits", ctx.guild.id)
         # self.__cipher = Cipher(word)
         channel = ctx.guild.get_channel(files.getChannelId("mason"))
         await channel.send("You have received a message from above.")
@@ -445,7 +443,7 @@ class Game(commands.Cog):
         if not villager1["alive"] or not villager2["alive"]:
             await ctx.send("You can't match dead villagers. Try again!")
             return
-        self.__abilities.use_ability("cupid")
+        abilities.use_ability("cupid", ctx.guild.id)
         game_document["inlove"].append(villager1["discord_id"])
         game_document["inlove"].append(villager2["discord_id"])
         game_document.save()
@@ -528,6 +526,7 @@ class Game(commands.Cog):
         if self.__election_cog is not None:
             self.__bot.remove_cog("Election")
 
+
     def daytime(self, guild_id: int):
         guild = self.__bot.get_guild(guild_id)
         game_document = models.game.Game.find_one({
@@ -536,7 +535,7 @@ class Game(commands.Cog):
         game_document["protected"] = -1
         game_document.save()
         self.__has_lynched = False
-        self.__abilities.daytime()
+        abilities.daytime(guild_id)
         self.__bot.loop.create_task(self.daytimeannounce(guild_id))
         if game_document["bakerdead"]:
             self.__bot.loop.create_task(self.starve_die(guild))
@@ -582,7 +581,7 @@ class Game(commands.Cog):
     def nighttime(self, guild_id):
         # self.__killed = False
         self.__bot.loop.create_task(self.nighttimeannounce(guild_id))
-        self.__abilities.nighttime()
+        abilities.nighttime(guild_id)
         if election.is_vote(guild_id):
             self.__bot.loop.create_task(self.stopvote(self.__bot.get_guild(guild_id)))
 
@@ -654,6 +653,3 @@ class Game(commands.Cog):
         # #     return "bakerdead"
         return ""
 
-    @property
-    def Abilities(self):
-        return self.__abilities
