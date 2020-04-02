@@ -110,17 +110,16 @@ class Bot(commands.Cog):
             self.__bot.add_cog(game_cog)
             self.__game = True
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
-            for x in ctx.guild.members:
-                if alive_role in x.roles:
-                    v_model = models.villager.Villager.find_one({
-                        "server": ctx.guild.id,
-                        "discord_id": x.id
-                    })
-                    character = v_model["character"]
-                    if character in files.channels_config["character-to-channel"]:
-                        channel_name = files.channels_config["character-to-channel"][character]
-                        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
-                        await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+            for x in players:
+                v_model = models.villager.Villager.find_one({
+                    "server": ctx.guild.id,
+                    "discord_id": x.id
+                })
+                character = v_model["character"]
+                if character in files.channels_config["character-to-channel"]:
+                    channel_name = files.channels_config["character-to-channel"][character]
+                    channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+                    await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
         town_square_id = files.getChannelId("announcements", ctx.guild.id)
         town_square_channel = self.__bot.get_channel(town_square_id)
@@ -149,7 +148,6 @@ class Bot(commands.Cog):
             await ctx.send("Game has ended")
 
     async def __finishGame(self, ctx):
-        self.__bot.remove_cog("Game")
         playing_role = discord.utils.get(
             ctx.guild.roles, name="Playing")
 
@@ -165,6 +163,7 @@ class Bot(commands.Cog):
                 await channel.set_permissions(member, overwrite=None)
             v.remove()
         models.game.delete_many({"server": ctx.guild.id})
+        self.__bot.remove_cog("Game")
 
     @commands.command(brief="Exits the game")
     @is_admin()

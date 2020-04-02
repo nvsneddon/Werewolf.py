@@ -13,7 +13,8 @@ import election
 import models.election
 import models.game
 import files
-from villager import Villager
+import villager
+import models.villager
 from abilities import Abilities
 from cipher import Cipher
 from exceptions import DocumentFoundException
@@ -26,17 +27,14 @@ def hunter():
 
     return commands.check(predicate)
 
-def test():
-    print("Hi there")
-
 class Game(commands.Cog):
     __cipher: typing.Optional[Cipher]
     __last_protected: str
     __bakerdays: int
     __bakerdead: bool
     __voted: bool
-    __inlove: typing.List[Villager]
-    __players: typing.List[Villager]
+    __inlove: typing.List[villager.Villager]
+    __players: typing.List[villager.Villager]
 
     # players is a list of all of the name of people playing
     # roles is a list of numbers of all of the characters that will be playing
@@ -82,7 +80,7 @@ class Game(commands.Cog):
 
         if v["discord_id"] in self.__inlove:
             self.__inlove.remove(v["discord_id"])
-            other: Villager = self.__inlove[0]
+            other: villager.Villager = self.__inlove[0]
             self.__inlove.remove(other)
             town_square_id = files.getChannelId("announcements")
             town_square_channel = guild.get_channel(town_square_id)
@@ -144,21 +142,40 @@ class Game(commands.Cog):
 
         self.schedule_day_and_night()
 
-        cards = self.__distribute_roles(roles)
+        self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
 
+    def initialize_game(self, guild_id, members, randomshuffle, roles, send_message_flag):
+        num_werewolves = 0
+        num_villagers = 0
+        players = []
+        afterlife_message = ""
+        cards = self.__distribute_roles(roles)
         if len(members) > len(cards):
             cards += (len(members) - len(cards)) * ["villager"]
         if randomshuffle:
             random.shuffle(cards)
         for x in members:
-            y = Villager(str(x), cards[0], x.id, x.nick, server=guild_id)
-            if cards[0] in ("werewolf"):
-                self.__numWerewolves += 1;
+            # y = villager.Villager(str(x), cards[0], x.id, x.nick, server=guild_id)
+            models.villager.delete_many({
+                "discord_id": x.id,
+                "server": guild_id,
+            })
+            character = cards[0]
+            is_bad = files.isBad(character)
+            v = models.villager.Villager({
+                "discord_id": x.id,
+                "server": guild_id,
+                "character": character
+            })
+            v.save()
+            if is_bad:
+                num_werewolves += 1
             else:
-                self.__numVillagers += 1;
-            self.__players.append(y)
+                num_villagers += 1
+            players.append(id)
+            afterlife_message += f"{x.mention} is a {character}\n"
             cards.pop(0)
-            message = '\n'.join(files.werewolfMessages[y.Character]["welcome"])
+            message = '\n'.join(files.werewolfMessages[character]["welcome"])
             if send_message_flag:
                 self.__bot.loop.create_task(self.__sendPM(x, message))
         models.game.delete_many({"server": guild_id})
@@ -169,12 +186,6 @@ class Game(commands.Cog):
             "villagercount": self.__numVillagers
         })
         game_object.save()
-        afterlife_message = ""
-
-        for i in self.__players:
-            afterlife_message += f"{i.Mention} is a {i.Character}\n"
-            print(i)
-
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message))
 
     def __distribute_roles(self, roles):
@@ -246,7 +257,7 @@ class Game(commands.Cog):
         if self.Winner != "":
             self.__game_future.set_result(self.Winner)
 
-    async def die(self, guild, target: Villager):
+    async def die(self, guild, target: villager.Villager):
         # self.die_from_db(target.UserID, guild.id)
         # if target.Character == "hunter":
         #     self.__hunter = True
@@ -276,7 +287,7 @@ class Game(commands.Cog):
 
         if target in self.__inlove:
             self.__inlove.remove(target)
-            other: Villager = self.__inlove[0]
+            other: villager.Villager = self.__inlove[0]
             self.__inlove.remove(other)
             town_square_id = files.getChannelId("announcements")
             town_square_channel = guild.get_channel(town_square_id)
@@ -355,7 +366,7 @@ class Game(commands.Cog):
         if not self.__abilities.check_ability("bodyguard"):
             await ctx.send("You've been protecting someone and now you're tired. Get some rest until the next morning.")
             return
-        protector: Villager = self.findVillager(ctx.message.author.name)
+        protector: villager.Villager = self.findVillager(ctx.message.author.name)
         the_protected_one = self.findVillager(person_name)
         if the_protected_one is None:
             await ctx.send("I couldn't find that person!")
@@ -480,7 +491,7 @@ class Game(commands.Cog):
             await announcements_channel.send("All of you guys forgot to vote. Too bad!")
         else:
             x = random.choice(result)
-            dead_villager: Villager = self.findVillager(x)
+            dead_villager: villager.Villager = self.findVillager(x)
             if len(result) > 1:
                 await announcements_channel.send(
                     f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
@@ -559,13 +570,13 @@ class Game(commands.Cog):
         if self.__lynching:
             await town_square_channel.send("Once nighttime falls, the lynch vote will be finished.")
 
-    def getVillagerByID(self, player_id: int) -> typing.Optional[Villager]:
+    def getVillagerByID(self, player_id: int) -> typing.Optional[villager.Villager]:
         for x in self.__players:
             if player_id == x.UserID:
                 return x
         return None
 
-    def findVillager(self, name: str) -> typing.Optional[Villager]:
+    def findVillager(self, name: str) -> typing.Optional[villager.Villager]:
         id = 0
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
             id = int(name[3:-1])
