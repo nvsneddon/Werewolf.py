@@ -4,6 +4,7 @@ from discord.ext import commands
 import models.game
 import models.election
 import models.villager
+import abilities
 from villager import Villager
 
 
@@ -45,8 +46,8 @@ def is_not_character(character_name: str):
 
 def has_ability(character_name: str):
     def predicate(ctx):
-        cog = ctx.bot.get_cog("Game")
-        return cog.Abilities.check_ability(character_name, ctx.guild.id)
+
+        return abilities.check_ability(character=character_name, guild_id=ctx.guild.id)
 
     return commands.check(predicate)
 

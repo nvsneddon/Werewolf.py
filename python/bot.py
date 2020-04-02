@@ -2,16 +2,13 @@ import discord
 from discord.ext import commands
 
 from decorators import is_admin, findPerson
-from election import Election
 from game import Game
 import asyncio
 import models.channels
 import models.game
 import models.villager
-import os
-import json
 import files
-
+import abilities
 
 def can_clear():
     async def predicate(ctx):
@@ -163,6 +160,7 @@ class Bot(commands.Cog):
                 await channel.set_permissions(member, overwrite=None)
             v.remove()
         models.game.delete_many({"server": ctx.guild.id})
+        abilities.finish_game(ctx.guild.id)
         self.__bot.remove_cog("Game")
 
     @commands.command(brief="Exits the game")

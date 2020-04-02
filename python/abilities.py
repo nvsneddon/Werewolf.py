@@ -13,7 +13,7 @@ NIGHT = {"seer", "spirits", "dead_wolves", "werewolves"}
 DAY = {"bodyguard"}
 
 
-def init_abilities(guild_id: int, night=False):
+def start_game(guild_id: int, night=False):
     m = models.abilities.Abilities({
         "server": guild_id
     })
@@ -62,12 +62,11 @@ def use_ability(character, guild_id):
         "server": guild_id
     })
     ability_document[character] = False
+    ability_document.save()
 
 
-class Abilities:
-
-
-    def use_ability(self, character):
-        if character not in self.__roles:
-            raise Exception("Character role not found.")
-        self.__roles[character] = False
+def finish_game(guild_id):
+    abilities_document = models.abilities.Abilities.find_one({
+        "server": guild_id
+    })
+    abilities_document.remove()
