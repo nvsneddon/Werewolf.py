@@ -6,7 +6,7 @@ from exceptions import DocumentFoundException
 class Villager:
 
     def __init__(self, discord_tag: str, character: str, id: int, nickname=None, server=0):
-        # specialChannel = ("werewolf", "bodyguard", "seer", "cupid")
+        # specialChannel = set(("werewolf", "bodyguard", "seer", "cupid"))
         self.__name: str = discord_tag.split("#")[0]
         self.__discordTag: str = discord_tag
         self.__nickname = nickname
@@ -25,7 +25,7 @@ class Villager:
         }
         v = models.villager.Villager.find_one(schema)
         if v is not None:
-            raise DocumentFoundException
+            v.remove()
 
         schema["character"] = character
         schema["werewolf"] = self.__is_werewolf

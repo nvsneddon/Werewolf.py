@@ -42,10 +42,12 @@ class Election(commands.Cog):
 
     # TODO Figure out how to get the guild_id at nighttime
     def stop_vote(self, guild_id=681696629224505376):
-        return self.__get_leading(guild_id)
+        leading = self.__get_leading(guild_id)
+        models.election.delete_many({"server": guild_id})
+        return leading
 
     @commands.command(**command_parameters['lock'])
-    @is_vote_channel()
+    #@is_vote_channel()
     async def lock(self, ctx):
         db_election = models.election.Election.find_one({"server": ctx.guild.id})
         # voter = str(ctx.message.author)
@@ -74,7 +76,7 @@ class Election(commands.Cog):
 
 
     @commands.command(**command_parameters['unlock'])
-    @is_vote_channel()
+    #@is_vote_channel()
     async def unlock(self, ctx):
         db_election = models.election.Election.find_one({"server": ctx.guild.id})
         if ctx.message.author.id not in db_election["locked"]:
@@ -85,7 +87,7 @@ class Election(commands.Cog):
             db_election.save()
 
     @commands.command(**command_parameters['vote'])
-    @is_vote_channel()
+    #@is_vote_channel()
     async def vote(self, ctx, voteestring: str):
         db_election = models.election.Election.find_one({"server": ctx.guild.id})
         if ctx.message.author.id in db_election["locked"]:

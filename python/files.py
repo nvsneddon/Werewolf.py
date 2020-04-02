@@ -58,7 +58,7 @@ try:
     with open(os.path.join(dirname, '../config/commands.json')) as f6:
         command_parameters = json.loads(f6.read())
 except FileNotFoundError:
-    print("No hints found.")
+    print("No comamnds.json file found.")
     exit()
 
 def writeJsonToConfig(filename: str, file: dict) -> None:
@@ -74,6 +74,11 @@ def writeToConfig(filename: str, file: str) -> None:
     except:
         print("Something went wrong with writing the file")
 
+def isBad(character: str):
+
+    character_dict = readJsonFromConfig("characters.json")
+    return character in character_dict["bad"]
+
 
 def readFromConfig(filename: str) -> str:
     try:
@@ -83,9 +88,9 @@ def readFromConfig(filename: str) -> str:
         f.close()
         return readfile
 
-    except:
+    except FileNotFoundError:
         print("File " + filename + " not found")
-        exit()
+        raise FileNotFoundError
 
 
 def readJsonFromConfig(filename: str) -> dict:

@@ -1,0 +1,14 @@
+{
+  "bad": [
+    "werewolf"
+  ],
+  "good": [
+    "villager",
+    "seer",
+    "bodyguard",
+    "cupid",
+    "mason",
+    "baker",
+    "hunter"
+  ]
+}
