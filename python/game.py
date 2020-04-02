@@ -20,18 +20,6 @@ from abilities import Abilities
 from cipher import Cipher
 
 
-def hunter():
-    def predicate(ctx):
-        game_document = models.game.Game.find_one({
-            "server": ctx.guild.id
-        })
-        if game_document is None:
-            return False
-
-        return ctx.message.author.id in game_document["hunter_ids"]
-
-    return commands.check(predicate)
-
 def distribute_roles(roles):
     cards = []
     if len(roles) >= 7:
@@ -317,7 +305,7 @@ class Game(commands.Cog):
         self.almostnighttimeannounce()
 
     @commands.command(**files.command_parameters['shoot'])
-    @hunter()
+    @decorators.hunter()
     async def shoot(self, ctx, victim_name: str):
         dead_villager = self.findMember(victim_name, ctx.guild.id)
         if dead_villager is None:

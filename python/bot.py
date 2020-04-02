@@ -189,7 +189,7 @@ class Bot(commands.Cog):
             if j["permissions-update"] is not None:
                 permission_object.update(**j["permissions-update"])
             c = discord.Color.from_rgb(*j["color"])
-            role = await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
+            await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
             message = i + " role created"
             await ctx.send(message)
 
@@ -263,3 +263,4 @@ class Bot(commands.Cog):
 
         channel = models.channels.Channels.find_one({"server": ctx.guild.id})
         channel.remove()
+
