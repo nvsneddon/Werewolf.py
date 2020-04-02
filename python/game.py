@@ -40,17 +40,6 @@ def distribute_roles(roles):
 
 
 class Game(commands.Cog):
-    __cipher: typing.Optional[Cipher]
-    __last_protected: str
-    __bakerdays: int
-    __bakerdead: bool
-    __voted: bool
-    __inlove: typing.List[villager.Villager]
-    __players: typing.List[villager.Villager]
-
-    # players is a list of all of the name of people playing
-    # roles is a list of numbers of all of the characters that will be playing
-    # raises ValueError Exception when too many roles are handed out
 
     async def die_from_db(self, villager_id: int, guild_id: int):
         v = models.villager.Villager.find_one({
@@ -126,18 +115,11 @@ class Game(commands.Cog):
     def __init__(self, bot, members, future, roles, randomshuffle=True, send_message_flag=True, guild_id=0):
 
         self.__bot = bot
-        self.__hunter_future = None
-        self.__cipher = None
-        self.__voted = False
         self.__game_future = future
         self.__players = []
         self.__members = members
         self.__pending_death = None
         self.__bakerdead = False
-        self.__election_cog = None
-        self.__lynching = False
-        self.__has_lynched = False
-        self.__last_protected = None
         self.__bakerdays = 0
         self.__starving_people = []
         self.__hunter = False  # Variable to turn on the hunter's power
@@ -147,8 +129,7 @@ class Game(commands.Cog):
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
         self.schedthread.start()
-        self.__election_cog = election.Election(self.__bot)
-        self.__bot.add_cog(self.__election_cog)
+        self.__bot.add_cog(election.Election(self.__bot))
 
         self.schedule_day_and_night(guild_id)
         self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
@@ -458,7 +439,6 @@ class Game(commands.Cog):
                                 "You two are now in love! :heart:".format(member1.mention, member2.mention))
 
     async def startvote(self, guild):
-        self.__lynching = True
         town_square_id = files.getChannelId("town-square", guild.id)
         town_square_channel = guild.get_channel(town_square_id)
         announcements_id = files.getChannelId("announcements", guild.id)
@@ -467,52 +447,39 @@ class Game(commands.Cog):
         town_square_channel = guild.get_channel(town_square_id)
         # future = self.__bot.loop.create_future()
         to_vote = []
-        for i in self.__players:
-            discordPerson = guild.get_member_named(i.DiscordTag)
-            alive_role = discord.utils.get(guild.roles, name="Alive")
-            if alive_role in discordPerson.roles:
-                to_vote.append(i)
-        # m = models.election.Election.find_one({"server": guild.id})
-        # if m is not None:
-        #     raise DocumentFoundException
-        # m = models.election.Election({
-        #     "server": guild.id,
-        #     "people": to_vote,
-        #     "future": future,
-        #     "channel": town_square_channel.id
-        # })
-        # m.save()
+        villagers = models.villager.Villager.find({
+            "server": guild.id
+        })
+        for i in villagers:
+            if i["alive"]:
+                to_vote.append(i["discord_id"])
 
         election.start_vote(town_square_channel, guild.id, to_vote)
         await announcements_channel.send("You can now vote to lynch.")
-        # await future
-        # m.remove()
+
 
     async def stopvote(self, guild):
-        self.__lynching = False
         cog = self.__bot.get_cog("Election")
         result = cog.stop_vote(guild.id)
-        # self.__bot.remove_cog("Election")
-        # self.__election_cog = None
 
         announcements_id = files.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
         await announcements_channel.send("The voting has closed.")
-        self.__has_lynched = True
         if len(result) == 0:
             await announcements_channel.send("All of you guys forgot to vote. Too bad!")
         else:
             x = random.choice(result)
-            dead_villager: villager.Villager = self.findVillager(x)
+            dead_villager = self.findMember(x, guild.id)
+            dead_player = self.findPlayer(x, guild.id)
             if len(result) > 1:
                 await announcements_channel.send(
                     f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
-                    f"I'll pick {dead_villager.Mention}! No hard feelings!")
-            await self.die(guild, dead_villager)
+                    f"I'll pick {dead_villager.mention}! No hard feelings!")
+            # await self.die(guild, dead_villager.id)
             # dead_villager.die(guild.id)
-            lynched_message = files.werewolfMessages[dead_villager.Character]["lynched"].format(dead_villager.Mention)
+            lynched_message = files.werewolfMessages[dead_player["character"]]["lynched"].format(dead_villager.mention)
             await announcements_channel.send(lynched_message)
-            await self.die(guild, dead_villager)
+            await self.die(guild, dead_villager.id)
             if self.Winner != "":
                 self.__game_future.set_result(self.Winner)
 
@@ -522,9 +489,9 @@ class Game(commands.Cog):
 
     def stop_game(self, tag="game"):
         schedule.clear(str(tag))
-        self.__bot.remove_cog("Election")
-        if self.__election_cog is not None:
-            self.__bot.remove_cog("Election")
+        # self.__bot.remove_cog("Election")
+        # if self.__election_cog is not None:
+        #     self.__bot.remove_cog("Election")
 
 
     def daytime(self, guild_id: int):
@@ -534,7 +501,6 @@ class Game(commands.Cog):
         })
         game_document["protected"] = -1
         game_document.save()
-        self.__has_lynched = False
         abilities.daytime(guild_id)
         self.__bot.loop.create_task(self.daytimeannounce(guild_id))
         if game_document["bakerdead"]:
@@ -594,11 +560,11 @@ class Game(commands.Cog):
         self.__bot.loop.create_task(self.almostnighttimeannounce(guild_id))
 
     async def almostnighttimeannounce(self, guild_id):
-        town_square_id = files.getChannelId("town-square", 681696629224505376)
+        town_square_id = files.getChannelId("town-square", guild_id)
         town_square_channel = self.__bot.get_channel(town_square_id)
         x = files.config["minutes-before-warning"]
         await town_square_channel.send(f"{x} minute{'s' if x > 1 else ''} left until nighttime.")
-        if self.__lynching:
+        if election.is_vote(guild_id):
             await town_square_channel.send("Once nighttime falls, the lynch vote will be finished.")
 
     def getVillagerByID(self, player_id: int) -> typing.Optional[villager.Villager]:

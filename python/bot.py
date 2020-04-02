@@ -6,6 +6,7 @@ from game import Game
 import asyncio
 import models.channels
 import models.game
+import models.election
 import models.villager
 import files
 import abilities
@@ -160,8 +161,9 @@ class Bot(commands.Cog):
                 await channel.set_permissions(member, overwrite=None)
             v.remove()
         models.game.delete_many({"server": ctx.guild.id})
+        models.election.delete_many({"server": ctx.guild.id})
         abilities.finish_game(ctx.guild.id)
-        self.__bot.remove_cog("Game")
+        # self.__bot.remove_cog("Game")
 
     @commands.command(brief="Exits the game")
     @is_admin()
