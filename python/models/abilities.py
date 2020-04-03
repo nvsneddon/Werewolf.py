@@ -1,15 +1,11 @@
 import mongothon
 
 from dbconnect import my_db
-#
-# role_schema = {
-#     "spirits": {"type": bool, "required": True},
-#     "dead_wolves": {"type": bool, "required": True},
-#     "werewolves": {"type": bool, "required": True},
-#     "seer": {"type": bool, "required": True},
-#     "bodyguard": {"type": bool, "required": True},
-#     "cupid": {"type": bool, "required": True}
-# }
+
+
+def delete_many(filter):
+    my_db['abilities'].delete_many(filter)
+
 
 ability_schema = mongothon.Schema({
     "server": {"type": int, "default": False},

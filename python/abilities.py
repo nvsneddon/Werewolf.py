@@ -14,6 +14,7 @@ DAY = {"bodyguard"}
 
 
 def start_game(guild_id: int, night=False):
+    models.abilities.delete_many({"server": guild_id})
     m = models.abilities.Abilities({
         "server": guild_id
     })

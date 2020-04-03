@@ -2,6 +2,7 @@ from typing import Optional
 
 from discord.ext import commands
 
+import decorators
 from files import command_parameters
 import models.election
 import models.villager
@@ -30,6 +31,7 @@ class Election(commands.Cog):
         self.__bot = bot
 
     @commands.command(**command_parameters['showleading'])
+    @decorators.is_election()
     async def showleading(self, ctx):
         if len(self.__get_leading(ctx.guild.id)) == 0:
             await ctx.send("No vote has been cast yet. No one is in the lead.")
@@ -45,7 +47,8 @@ class Election(commands.Cog):
         return leading
 
     @commands.command(**command_parameters['lock'])
-    #@is_vote_channel()
+    @decorators.is_vote_channel()
+    @decorators.is_election()
     async def lock(self, ctx):
         db_election = models.election.Election.find_one({"server": ctx.guild.id})
         # voter = str(ctx.message.author)
@@ -74,7 +77,8 @@ class Election(commands.Cog):
 
 
     @commands.command(**command_parameters['unlock'])
-    #@is_vote_channel()
+    @decorators.is_vote_channel()
+    @decorators.is_election()
     async def unlock(self, ctx):
         db_election = models.election.Election.find_one({"server": ctx.guild.id})
         if ctx.message.author.id not in db_election["locked"]:
@@ -85,7 +89,8 @@ class Election(commands.Cog):
             db_election.save()
 
     @commands.command(**command_parameters['vote'])
-    #@is_vote_channel()
+    @decorators.is_vote_channel()
+    @decorators.is_election()
     async def vote(self, ctx, voteestring: str):
         db_election = models.election.Election.find_one({"server": ctx.guild.id})
         if ctx.message.author.id in db_election["locked"]:
@@ -98,8 +103,8 @@ class Election(commands.Cog):
             return
         if str(votee_id) in db_election["casted_votes"]:
             voter_id = ctx.message.author.id
-            if voter_id in db_election["voted"]:
-                db_election["casted_votes"][str(db_election[str(voter_id)])] -= 1
+            if str(voter_id) in db_election["voted"]:
+                db_election["casted_votes"][str(db_election["voted"][str(voter_id)])] -= 1
             db_election["casted_votes"][str(votee_id)] += 1
             db_election["voted"][str(voter_id)] = votee_id
             votee = ctx.guild.get_member(votee_id)
@@ -109,6 +114,7 @@ class Election(commands.Cog):
             await ctx.send("You can't vote for that person. Please try again.")
 
     @commands.command(**command_parameters['showvote'])
+    @decorators.is_election()
     async def showvote(self, ctx):
         db_election = models.election.Election.find_one({"server": ctx.guild.id})
         voted_people = ""
@@ -118,7 +124,8 @@ class Election(commands.Cog):
             if person not in who_voted:
                 who_voted[person] = []
             who_voted[person].append(x)
-        for x in sorted(who_voted, key=db_election["casted_votes"].get, reverse=True):
+        # db_election["casted_votes"].get
+        for x in sorted(who_voted, key=lambda x: db_election["casted_votes"].get(str(x)), reverse=True):
             y = who_voted[x]
             voting_list = [ctx.guild.get_member(int(a)).display_name for a in y]
             voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for " \
@@ -141,25 +148,6 @@ class Election(commands.Cog):
             if name.lower() == member.display_name.lower() or str(member.id) == name or name.lower() == member.name.lower() or name.lower() == str(member).lower():
                 return member.id
         return -1
-
-    def get_vote_channel(self, guild_id):
-        db_election = models.election.Election.find_one({"server": guild_id})
-        return db_election["channel"]
-
-    def __get_leading_id(self, guild_id):
-        db_election = models.election.Election.find_one({"server": guild_id})
-        max_tally = 0
-        leading = []
-        for id, votes in db_election["casted_votes"].items():
-            id = int(id)
-            if votes == 0:
-                continue
-            if max_tally < votes:
-                leading = [id]
-                max_tally = votes
-            elif max_tally == votes:
-                leading.append(id)
-        return leading
 
     def __get_leading(self, guild_id):
         db_election = models.election.Election.find_one({"server": guild_id})
