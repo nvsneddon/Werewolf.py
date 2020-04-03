@@ -13,8 +13,9 @@ import abilities
 
 def can_clear():
     async def predicate(ctx):
-        return not ((discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (
-                ctx.message.author != findPerson(ctx, "keyclimber")))
+
+        bot_admin_channel = discord.utils.get(ctx.guild.channels, name="bot-admin")
+        return ctx.author in bot_admin_channel.overwrites
 
     return commands.check(predicate)
 
