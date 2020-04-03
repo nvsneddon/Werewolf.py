@@ -609,15 +609,6 @@ class Game(commands.Cog):
                 guild.get_member(dead_id).mention))
             await self.die_from_db(dead_id, guild.id)
 
-        # for x in dead_people:
-        #     if not x.Dead:
-        #         await announcements_channel.send(files.werewolfMessages[x.Character]["starve"].format(x.Mention))
-        #         await self.die(guild, x)
-        # self.__bakerdays += 1
-        # if self.Winner != "":
-        #     self.__game_future.set_result(self.Winner)
-        #     return
-
     def nighttime(self, guild_id):
         # self.__killed = False
         self.__bot.loop.create_task(self.nighttimeannounce(guild_id))
