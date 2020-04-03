@@ -602,9 +602,9 @@ class Game(commands.Cog):
                 "discord_id": dead_id
             })
             game_document["starving"].remove(dead_id)
+            game_document.save()
             if not dead_villager["alive"]:
                 continue
-            game_document.save()
             await announcements_channel.send(files.werewolfMessages[dead_villager["character"]]["starve"].format(
                 guild.get_member(dead_id).mention))
             await self.die_from_db(dead_id, guild.id)
