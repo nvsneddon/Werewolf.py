@@ -18,12 +18,21 @@ def valid_minute():
     return validate
 
 
+def validate_warning():
+    def validate(value):
+        if value > 180:
+            return "Warning has to be within three hours of nighttime"
+
+    return validate
+
+
 time_schema = mongothon.Schema({"hour": {"type": int, "required": True, "validates": valid_hour()},
                                 "minute": {"type": int, "required": True, "validates": valid_minute()}})
 server_schema = mongothon.Schema({
     "server": {"type": int, "required": True},
     "daytime": {"type": time_schema, "required": True},
-    "nighttime": {"type": time_schema, "required": True}
+    "nighttime": {"type": time_schema, "required": True},
+    "warning": {"type": int, "required": True, "validates": validate_warning()}
 })
 
 Server = mongothon.create_model(server_schema, my_db['server'])

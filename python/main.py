@@ -3,6 +3,7 @@ from discord.ext import commands
 
 import files
 import bot
+import models.server
 
 
 client = commands.Bot(command_prefix='!')
@@ -27,9 +28,25 @@ async def on_guild_join(guild):
         channel = discord.utils.get(guild.channels, name="bot-admin")
         await channel.send(
             "Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide "
-            "who will be allowed to access this channel.\nHave fun :) "
+            "who will be allowed to access this channel.\nDaytime is set to begin at 07:00 and nighttime is set "
+            "to begin at 20:00. I will remind you 30 minutes before nighttime that nighttime approaches.\n"
+            "You can also configure these options in this bot-admin channel by using the commands"
+            "!changeday, !changenight, and !changewarning.\nHave fun :) "
         )
-        # TODO Test to see if this works before deploying to other servers
+
+    server_model = models.server.Server({
+        "server": guild.id,
+        "daytime": {
+            "hour": 7,
+            "minute": 0
+        },
+        "nighttime": {
+            "hour": 20,
+            "minute": 0
+        },
+        "warning": 30
+    })
+    server_model.save()
 
 
 @client.event

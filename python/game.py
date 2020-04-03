@@ -54,6 +54,16 @@ def distribute_roles(roles):
 
 class Game(commands.Cog):
 
+    def __init__(self, bot):
+        self.__bot = bot
+        self.schedstop = threading.Event()
+        self.schedthread = threading.Thread(target=self.timer)
+        self.schedthread.start()
+        self.__bot.add_cog(election.Election(self.__bot))
+
+        # self.schedule_day_and_night(guild_id)
+        # self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
+
     async def die_from_db(self, villager_id: int, guild_id: int):
         v = models.villager.Villager.find_one({
             "server": guild_id,
@@ -165,16 +175,6 @@ class Game(commands.Cog):
             schedule.run_pending()
             time.sleep(3)
 
-    def __init__(self, bot):
-        self.__bot = bot
-        self.schedstop = threading.Event()
-        self.schedthread = threading.Thread(target=self.timer)
-        self.schedthread.start()
-        self.__bot.add_cog(election.Election(self.__bot))
-
-        # self.schedule_day_and_night(guild_id)
-        # self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
-
     def initialize_game(self, guild_id, members, randomshuffle, roles, send_message_flag):
         num_werewolves = 0
         num_villagers = 0
@@ -251,7 +251,8 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters['kill'])
     @decorators.is_from_channel("werewolves")
-    @decorators.has_ability("werewolves")
+    @decorators.is_game()
+    # @decorators.has_ability("werewolves")
     async def kill(self, ctx, person_name):
         game_document = models.game.Game.find_one({
             "server": ctx.guild.id
@@ -302,21 +303,25 @@ class Game(commands.Cog):
 
     @commands.command(aliases=['daytime'])
     @decorators.is_admin()
+    @decorators.is_game()
     async def day(self, ctx):
         self.daytime(ctx.guild.id)
 
     @commands.command(aliases=['nighttime'])
     @decorators.is_admin()
+    @decorators.is_game()
     async def night(self, ctx):
         self.nighttime(ctx.guild.id)
 
     @commands.command()
     @decorators.is_admin()
+    @decorators.is_game()
     async def announcenight(self, ctx):
         self.almostnighttimeannounce()
 
     @commands.command(**files.command_parameters['shoot'])
     @decorators.hunter()
+    @decorators.is_game()
     async def shoot(self, ctx, victim_name: str):
         dead_villager = self.findMember(victim_name, ctx.guild.id)
         if dead_villager is None:
@@ -348,6 +353,7 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters['investigate'])
     @decorators.is_from_channel("seer")
+    @decorators.is_game()
     async def investigate(self, ctx, person_name):
         if not abilities.check_ability("seer", ctx.guild.id):
             await ctx.send("You already used your ability. Try again after the next sunrise.")
@@ -372,6 +378,7 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters['protect'])
     @decorators.is_from_channel("bodyguard")
+    @decorators.is_game()
     async def protect(self, ctx, person_name):
         if not abilities.check_ability("bodyguard", ctx.guild.id):
             await ctx.send("You've been protecting someone and now you're tired. Get some rest until the next morning.")
@@ -411,7 +418,8 @@ class Game(commands.Cog):
         await ctx.send('\n'.join(files.werewolfMessages["help"]))
 
     @commands.command(**files.command_parameters['sendmessage'])
-    # @decorators.is_from_channel("afterlife")
+    @decorators.is_from_channel("afterlife")
+    @decorators.is_game()
     async def sendmessage(self, ctx, word: str):
         v = models.villager.Villager.find_one({
             "server": ctx.guild.id,
@@ -442,6 +450,7 @@ class Game(commands.Cog):
     @commands.command(aliases=["matchlove", "makeinlove"])
     @decorators.is_from_channel("cupid")
     @decorators.has_ability("cupid")
+    @decorators.is_game()
     async def match(self, ctx, person1: str, person2: str):
         member1 = self.findMember(person1, ctx.guild.id)
         member2 = self.findMember(person2, ctx.guild.id)
