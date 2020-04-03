@@ -11,6 +11,7 @@ import models.villager
 import files
 import abilities
 
+
 def can_clear():
     async def predicate(ctx):
         bot_admin_channel = discord.utils.get(ctx.guild.channels, name="bot-admin")
@@ -86,8 +87,6 @@ class Bot(commands.Cog):
         await ctx.author.edit(roles=[])
         await ctx.send(f"{ctx.author.mention} is not playing.")
 
-
-
     # @commands.command()
     # @is_admin()
     # async def endgame(self, ctx):
@@ -149,6 +148,10 @@ class Bot(commands.Cog):
         for i, j in files.channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
             await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+        target = discord.utils.get(ctx.guild.me.roles, managed=True)
+        permissions = files.readJsonFromConfig("permissions.json")
+        await town_square_category.set_permissions(target,
+                                                   overwrite=discord.PermissionOverwrite(**permissions["read_write"]))
         channel_id_dict = dict()
         channel_id_dict["guild"] = ctx.guild.id
         for i in files.channels_config["channels"]:
@@ -159,7 +162,6 @@ class Bot(commands.Cog):
             async for x in (channel.history(limit=1)):
                 await x.pin()
 
-
         channels = models.channels.Channels.find_one({"server": ctx.guild.id})
         if channels is None:
             channels = models.channels.Channels({
@@ -169,7 +171,6 @@ class Bot(commands.Cog):
             channels.save()
         else:
             channels.update_instance({"channels": channel_id_dict})
-
 
         for i, j in files.channels_config["channel-permissions"].items():
             ch = discord.utils.get(town_square_category.channels, name=i)
@@ -193,4 +194,3 @@ class Bot(commands.Cog):
 
         channel = models.channels.Channels.find_one({"server": ctx.guild.id})
         channel.remove()
-
