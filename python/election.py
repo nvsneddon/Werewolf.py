@@ -71,7 +71,8 @@ class Election(commands.Cog):
             db_election.save()
             if votes > len(db_election["casted_votes"])/2:
                 await ctx.send("Half of the people locked their votes for one person, so the voting will end now.")
-                self.stop_vote(guild_id=ctx.guild.id)
+                cog = self.__bot.get_cog("Game")
+                await cog.stopvote(ctx.guild)
         else:
             await ctx.send("You've already locked your vote.")
 

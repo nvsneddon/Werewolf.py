@@ -1,19 +1,15 @@
 import mongothon
+import time
 
 from dbconnect import my_db
 
-def valid_hour():
+
+def time_format():
     def validate(value):
-        if value < 0 or value >= 24:
-            return "Hour must be between 0 and 23"
-
-    return validate
-
-
-def valid_minute():
-    def validate(value):
-        if value >= 60 or value < 0 or value % 15 != 0:
-            return "Minute can only be 0, 15, 30, or 45"
+        try:
+            time.strptime(value, '%H:%M')
+        except ValueError:
+            return "Invalid time format"
 
     return validate
 
@@ -26,13 +22,11 @@ def validate_warning():
     return validate
 
 
-time_schema = mongothon.Schema({"hour": {"type": int, "required": True, "validates": valid_hour()},
-                                "minute": {"type": int, "required": True, "validates": valid_minute()}})
 server_schema = mongothon.Schema({
     "server": {"type": int, "required": True},
-    "daytime": {"type": time_schema, "required": True},
-    "nighttime": {"type": time_schema, "required": True},
-    "warning": {"type": int, "required": True, "validates": validate_warning()}
+    "daytime": {"type": str, "default": "08:00", "validates": time_format()},
+    "nighttime": {"type": str, "default": "20:00", "validates": time_format()},
+    "warning": {"type": int, "default": 30, "validates": validate_warning()}
 })
 
 Server = mongothon.create_model(server_schema, my_db['server'])

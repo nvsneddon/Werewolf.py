@@ -50,24 +50,24 @@ def distribute_roles(roles):
     return cards
 
 
-async def finishGame(ctx):
+async def finishGame(guild):
     playing_role = discord.utils.get(
-        ctx.guild.roles, name="Playing")
+        guild.roles, name="Playing")
 
-    villagers = models.villager.Villager.find({"server": ctx.guild.id})
+    villagers = models.villager.Villager.find({"server": guild.id})
     for v in villagers:
-        member = ctx.guild.get_member(v["discord_id"])
+        member = guild.get_member(v["discord_id"])
 
         await member.edit(roles=[playing_role])
         for x in files.channels_config["channels"]:
             if x == "announcements":
                 continue
-            channel = discord.utils.get(ctx.guild.channels, name=x)
+            channel = discord.utils.get(guild.channels, name=x)
             await channel.set_permissions(member, overwrite=None)
         v.remove()
-    models.game.delete_many({"server": ctx.guild.id})
-    models.election.delete_many({"server": ctx.guild.id})
-    abilities.finish_game(ctx.guild.id)
+    models.game.delete_many({"server": guild.id})
+    models.election.delete_many({"server": guild.id})
+    abilities.finish_game(guild.id)
 
 
 class Game(commands.Cog):
@@ -93,8 +93,13 @@ class Game(commands.Cog):
         guild = self.__bot.get_guild(guild_id)
         if v["werewolf"]:
             game_document["werewolfcount"] -= 1
+            print("One less werewolf")
         else:
             game_document["villagercount"] -= 1
+            print("One less villager")
+        print("Villagers:", game_document["villagercount"])
+        print("Werewolves:", game_document["werewolfcount"])
+        game_document.save()
         if v["character"] == "hunter":
             game_document["hunter_ids"].append(v["discord_id"])
             game_document.save()
@@ -167,11 +172,8 @@ class Game(commands.Cog):
                 return
             for player in players:
                 await player.edit(roles=[alive_role])
-            # game = Game(randomshuffle=True, members=players, guild_id=ctx.guild.id, roles=args, send_message_flag=False)
             self.schedule_day_and_night(ctx.guild.id)
             self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args, send_message_flag=False)
-            # self.__bot.add_cog(game_cog)
-            # self.__game = True
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
             for x in players:
                 v_model = models.villager.Villager.find_one({
@@ -196,12 +198,22 @@ class Game(commands.Cog):
             return
         announcements_id = files.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
+        guild = self.__bot.get_guild(guild_id)
         if self.__cupidwinner(guild_id, game["inlove"]):
             await announcements_channel.send("The only alive people left are the two people in love. Cupid wins.")
+            with announcements_channel.typing():
+                await finishGame(guild)
+            await announcements_channel.send("The game has ended!")
         elif game["werewolfcount"] > game["villagercount"]:
             await announcements_channel.send("Werewolves outnumber the villagers. Werewolves win")
+            with announcements_channel.typing():
+                await finishGame(guild)
+            await announcements_channel.send("The game has ended!")
         elif game["werewolfcount"] == 0:
             await announcements_channel.send("All werewolves are dead. Villagers win!")
+            with announcements_channel.typing():
+                await finishGame(guild)
+            await announcements_channel.send("The game has ended!")
 
     def __cupidwinner(self, guild_id, love):
         villagers = models.villager.Villager.find({
@@ -221,6 +233,7 @@ class Game(commands.Cog):
     def initialize_game(self, guild_id, members, randomshuffle, roles, send_message_flag):
         num_werewolves = 0
         num_villagers = 0
+        num_players = 0
         players = []
         afterlife_message = ""
         cards = distribute_roles(roles)
@@ -247,12 +260,16 @@ class Game(commands.Cog):
                 num_werewolves += 1
             else:
                 num_villagers += 1
+            num_players += 1
             players.append(id)
             afterlife_message += f"{x.mention} is a {character}\n"
             cards.pop(0)
             message = '\n'.join(files.werewolfMessages[character]["welcome"])
             if send_message_flag:
                 self.__bot.loop.create_task(self.__sendPM(x, message))
+        print("Players", num_players)
+        print("Werewolves", num_werewolves)
+        print("Villagers", num_villagers)
         models.game.delete_many({"server": guild_id})
         game_object = models.game.Game({
             "server": guild_id,
@@ -296,7 +313,7 @@ class Game(commands.Cog):
     @decorators.is_admin()
     async def endgame(self, ctx):
         with ctx.typing():
-            await finishGame(ctx)
+            await finishGame(ctx.guild)
             await ctx.send("Game has ended")
 
     @commands.command(**files.command_parameters['kill'])
@@ -338,10 +355,6 @@ class Game(commands.Cog):
             await announcements_channel.send(
                 files.werewolfMessages[target_document["character"]]["killed"].format(target.mention))
             await self.die_from_db(target.id, ctx.guild.id)
-
-
-    async def declareWinner(self, guild_id: int, winner):
-        pass
 
     @commands.command(**files.command_parameters['countpeople'])
     async def countpeople(self, ctx):
@@ -544,9 +557,6 @@ class Game(commands.Cog):
 
         election.start_vote(town_square_channel, guild.id, to_vote)
         await announcements_channel.send("You can now vote to lynch.")
-
-    def get_winner(self, guild_id):
-        pass
 
     async def stopvote(self, guild):
         cog = self.__bot.get_cog("Election")
