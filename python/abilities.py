@@ -52,6 +52,8 @@ def check_ability(character: str, guild_id):
     ability_document = models.abilities.Abilities.find_one({
         "server": guild_id
     })
+    if ability_document is None:
+        return False
     return ability_document[character]
 
 

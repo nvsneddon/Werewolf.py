@@ -3,6 +3,7 @@ from discord.ext import commands
 
 from decorators import is_admin, findPerson
 from game import Game
+import election
 import asyncio
 import models.channels
 import models.game
@@ -30,7 +31,8 @@ class Bot(commands.Cog):
 
     def __init__(self, bot):
         self.__bot = bot
-        self.__game = False
+        self.__bot.add_cog(Game(self.__bot))
+        # self.__game = False
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -85,58 +87,7 @@ class Bot(commands.Cog):
         await ctx.author.edit(roles=[])
         await ctx.send(f"{ctx.author.mention} is not playing.")
 
-    @commands.command(**files.command_parameters["startgame"])
-    @is_admin()
-    async def startgame(self, ctx, *args: int):
-        with ctx.typing():
-            game_future = self.__bot.loop.create_future()
-            alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
-            playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
-            if len(args) == 0:
-                await ctx.send("Please add game parameters to the game")
-                return
-            players = []
-            for member in ctx.guild.members:
-                if playing_role in member.roles:
-                    players.append(member)
-            if len(players) < sum(args):
-                await ctx.send("You gave out too many roles for the number of people. Please try again.")
-                return
-            for player in players:
-                await player.edit(roles=[alive_role])
-            game_cog = Game(self.__bot, randomshuffle=False, members=players, guild_id=ctx.guild.id, future=game_future, roles=args, send_message_flag=False)
-            self.__bot.add_cog(game_cog)
-            self.__game = True
-            read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
-            for x in players:
-                v_model = models.villager.Villager.find_one({
-                    "server": ctx.guild.id,
-                    "discord_id": x.id
-                })
-                character = v_model["character"]
-                if character in files.channels_config["character-to-channel"]:
-                    channel_name = files.channels_config["character-to-channel"][character]
-                    channel = discord.utils.get(ctx.guild.channels, name=channel_name)
-                    await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
-        town_square_id = files.getChannelId("announcements", ctx.guild.id)
-        town_square_channel = self.__bot.get_channel(town_square_id)
-        await town_square_channel.send("Let the games begin!")
-        await ctx.send("The game has started!")
-        await game_future
-        self.__game = False
-        winner = game_future.result()
-        if winner == "werewolves":
-            await town_square_channel.send("Werewolves outnumber the villagers. Werewolves won.")
-        elif winner == "villagers":
-            await town_square_channel.send("All werewolves are now dead. Villagers win!")
-        elif winner == "cupid":
-            await town_square_channel.send("Cupid did a great job. The last two people alive are the love birds.")
-        elif winner == "bakerdead":
-            await town_square_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses "
-                                           "and win the game.")
-
-        await self.__finishGame(ctx)
 
     @commands.command()
     @is_admin()

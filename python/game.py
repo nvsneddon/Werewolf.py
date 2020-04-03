@@ -20,6 +20,19 @@ import abilities
 from cipher import Cipher
 
 
+async def declare_winner(bot, winner, guild_id):
+    announcements_id = files.getChannelId("announcements", guild_id)
+    announcements_channel = bot.get_channel(announcements_id)
+    if winner == "werewolves":
+        await announcements_channel.send("Werewolves outnumber the villagers. Werewolves won.")
+    elif winner == "villagers":
+        await announcements_channel.send("All werewolves are now dead. Villagers win!")
+    elif winner == "cupid":
+        await announcements_channel.send("Cupid did a great job. The last two people alive are the love birds.")
+    elif winner == "bakerdead":
+        await announcements_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses "
+                                         "and win the game.")
+
 def distribute_roles(roles):
     cards = []
     if len(roles) >= 7:
@@ -107,32 +120,60 @@ class Game(commands.Cog):
             await channel.set_permissions(member, overwrite=None)
         await member.edit(roles=[dead_role])
 
+    @commands.command(**files.command_parameters["startgame"])
+    @decorators.is_admin()
+    async def startgame(self, ctx, *args: int):
+        with ctx.typing():
+            alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
+            playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
+            if len(args) == 0:
+                await ctx.send("Please add game parameters to the game")
+                return
+            players = []
+            for member in ctx.guild.members:
+                if playing_role in member.roles:
+                    players.append(member)
+            if len(players) < sum(args):
+                await ctx.send("You gave out too many roles for the number of people. Please try again.")
+                return
+            for player in players:
+                await player.edit(roles=[alive_role])
+            # game = Game(randomshuffle=True, members=players, guild_id=ctx.guild.id, roles=args, send_message_flag=False)
+            self.schedule_day_and_night(ctx.guild.id)
+            self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args, send_message_flag=False)
+            # self.__bot.add_cog(game_cog)
+            # self.__game = True
+            read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
+            for x in players:
+                v_model = models.villager.Villager.find_one({
+                    "server": ctx.guild.id,
+                    "discord_id": x.id
+                })
+                character = v_model["character"]
+                if character in files.channels_config["character-to-channel"]:
+                    channel_name = files.channels_config["character-to-channel"][character]
+                    channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+                    await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+
+        announcements_id = files.getChannelId("announcements", ctx.guild.id)
+        announcements_channel = self.__bot.get_channel(announcements_id)
+        await announcements_channel.send("Let the games begin!")
+        await ctx.send("The game has started!")
+
     def timer(self):
         while not self.schedstop.is_set():
             schedule.run_pending()
             time.sleep(3)
 
-    def __init__(self, bot, members, future, roles, randomshuffle=True, send_message_flag=True, guild_id=0):
-
+    def __init__(self, bot):
         self.__bot = bot
-        self.__game_future = future
-        self.__players = []
-        self.__members = members
-        self.__pending_death = None
-        self.__bakerdead = False
-        self.__bakerdays = 0
-        self.__starving_people = []
-        self.__hunter = False  # Variable to turn on the hunter's power
-        self.__running = True
-        self.__numWerewolves = 0
-        self.__numVillagers = 0
         self.schedstop = threading.Event()
         self.schedthread = threading.Thread(target=self.timer)
         self.schedthread.start()
         self.__bot.add_cog(election.Election(self.__bot))
 
-        self.schedule_day_and_night(guild_id)
-        self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
+        # self.schedule_day_and_night(guild_id)
+        # self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
 
     def initialize_game(self, guild_id, members, randomshuffle, roles, send_message_flag):
         num_werewolves = 0
@@ -181,13 +222,13 @@ class Game(commands.Cog):
 
 
     def schedule_day_and_night(self, guild_id):
-        schedule.every().day.at(files.config["daytime"]).do(self.daytime, guild_id=guild_id).tag("game", str(guild_id))
+        schedule.every().day.at(files.config["daytime"]).do(self.daytime, guild_id).tag("game", str(guild_id))
         warn_voting_time = datetime.datetime(1, 1, 1, int(
             files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - \
                            datetime.datetime(1, 1, 1, 0, files.config['minutes-before-warning'])
-        schedule.every().day.at(str(warn_voting_time)).do(self.almostnighttime, guild_id=guild_id).tag("game",
+        schedule.every().day.at("20:22").do(self.almostnighttime, guild_id).tag("game",
                                                                                                        str(guild_id))
-        schedule.every().day.at(files.config["nighttime"]).do(self.nighttime, guild_id=guild_id).tag("game",
+        schedule.every().day.at(files.config["nighttime"]).do(self.nighttime, guild_id).tag("game",
                                                                                                      str(guild_id))
         night_array = files.config["nighttime"].split(':')
         day_array = files.config["daytime"].split(':')
@@ -210,6 +251,7 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters['kill'])
     @decorators.is_from_channel("werewolves")
+    @decorators.has_ability("werewolves")
     async def kill(self, ctx, person_name):
         game_document = models.game.Game.find_one({
             "server": ctx.guild.id
@@ -369,7 +411,7 @@ class Game(commands.Cog):
         await ctx.send('\n'.join(files.werewolfMessages["help"]))
 
     @commands.command(**files.command_parameters['sendmessage'])
-    @decorators.is_from_channel("afterlife")
+    # @decorators.is_from_channel("afterlife")
     async def sendmessage(self, ctx, word: str):
         v = models.villager.Villager.find_one({
             "server": ctx.guild.id,
@@ -556,7 +598,7 @@ class Game(commands.Cog):
         announcements_channel = self.__bot.get_channel(announcements_id)
         await announcements_channel.send("It is nighttime")
 
-    def almostnighttime(self, guid_id):
+    def almostnighttime(self, guild_id):
         self.__bot.loop.create_task(self.almostnighttimeannounce(guild_id))
 
     async def almostnighttimeannounce(self, guild_id):
