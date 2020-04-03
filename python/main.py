@@ -34,19 +34,6 @@ async def on_guild_join(guild):
             "!changeday, !changenight, and !changewarning.\nHave fun :) "
         )
 
-    server_model = models.server.Server({
-        "server": guild.id,
-        "daytime": {
-            "hour": 7,
-            "minute": 0
-        },
-        "nighttime": {
-            "hour": 20,
-            "minute": 0
-        },
-        "warning": 30
-    })
-    server_model.save()
 
 
 @client.event

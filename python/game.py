@@ -10,11 +10,11 @@ from discord.ext import commands
 
 import decorators
 import election
-import models.election
-import models.game
 import files
 import villager
 import models.villager
+import models.election
+import models.game
 
 import abilities
 from cipher import Cipher
@@ -50,6 +50,26 @@ def distribute_roles(roles):
     if len(roles) >= 1:
         cards += roles[0] * ["werewolf"]
     return cards
+
+
+async def finishGame(ctx):
+    playing_role = discord.utils.get(
+        ctx.guild.roles, name="Playing")
+
+    villagers = models.villager.Villager.find({"server": ctx.guild.id})
+    for v in villagers:
+        member = ctx.guild.get_member(v["discord_id"])
+
+        await member.edit(roles=[playing_role])
+        for x in files.channels_config["channels"]:
+            if x == "announcements":
+                continue
+            channel = discord.utils.get(ctx.guild.channels, name=x)
+            await channel.set_permissions(member, overwrite=None)
+        v.remove()
+    models.game.delete_many({"server": ctx.guild.id})
+    models.election.delete_many({"server": ctx.guild.id})
+    abilities.finish_game(ctx.guild.id)
 
 
 class Game(commands.Cog):
@@ -248,6 +268,13 @@ class Game(commands.Cog):
 
     async def __sendPM(self, member, message):
         await member.send(message)
+
+    @commands.command()
+    @decorators.is_admin()
+    async def endgame(self, ctx):
+        with ctx.typing():
+            await finishGame(ctx)
+            await ctx.send("Game has ended")
 
     @commands.command(**files.command_parameters['kill'])
     @decorators.is_from_channel("werewolves")
@@ -624,19 +651,8 @@ class Game(commands.Cog):
                 return x
         return None
 
-    def findVillager(self, name: str) -> typing.Optional[villager.Villager]:
-        id = 0
-        if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
-            id = int(name[3:-1])
-        elif name[0:2] == "<@":
-            id = int(name[2:-1])
-        for x in self.__players:
-            if x.UserID == id or x.Name.lower() == name.lower() or \
-                    x.DiscordTag.lower() == name.lower() or x.NickName.lower() == name.lower():
-                return x
-        return None
-
     def findMember(self, name: str, guild_id: int):
+        guild = self.__bot.get_guild(guild_id)
         if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
             id = int(name[3:-1])
         elif name[0:2] == "<@":
@@ -644,9 +660,16 @@ class Game(commands.Cog):
         else:
             id = 0
         if id != 0:
-            return self.__bot.get_guild(guild_id).get_member(id)
-        else:
-            return self.__bot.get_guild(guild_id).get_member_named(name)
+            return guild.get_member(id)
+        villagers = models.villager.Villager.find({
+            "server": guild_id
+        })
+        for v in villagers:
+            m = guild.get_member(v["discord_id"])
+            name = name.lower()
+            if name == m.display_name.lower() or name == m.name.lower() or name == str(m).lower():
+                return m
+        return guild.get_member_named(name)
 
     def findPlayer(self, name: str, guild_id: int):
         member = self.findMember(name, guild_id)

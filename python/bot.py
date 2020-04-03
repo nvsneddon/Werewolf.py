@@ -3,7 +3,6 @@ from discord.ext import commands
 
 from decorators import is_admin, findPerson
 from game import Game
-import election
 import asyncio
 import models.channels
 import models.game
@@ -89,38 +88,18 @@ class Bot(commands.Cog):
 
 
 
-    @commands.command()
-    @is_admin()
-    async def endgame(self, ctx):
-        with ctx.typing():
-            await self.__finishGame(ctx)
-            await ctx.send("Game has ended")
-
-    async def __finishGame(self, ctx):
-        playing_role = discord.utils.get(
-            ctx.guild.roles, name="Playing")
-
-        villagers = models.villager.Villager.find({"server": ctx.guild.id})
-        for v in villagers:
-            member = ctx.guild.get_member(v["discord_id"])
-
-            await member.edit(roles=[playing_role])
-            for x in files.channels_config["channels"]:
-                if x == "announcements":
-                    continue
-                channel = discord.utils.get(ctx.guild.channels, name=x)
-                await channel.set_permissions(member, overwrite=None)
-            v.remove()
-        models.game.delete_many({"server": ctx.guild.id})
-        models.election.delete_many({"server": ctx.guild.id})
-        abilities.finish_game(ctx.guild.id)
-        # self.__bot.remove_cog("Game")
+    # @commands.command()
+    # @is_admin()
+    # async def endgame(self, ctx):
+    #     with ctx.typing():
+    #         await self.__finishGame(ctx)
+    #         await ctx.send("Game has ended")
 
     @commands.command(brief="Exits the game")
     @is_admin()
     async def exit(self, ctx):
         with ctx.typing():
-            await self.__finishGame(ctx)
+            # await self.__finishGame(ctx)
             await ctx.send("Goodbye!")
         await self.__bot.logout()
 
