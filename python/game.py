@@ -11,7 +11,6 @@ from discord.ext import commands
 import decorators
 import election
 import files
-import villager
 import models.villager
 import models.election
 import models.game
@@ -373,10 +372,6 @@ class Game(commands.Cog):
         await town_square_channel.send(lynched_message)
         await self.die_from_db(villager_id=dead_villager.id, guild_id=ctx.guild.id)
         await self.die(ctx.guild, ctx.author.id)
-        # self.__hunter_future.set_result("dead")
-        # self.__bot.remove_command("shoot")
-
-        # await self.findWinner(ctx)
 
     @commands.command(**files.command_parameters['investigate'])
     @decorators.is_from_channel("seer")
@@ -474,7 +469,7 @@ class Game(commands.Cog):
     def cupidWinner(self):
         return False
 
-    @commands.command(aliases=["matchlove", "makeinlove"])
+    @commands.command(**files.command_parameters['match'])
     @decorators.is_from_channel("cupid")
     @decorators.has_ability("cupid")
     @decorators.is_game()
@@ -557,7 +552,8 @@ class Game(commands.Cog):
             # dead_villager.die(guild.id)
             lynched_message = files.werewolfMessages[dead_player["character"]]["lynched"].format(dead_villager.mention)
             await announcements_channel.send(lynched_message)
-            await self.die(guild, dead_villager.id)
+            # await self.die(guild, dead_villager.id)
+            await self.die_from_db(dead_villager.id, guild.id)
             if self.Winner != "":
                 self.__game_future.set_result(self.Winner)
 
@@ -605,9 +601,9 @@ class Game(commands.Cog):
                 "server": guild.id,
                 "discord_id": dead_id
             })
+            game_document["starving"].remove(dead_id)
             if not dead_villager["alive"]:
                 continue
-            game_document["starving"].remove(dead_id)
             game_document.save()
             await announcements_channel.send(files.werewolfMessages[dead_villager["character"]]["starve"].format(
                 guild.get_member(dead_id).mention))
@@ -644,12 +640,6 @@ class Game(commands.Cog):
         await town_square_channel.send(f"{x} minute{'s' if x > 1 else ''} left until nighttime.")
         if election.is_vote(guild_id):
             await town_square_channel.send("Once nighttime falls, the lynch vote will be finished.")
-
-    def getVillagerByID(self, player_id: int) -> typing.Optional[villager.Villager]:
-        for x in self.__players:
-            if player_id == x.UserID:
-                return x
-        return None
 
     def findMember(self, name: str, guild_id: int):
         guild = self.__bot.get_guild(guild_id)

@@ -93,19 +93,19 @@ class Bot(commands.Cog):
     #     with ctx.typing():
     #         await self.__finishGame(ctx)
     #         await ctx.send("Game has ended")
-
-    @commands.command(brief="Exits the game")
-    @is_admin()
-    async def exit(self, ctx):
-        with ctx.typing():
-            # await self.__finishGame(ctx)
-            await ctx.send("Goodbye!")
-        await self.__bot.logout()
-
-    @exit.error
-    async def exit_error(self, ctx, error):
-        if isinstance(error, commands.CheckFailure):
-            await ctx.send("I'm sorry, but you cannot shut me down!")
+    #
+    # @commands.command(brief="Exits the game")
+    # @is_admin()
+    # async def exit(self, ctx):
+    #     with ctx.typing():
+    #         # await self.__finishGame(ctx)
+    #         await ctx.send("Goodbye!")
+    #     await self.__bot.logout()
+    #
+    # @exit.error
+    # async def exit_error(self, ctx, error):
+    #     if isinstance(error, commands.CheckFailure):
+    #         await ctx.send("I'm sorry, but you cannot shut me down!")
 
     @commands.command()
     @is_admin()

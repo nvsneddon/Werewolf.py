@@ -11,6 +11,7 @@ ROLES = {
 
 NIGHT = {"seer", "spirits", "dead_wolves", "werewolves"}
 DAY = {"bodyguard"}
+ONE_TIME = {"cupid"}
 
 
 def start_game(guild_id: int, night=False):
@@ -30,6 +31,8 @@ def daytime(guild_id):
         "server": guild_id
     })
     for x in ROLES:
+        if x in ONE_TIME:
+            continue
         if x in DAY:
             ability_document[x] = True
         else:

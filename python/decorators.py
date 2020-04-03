@@ -5,7 +5,6 @@ import models.game
 import models.election
 import models.villager
 import abilities
-from villager import Villager
 
 
 def is_admin():
