@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+import decorators
 from decorators import is_admin, findPerson
 from game import Game
 import asyncio
@@ -74,38 +75,17 @@ class Bot(commands.Cog):
         await ctx.send(":ping_pong: Pong!")
 
     @commands.command(**files.command_parameters['playing'])
+    @decorators.is_no_game()
     async def playing(self, ctx):
         playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
         await ctx.author.edit(roles={playing_role})
         await ctx.send(f"{ctx.author.mention} is now playing.")
 
     @commands.command(**files.command_parameters['notplaying'])
+    @decorators.is_no_game()
     async def notplaying(self, ctx):
-        if self.__game:
-            await ctx.send("You can't stop now!")
-            return
         await ctx.author.edit(roles=[])
         await ctx.send(f"{ctx.author.mention} is not playing.")
-
-    # @commands.command()
-    # @is_admin()
-    # async def endgame(self, ctx):
-    #     with ctx.typing():
-    #         await self.__finishGame(ctx)
-    #         await ctx.send("Game has ended")
-    #
-    # @commands.command(brief="Exits the game")
-    # @is_admin()
-    # async def exit(self, ctx):
-    #     with ctx.typing():
-    #         # await self.__finishGame(ctx)
-    #         await ctx.send("Goodbye!")
-    #     await self.__bot.logout()
-    #
-    # @exit.error
-    # async def exit_error(self, ctx, error):
-    #     if isinstance(error, commands.CheckFailure):
-    #         await ctx.send("I'm sorry, but you cannot shut me down!")
 
     @commands.command()
     @is_admin()

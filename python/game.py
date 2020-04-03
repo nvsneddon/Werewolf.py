@@ -16,7 +16,6 @@ import models.election
 import models.game
 
 import abilities
-from cipher import Cipher
 
 
 async def declare_winner(bot, winner, guild_id):
@@ -108,9 +107,10 @@ class Game(commands.Cog):
             for v in villagers:
                 if v["alive"] and not v["werewolf"] and v["discord_id"] != villager_id:
                     game_document["starving"].append(v["discord_id"])
-            game_document.save()
+        game_document.save()
 
         await self.die(guild, villager_id)
+        await self.__announce_winner(guild_id)
 
 
     async def die(self, guild, villager_id):
@@ -188,6 +188,30 @@ class Game(commands.Cog):
         announcements_channel = self.__bot.get_channel(announcements_id)
         await announcements_channel.send("Let the games begin!")
         await ctx.send("The game has started!")
+
+    async def __announce_winner(self, guild_id):
+        game = models.game.Game.find_one({ "server": guild_id })
+        if game is None:
+            print("No game found to announce winner. Please try again")
+            return
+        announcements_id = files.getChannelId("announcements", guild_id)
+        announcements_channel = self.__bot.get_channel(announcements_id)
+        if self.__cupidwinner(guild_id, game["inlove"]):
+            await announcements_channel.send("The only alive people left are the two people in love. Cupid wins.")
+        elif game["werewolfcount"] > game["villagercount"]:
+            await announcements_channel.send("Werewolves outnumber the villagers. Werewolves win")
+        elif game["werewolfcount"] == 0:
+            await announcements_channel.send("All werewolves are dead. Villagers win!")
+
+    def __cupidwinner(self, guild_id, love):
+        villagers = models.villager.Villager.find({
+            "server": guild_id,
+            "alive": True
+        })
+        for v in villagers:
+            if v["discord_id"] not in love:
+                return False
+        return True
 
     def timer(self):
         while not self.schedstop.is_set():
@@ -314,8 +338,7 @@ class Game(commands.Cog):
             await announcements_channel.send(
                 files.werewolfMessages[target_document["character"]]["killed"].format(target.mention))
             await self.die_from_db(target.id, ctx.guild.id)
-        if self.Winner != "":
-            self.__game_future.set_result(self.Winner)
+
 
     async def declareWinner(self, guild_id: int, winner):
         pass
@@ -431,9 +454,6 @@ class Game(commands.Cog):
         game_document["protected"] = the_protected_one.id
         game_document["last_protected_id"] = the_protected_one.id
         game_document.save()
-        # protected_member = ctx.guild.get_member_named(the_protected_one.id)
-        # if not the_protected_one.Werewolf:
-        # await protected_member.send("You have been protected for the night! You can sleep in peace! :)")
 
     @commands.command(**files.command_parameters['getinstructions'])
     async def getinstructions(self, ctx):
@@ -461,13 +481,9 @@ class Game(commands.Cog):
             abilities.use_ability("dead_wolves", ctx.guild.id)
         else:
             abilities.use_ability("spirits", ctx.guild.id)
-        # self.__cipher = Cipher(word)
         channel = ctx.guild.get_channel(files.getChannelId("mason"))
         await channel.send("You have received a message from above.")
         await channel.send(word)
-
-    def cupidWinner(self):
-        return False
 
     @commands.command(**files.command_parameters['match'])
     @decorators.is_from_channel("cupid")
@@ -518,7 +534,6 @@ class Game(commands.Cog):
         announcements_channel = guild.get_channel(announcements_id)
         town_square_id = files.getChannelId("town-square")
         town_square_channel = guild.get_channel(town_square_id)
-        # future = self.__bot.loop.create_future()
         to_vote = []
         villagers = models.villager.Villager.find({
             "server": guild.id
@@ -530,6 +545,8 @@ class Game(commands.Cog):
         election.start_vote(town_square_channel, guild.id, to_vote)
         await announcements_channel.send("You can now vote to lynch.")
 
+    def get_winner(self, guild_id):
+        pass
 
     async def stopvote(self, guild):
         cog = self.__bot.get_cog("Election")
@@ -554,8 +571,6 @@ class Game(commands.Cog):
             await announcements_channel.send(lynched_message)
             # await self.die(guild, dead_villager.id)
             await self.die_from_db(dead_villager.id, guild.id)
-            if self.Winner != "":
-                self.__game_future.set_result(self.Winner)
 
     def cog_unload(self):
         self.stop_game()
@@ -660,17 +675,3 @@ class Game(commands.Cog):
             "server": guild_id,
             "discord_id": member.id
         })
-
-    @property
-    def Winner(self) -> str:
-        # channel = ctx.guild.get_channel(getChannelId("town-square"))
-        # if self.cupidWinner():
-        #     return "cupid"
-        # if self.GameStats["werewolves"] >= self.GameStats["villagers"]:
-        #     return "werewolves"
-        # elif self.GameStats["werewolves"] == 0:
-        #     return "villagers"
-        # # elif self.__bakerdays < 0:
-        # #     return "bakerdead"
-        return ""
-
