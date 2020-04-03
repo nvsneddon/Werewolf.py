@@ -4,13 +4,6 @@ from discord.ext import commands
 import files
 import bot
 
-import logging
-
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
 
 client = commands.Bot(command_prefix='!')
 
@@ -29,7 +22,8 @@ async def on_guild_join(guild):
         overwrite = {
             guild.default_role: discord.PermissionOverwrite(**permissions['none'])
         }
-        await guild.create_text_channel(name="bot-admin")
+        town_square_category = await guild.create_category_channel(name="Admin")
+        await guild.create_text_channel(name="bot-admin", overwrites=overwrite, category=town_square_category)
         channel = discord.utils.get(guild.channels, name="bot-admin")
         await channel.send(
             "Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide "
