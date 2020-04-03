@@ -99,6 +99,15 @@ def is_game():
 
     return commands.check(predicate)
 
+def is_no_game():
+    def predicate(ctx):
+        game_document = models.game.Game.find_one({
+            "server": ctx.guild.id
+        })
+        return game_document is None
+
+    return commands.check(predicate)
+
 
 def hunter():
     def predicate(ctx):
