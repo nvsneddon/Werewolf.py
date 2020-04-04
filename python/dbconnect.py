@@ -14,5 +14,5 @@ import sys
 #     print("Database config not found")
 #     raise FileNotFoundError
 
-my_client = pymongo.MongoClient(sys.argv[2].format(sys.argv[3], sys.argv[4]))
+my_client = pymongo.MongoClient(sys.argv[2])
 my_db = my_client["games"]
