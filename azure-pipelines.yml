@@ -31,9 +31,11 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: 'python/main.py'
-    arguments: '$env:BOT_TOKEN $(db-url) $(db-user) $env:MY_PASSWORD'
+    arguments: '$env:BOT_TOKEN $env:FULL_URL'
     workingDirectory: 'python/'
   env:
     MY_PASSWORD: $(db-password)
     BOT_TOKEN: $(test-bot-token)
+    FULL_URL: $(db-full-url)
   displayName: 'Run Bot'
+
