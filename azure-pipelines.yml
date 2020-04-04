@@ -32,3 +32,10 @@ steps:
         scriptPath: 'python/main.py'
         workingDirectory: 'python/'
   displayName: 'Run Bot'
+
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'filePath'
+    scriptPath: 'python/main.py'
+    arguments: '$(token) $(database-url) $(database-user) $(database-password)'
+    workingDirectory: 'python/'
