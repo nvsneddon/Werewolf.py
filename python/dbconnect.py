@@ -1,7 +1,7 @@
 import mongothon
 # import files
 import pymongo
-import os
+import sys
 
 # database_config = files.readJsonFromConfig("../config/database_config.json")
 # try:
@@ -14,5 +14,5 @@ import os
 #     print("Database config not found")
 #     raise FileNotFoundError
 
-my_client = pymongo.MongoClient(os.getenv("database-url").format(os.getenv("database-user"), os.getenv("database-password")))
+my_client = pymongo.MongoClient(sys.argv[1].format(sys.argv[2], sys.argv[3]))
 my_db = my_client["games"]
