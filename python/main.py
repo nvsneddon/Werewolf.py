@@ -16,8 +16,19 @@ async def on_ready():
 
 
 @client.event
+async def on_guild_remove(guild):
+    models.server.delete_many({"server": guild.id})
+
+@client.event
 async def on_guild_join(guild):
-    files.writeJsonToConfig("server_config.json", {"server_id": str(guild.id)})
+    x = models.server.Server.find_one({
+        "server": guild.id
+    })
+    if x is None:
+        x = models.server.Server({
+            "server": guild.id
+        })
+        x.save()
     if not discord.utils.get(guild.channels, name="bot-admin"):
         permissions = files.readJsonFromConfig('permissions.json')
         overwrite = {
@@ -25,14 +36,15 @@ async def on_guild_join(guild):
         }
         town_square_category = await guild.create_category_channel(name="Admin")
         await guild.create_text_channel(name="bot-admin", overwrites=overwrite, category=town_square_category)
-        channel = discord.utils.get(guild.channels, name="bot-admin")
-        await channel.send(
-            "Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide "
-            "who will be allowed to access this channel.\nDaytime is set to begin at 07:00 and nighttime is set "
-            "to begin at 20:00. I will remind you 30 minutes before nighttime that nighttime approaches.\n"
-            "You can also configure these options in this bot-admin channel by using the commands"
-            "!changeday, !changenight, and !changewarning.\nHave fun :) "
-        )
+    channel = discord.utils.get(guild.channels, name="bot-admin")
+    await channel.send(
+        "Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide "
+        f"who will be allowed to access this channel.\nDaytime is set to begin at {x['daytime']} and nighttime is set "
+        f"to begin at {x['nighttime']}. I will remind you {x['warning']} minutes before nighttime approaches.\n"
+        "You can also configure these options in this bot-admin channel by using the commands"
+        "!changeday, !changenight, and !changewarning.\nHave fun :) "
+    )
+
 
 
 

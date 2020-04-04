@@ -13,6 +13,7 @@ import election
 import files
 import models.villager
 import models.election
+import models.server
 import models.game
 
 import abilities
@@ -280,24 +281,32 @@ class Game(commands.Cog):
         game_object.save()
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message))
 
-
     def schedule_day_and_night(self, guild_id):
-        schedule.every().day.at(files.config["daytime"]).do(self.daytime, guild_id).tag("game", str(guild_id))
-        warn_voting_time = datetime.datetime(1, 1, 1, int(
-            files.config['nighttime'][:2]), int(files.config['nighttime'][3:5])) - \
-                           datetime.datetime(1, 1, 1, 0, files.config['minutes-before-warning'])
-        schedule.every().day.at("20:22").do(self.almostnighttime, guild_id).tag("game",
-                                                                                                       str(guild_id))
-        schedule.every().day.at(files.config["nighttime"]).do(self.nighttime, guild_id).tag("game",
+        server_document = models.server.Server.find_one({
+            "server": guild_id
+        })
+        schedule.every().day.at(server_document["daytime"]).do(self.daytime, guild_id).tag("game", str(guild_id))
+        warn_voting_time = datetime.datetime(10, 1, 2, int(
+            server_document['nighttime'][:2]), int(server_document['nighttime'][3:5])) - \
+                           datetime.timedelta(minutes=server_document['warning'])
+        warn_voting_time_string = f"{warn_voting_time.hour:02d}:{warn_voting_time.minute:02d}"
+        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(guild_id))
+        schedule.every().day.at(server_document["nighttime"]).do(self.nighttime, guild_id).tag("game",
                                                                                                      str(guild_id))
-        night_array = files.config["nighttime"].split(':')
-        day_array = files.config["daytime"].split(':')
+        night_array = server_document["nighttime"].split(':')
+        day_array = server_document["daytime"].split(':')
         check_time = datetime.datetime.now().time()
-        if datetime.time(int(day_array[0]), int(day_array[1])) <= check_time <= datetime.time(int(night_array[0]),
-                                                                                              int(night_array[1])):
-            abilities.start_game(guild_id, False)
+        daytime_time = datetime.time(int(day_array[0]), int(day_array[1]))
+        nighttime_time = datetime.time(int(night_array[0]), int(night_array[1]))
+        time_flag = daytime_time <= check_time <= nighttime_time
+        if daytime_time > nighttime_time:
+            time_flag = not time_flag
+        if time_flag:
+            abilities.start_game(guild_id, night=False)
+            print("It is daytime")
         else:
-            abilities.start_game(guild_id, True)
+            abilities.start_game(guild_id, night=True)
+            print("It is nighttime")
 
     async def __afterlife_message(self, message):
         afterlife_id = files.getChannelId("afterlife")
