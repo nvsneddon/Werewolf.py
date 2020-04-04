@@ -14,5 +14,5 @@ import os
 #     print("Database config not found")
 #     raise FileNotFoundError
 
-my_client = pymongo.MongoClient(os.getenv("url").format(os.getenv("user"), os.getenv("database-password")))
+my_client = pymongo.MongoClient(os.getenv("database-url").format(os.getenv("database-user"), os.getenv("database-password")))
 my_db = my_client["games"]
