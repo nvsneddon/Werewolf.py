@@ -8,3 +8,6 @@ class PermissionException(WerewolfException):
 
 class PersonNotFoundException(WerewolfException):
     pass
+
+class DocumentFoundException(Exception):
+    pass
