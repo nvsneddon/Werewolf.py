@@ -16,17 +16,17 @@ except FileNotFoundError:
         "Please make sure the messages.json and the command_descriptions.json files are in the config folder and try "
         "again.")
     exit()
-try:
-    f3 = open(os.path.join(dirname, "../config/discord-config.json"))
-    config = json.loads(f3.read())
-    f3.close()
-except FileNotFoundError:
-    print("Please enter your token:")
-    config = dict()
-    config['token'] = str(input())
-    f3 = open(os.path.join(dirname, "../config/discord-config.json"), "w")
-    f3.write(json.dumps(config))
-    f3.close()
+# try:
+#     f3 = open(os.path.join(dirname, "../config/discord-config.json"))
+#     config = json.loads(f3.read())
+#     f3.close()
+# except FileNotFoundError:
+#     print("Please enter your token:")
+#     config = dict()
+#     config['token'] = str(input())
+#     f3 = open(os.path.join(dirname, "../config/discord-config.json"), "w")
+#     f3.write(json.dumps(config))
+#     f3.close()
 try:
     f4 = open(os.path.join(dirname, "../config/channels-config.json"))
     channels_config = json.loads(f4.read())
