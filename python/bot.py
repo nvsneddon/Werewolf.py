@@ -1,19 +1,24 @@
 import discord
 from discord.ext import commands
+from schemer import ValidationException
 
+import decorators
 from decorators import is_admin, findPerson
-from election import Election
 from game import Game
 import asyncio
-import os
-import json
+import models.channels
+import models.game
+import models.election
+import models.server
+import models.villager
 import files
+import abilities
 
 
 def can_clear():
     async def predicate(ctx):
-        return not ((discord.utils.get(ctx.message.author.roles, name="Owner") is None) and (
-                ctx.message.author != findPerson(ctx, "keyclimber")))
+        bot_admin_channel = discord.utils.get(ctx.guild.channels, name="bot-admin")
+        return ctx.author in bot_admin_channel.overwrites or ctx.author == ctx.guild.owner
 
     return commands.check(predicate)
 
@@ -29,7 +34,8 @@ class Bot(commands.Cog):
 
     def __init__(self, bot):
         self.__bot = bot
-        self.__game = False
+        self.__bot.add_cog(Game(self.__bot))
+        # self.__game = False
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -71,112 +77,17 @@ class Bot(commands.Cog):
         await ctx.send(":ping_pong: Pong!")
 
     @commands.command(**files.command_parameters['playing'])
+    @decorators.is_no_game()
     async def playing(self, ctx):
         playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
         await ctx.author.edit(roles={playing_role})
         await ctx.send(f"{ctx.author.mention} is now playing.")
 
     @commands.command(**files.command_parameters['notplaying'])
+    @decorators.is_no_game()
     async def notplaying(self, ctx):
-        if self.__game:
-            await ctx.send("You can't stop now!")
-            return
         await ctx.author.edit(roles=[])
         await ctx.send(f"{ctx.author.mention} is not playing.")
-
-    @commands.command(**files.command_parameters["startgame"])
-    @is_admin()
-    async def startgame(self, ctx, *args: int):
-        with ctx.typing():
-            game_future = self.__bot.loop.create_future()
-            alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
-            playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
-            if len(args) == 0:
-                await ctx.send("Please add game parameters to the game")
-                return
-            players = []
-            for member in ctx.guild.members:
-                if playing_role in member.roles:
-                    players.append(member)
-            if len(players) < sum(args):
-                await ctx.send("You gave out too many roles for the number of people. Please try again.")
-                return
-            for player in players:
-                await player.edit(roles=[alive_role])
-            game_cog = Game(self.__bot, randomshuffle=True, members=players, future=game_future, roles=args, send_message_flag=False)
-            self.__bot.add_cog(game_cog)
-            self.__game = True
-            read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
-            for x in ctx.guild.members:
-                if alive_role in x.roles:
-                    character = game_cog.getVillagerByID(x.id).Character
-                    if character in files.channels_config["character-to-channel"]:
-                        channel_name = files.channels_config["character-to-channel"][character]
-                        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
-                        await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
-
-        town_square_id = files.getChannelId("announcements")
-        town_square_channel = self.__bot.get_channel(town_square_id)
-        await town_square_channel.send("Let the games begin!")
-        await ctx.send("The game has started!")
-        await game_future
-        self.__game = False
-        winner = game_future.result()
-        if winner == "werewolves":
-            await town_square_channel.send("Werewolves outnumber the villagers. Werewolves won.")
-        elif winner == "villagers":
-            await town_square_channel.send("All werewolves are now dead. Villagers win!")
-        elif winner == "cupid":
-            await town_square_channel.send("Cupid did a great job. The last two people alive are the love birds.")
-        elif winner == "bakerdead":
-            await town_square_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses "
-                                           "and win the game.")
-
-        await self.__finishGame(ctx)
-
-    @commands.command()
-    @is_admin()
-    async def endgame(self, ctx):
-        with ctx.typing():
-            await self.__finishGame(ctx)
-            await ctx.send("Game has ended")
-
-    async def __finishGame(self, ctx):
-        self.__bot.remove_cog("Game")
-        playing_role = discord.utils.get(
-            ctx.guild.roles, name="Playing")
-        owner_role = discord.utils.get(
-            ctx.guild.roles, name="Owner")
-        alive_role = discord.utils.get(
-            ctx.guild.roles, name="Alive")
-        dead_role = discord.utils.get(
-            ctx.guild.roles, name="Dead")
-        for member in ctx.guild.members:
-            # if member.bot:
-            #     continue
-            if alive_role not in member.roles and dead_role not in member.roles :
-                continue
-            if owner_role not in member.roles:
-                await member.edit(roles=[playing_role])
-            for x in files.channels_config["channels"]:
-                if x == "announcements":
-                    continue
-                channel = discord.utils.get(ctx.guild.channels, name=x)
-                await channel.set_permissions(member, overwrite=None)
-
-
-    @commands.command(brief="Exits the game")
-    @is_admin()
-    async def exit(self, ctx):
-        with ctx.typing():
-            await self.__finishGame(ctx)
-            await ctx.send("Goodbye!")
-        await self.__bot.logout()
-
-    @exit.error
-    async def exit_error(self, ctx, error):
-        if isinstance(error, commands.CheckFailure):
-            await ctx.send("I'm sorry, but you cannot shut me down!")
 
     @commands.command()
     @is_admin()
@@ -189,7 +100,7 @@ class Bot(commands.Cog):
             if j["permissions-update"] is not None:
                 permission_object.update(**j["permissions-update"])
             c = discord.Color.from_rgb(*j["color"])
-            role = await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
+            await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
             message = i + " role created"
             await ctx.send(message)
 
@@ -211,10 +122,18 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addcategory(self, ctx):
+        x = models.channels.Channels.find_one({"server": ctx.guild.id})
+        if x is not None:
+            await ctx.send("You already have the channels set up.")
+            return
         town_square_category = await ctx.guild.create_category_channel(files.channels_config["category-name"])
         for i, j in files.channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
             await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+        bot_role = discord.utils.get(ctx.guild.me.roles, managed=True)
+        permissions = files.readJsonFromConfig("permissions.json")
+        await town_square_category.set_permissions(bot_role,
+                                                   overwrite=discord.PermissionOverwrite(**permissions["manage"]))
         channel_id_dict = dict()
         channel_id_dict["guild"] = ctx.guild.id
         for i in files.channels_config["channels"]:
@@ -225,14 +144,15 @@ class Bot(commands.Cog):
             async for x in (channel.history(limit=1)):
                 await x.pin()
 
-        try:
-            dirname = os.path.dirname(__file__)
-            f = open(os.path.join(dirname, '../config/channel_id_list.json'), "w")
-            f.write(json.dumps(channel_id_dict))
-            f.close()
-        except:
-            print("Channel_id_list.json not found. Exiting now!")
-            exit()
+        channels = models.channels.Channels.find_one({"server": ctx.guild.id})
+        if channels is None:
+            channels = models.channels.Channels({
+                "server": ctx.guild.id,
+                "channels": channel_id_dict
+            })
+            channels.save()
+        else:
+            channels.update_instance({"channels": channel_id_dict})
 
         for i, j in files.channels_config["channel-permissions"].items():
             ch = discord.utils.get(town_square_category.channels, name=i)
@@ -247,6 +167,7 @@ class Bot(commands.Cog):
 
     @commands.command()
     @is_admin()
+    @decorators.is_no_game()
     async def removecategory(self, ctx):
         c = discord.utils.get(ctx.guild.categories,
                               name=files.channels_config["category-name"])
@@ -254,7 +175,39 @@ class Bot(commands.Cog):
             await i.delete()
         await c.delete()
 
-        dirname = os.path.dirname(__file__)
-        path = os.path.join(dirname, '../config/channel_id_list.json')
-        if os.path.exists(path):
-            os.remove(path)
+        channel = models.channels.Channels.find_one({"server": ctx.guild.id})
+        channel.remove()
+
+    @commands.command()
+    @is_admin()
+    @decorators.is_no_game()
+    async def changeday(self, ctx, time):
+        if models.server.set_day(ctx.guild.id, time):
+            await ctx.send(f"Time set to {time}")
+        else:
+            await ctx.send("Bad time format. Please try using the hh:mm 24h format.")
+
+    @commands.command()
+    @is_admin()
+    @decorators.is_no_game()
+    async def changenight(self, ctx, time):
+        if models.server.set_night(ctx.guild.id, time):
+            await ctx.send(f"Time set to {time}")
+        else:
+            await ctx.send("Bad time format. Please try using the hh:mm 24h format")
+
+    @commands.command()
+    @is_admin()
+    @decorators.is_no_game()
+    async def changewarning(self, ctx, minutes):
+        if models.server.set_warning(ctx.guild.id, minutes):
+            await ctx.send(f"Warning set to {minutes} before nighttime")
+        else:
+            await ctx.send("Please make sure the number isn't bigger than 180.")
+
+    @commands.command()
+    async def gettime(self, ctx):
+        server_document = models.server.Server.find_one({ "server": ctx.guild.id })
+        await ctx.send(f"Day time is at {server_document['daytime']}")
+        await ctx.send(f"Night time is at {server_document['nighttime']}")
+        await ctx.send(f"Warning happens {server_document['warning']} minutes before nighttime")
