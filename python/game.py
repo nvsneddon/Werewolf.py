@@ -94,12 +94,8 @@ class Game(commands.Cog):
         guild = self.__bot.get_guild(guild_id)
         if v["werewolf"]:
             game_document["werewolfcount"] -= 1
-            print("One less werewolf")
         else:
             game_document["villagercount"] -= 1
-            print("One less villager")
-        print("Villagers:", game_document["villagercount"])
-        print("Werewolves:", game_document["werewolfcount"])
         game_document.save()
         if v["character"] == "hunter":
             game_document["hunter_ids"].append(v["discord_id"])
