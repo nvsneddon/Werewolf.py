@@ -268,9 +268,6 @@ class Game(commands.Cog):
             message = '\n'.join(files.werewolfMessages[character]["welcome"])
             if send_message_flag:
                 self.__bot.loop.create_task(self.__sendPM(x, message))
-        print("Players", num_players)
-        print("Werewolves", num_werewolves)
-        print("Villagers", num_villagers)
         models.game.delete_many({"server": guild_id})
         game_object = models.game.Game({
             "server": guild_id,
@@ -370,7 +367,10 @@ class Game(commands.Cog):
         game = models.game.Game.find_one({
             "server": ctx.guild.id
         })
-        await ctx.send(f"Villagers: {game['villagercount']}\nWerewolves: {game['werewolfcount']}")
+        if game is None:
+            await ctx.send("You don't have a game going on!")
+        else:
+            await ctx.send(f"Villagers: {game['villagercount']}\nWerewolves: {game['werewolfcount']}")
 
     @commands.command(aliases=['daytime'])
     @decorators.is_admin()

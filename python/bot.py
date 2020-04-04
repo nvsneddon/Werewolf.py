@@ -18,7 +18,7 @@ import abilities
 def can_clear():
     async def predicate(ctx):
         bot_admin_channel = discord.utils.get(ctx.guild.channels, name="bot-admin")
-        return ctx.author in bot_admin_channel.overwrites
+        return ctx.author in bot_admin_channel.overwrites or ctx.author == ctx.guild.owner
 
     return commands.check(predicate)
 
@@ -130,10 +130,10 @@ class Bot(commands.Cog):
         for i, j in files.channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
             await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
-        target = discord.utils.get(ctx.guild.me.roles, managed=True)
+        bot_role = discord.utils.get(ctx.guild.me.roles, managed=True)
         permissions = files.readJsonFromConfig("permissions.json")
-        await town_square_category.set_permissions(target,
-                                                   overwrite=discord.PermissionOverwrite(**permissions["read_write"]))
+        await town_square_category.set_permissions(bot_role,
+                                                   overwrite=discord.PermissionOverwrite(**permissions["manage"]))
         channel_id_dict = dict()
         channel_id_dict["guild"] = ctx.guild.id
         for i in files.channels_config["channels"]:

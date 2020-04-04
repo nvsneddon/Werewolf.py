@@ -31,7 +31,9 @@ async def on_guild_join(guild):
         x.save()
     if not discord.utils.get(guild.channels, name="bot-admin"):
         permissions = files.readJsonFromConfig('permissions.json')
+        bot_role = discord.utils.get(guild.me.roles, managed=True)
         overwrite = {
+            bot_role: discord.PermissionOverwrite(**permissions["manage"]),
             guild.default_role: discord.PermissionOverwrite(**permissions['none'])
         }
         town_square_category = await guild.create_category_channel(name="Admin")
