@@ -6,6 +6,9 @@
 trigger:
 - master
 
+variables:
+- group: werewolf-variables
+
 pool:
   vmImage: 'ubuntu-latest'
 strategy:
@@ -24,18 +27,13 @@ steps:
     pip install -r requirements.txt
   displayName: 'Install dependencies'
 
-- script: |
-    ./run.sh
-    - task: PythonScript@0
-      inputs:
-        scriptSource: 'filePath'
-        scriptPath: 'python/main.py'
-        workingDirectory: 'python/'
-  displayName: 'Run Bot'
-
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
     scriptPath: 'python/main.py'
-    arguments: '$(token) $(database-url) $(database-user) $(database-password)'
+    arguments: '$env:BOT_TOKEN $(db-url) $(db-user) $env:MY_PASSWORD'
     workingDirectory: 'python/'
+  env:
+    MY_PASSWORD: $(db-password)
+    BOT_TOKEN: $(test-bot-token)
+  displayName: 'Run Bot'
