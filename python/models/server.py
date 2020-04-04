@@ -1,13 +1,61 @@
 import mongothon
 import time
 
+from schemer import ValidationException
+
 from dbconnect import my_db
 
+def set_day(guild_id, time_input):
+    try:
+        document = Server.find_one({"server": guild_id})
+        time.strptime(time_input, '%H:%M')
+        time_array = time_input.split(':')
+        if int(time_array[0]) < 10 and len(time_array[0]) < 2:
+            time_array[0] = "0" + time_array[0]
+            document["daytime"] = ':'.join(time_array)
+            document.save()
+        else:
+            document["daytime"] = time_input
+            document.save()
+        return True
+    except ValueError:
+        return False
+
+def set_night(guild_id, time_input):
+    try:
+        document = Server.find_one({"server": guild_id})
+        time.strptime(time_input, '%H:%M')
+        time_array = time_input.split(':')
+        if int(time_array[0]) < 10 and len(time_array[0]) < 2:
+            time_array[0] = "0" + time_array[0]
+            document["nighttime"] = ':'.join(time_array)
+            document.save()
+        else:
+            document["nighttime"] = time_input
+            document.save()
+        return True
+    except ValueError:
+        return False
+
+def set_warning(guild_id, minutes):
+    document = Server.find_one({"server": guild_id})
+    document["warning"] = int(minutes)
+    try:
+        document.save()
+        return True
+    except ValidationException:
+        return False
+
+def delete_many(filter):
+    my_db['server'].delete_many(filter)
 
 def time_format():
     def validate(value):
         try:
             time.strptime(value, '%H:%M')
+            h, m  = value.split(':')
+            if int(h) < 10 and len(h) < 2:
+                return "Invalid time format"
         except ValueError:
             return "Invalid time format"
 

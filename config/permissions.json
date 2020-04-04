@@ -31,5 +31,17 @@
         "mention_everyone": true,
         "external_emojis": true,
         "add_reactions": true
-    }
-}
+    },
+    "manage": {
+        "manage_channels": true,
+        "manage_roles": true,
+        "read_messages": true,
+        "send_messages": true,
+        "send_tts_messages": true,
+        "embed_links": true,
+        "attach_files": true,
+        "read_message_history": true,
+        "mention_everyone": true,
+        "external_emojis": true,
+        "add_reactions": true
+    }}

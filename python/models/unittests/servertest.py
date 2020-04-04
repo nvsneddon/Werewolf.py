@@ -47,6 +47,9 @@ class MyServerTest(unittest.TestCase):
     def test_no_time(self):
         self.assertRaises(ValidationException, bad_input, "hello")
 
+    def test_bad_formatted_time(self):
+        self.assertRaises(ValidationException, bad_input, "5:00")
+
     def test_bad_warning(self):
         self.assertRaises(ValidationException, bad_warning, 250)
 

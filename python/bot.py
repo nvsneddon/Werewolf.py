@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from schemer import ValidationException
 
 import decorators
 from decorators import is_admin, findPerson
@@ -8,6 +9,7 @@ import asyncio
 import models.channels
 import models.game
 import models.election
+import models.server
 import models.villager
 import files
 import abilities
@@ -16,7 +18,7 @@ import abilities
 def can_clear():
     async def predicate(ctx):
         bot_admin_channel = discord.utils.get(ctx.guild.channels, name="bot-admin")
-        return ctx.author in bot_admin_channel.overwrites
+        return ctx.author in bot_admin_channel.overwrites or ctx.author == ctx.guild.owner
 
     return commands.check(predicate)
 
@@ -128,10 +130,10 @@ class Bot(commands.Cog):
         for i, j in files.channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
             await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
-        target = discord.utils.get(ctx.guild.me.roles, managed=True)
+        bot_role = discord.utils.get(ctx.guild.me.roles, managed=True)
         permissions = files.readJsonFromConfig("permissions.json")
-        await town_square_category.set_permissions(target,
-                                                   overwrite=discord.PermissionOverwrite(**permissions["read_write"]))
+        await town_square_category.set_permissions(bot_role,
+                                                   overwrite=discord.PermissionOverwrite(**permissions["manage"]))
         channel_id_dict = dict()
         channel_id_dict["guild"] = ctx.guild.id
         for i in files.channels_config["channels"]:
@@ -165,6 +167,7 @@ class Bot(commands.Cog):
 
     @commands.command()
     @is_admin()
+    @decorators.is_no_game()
     async def removecategory(self, ctx):
         c = discord.utils.get(ctx.guild.categories,
                               name=files.channels_config["category-name"])
@@ -174,3 +177,37 @@ class Bot(commands.Cog):
 
         channel = models.channels.Channels.find_one({"server": ctx.guild.id})
         channel.remove()
+
+    @commands.command()
+    @is_admin()
+    @decorators.is_no_game()
+    async def changeday(self, ctx, time):
+        if models.server.set_day(ctx.guild.id, time):
+            await ctx.send(f"Time set to {time}")
+        else:
+            await ctx.send("Bad time format. Please try using the hh:mm 24h format.")
+
+    @commands.command()
+    @is_admin()
+    @decorators.is_no_game()
+    async def changenight(self, ctx, time):
+        if models.server.set_night(ctx.guild.id, time):
+            await ctx.send(f"Time set to {time}")
+        else:
+            await ctx.send("Bad time format. Please try using the hh:mm 24h format")
+
+    @commands.command()
+    @is_admin()
+    @decorators.is_no_game()
+    async def changewarning(self, ctx, minutes):
+        if models.server.set_warning(ctx.guild.id, minutes):
+            await ctx.send(f"Warning set to {minutes} before nighttime")
+        else:
+            await ctx.send("Please make sure the number isn't bigger than 180.")
+
+    @commands.command()
+    async def gettime(self, ctx):
+        server_document = models.server.Server.find_one({ "server": ctx.guild.id })
+        await ctx.send(f"Day time is at {server_document['daytime']}")
+        await ctx.send(f"Night time is at {server_document['nighttime']}")
+        await ctx.send(f"Warning happens {server_document['warning']} minutes before nighttime")
