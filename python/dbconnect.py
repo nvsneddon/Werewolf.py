@@ -14,4 +14,7 @@ except:
     raise FileNotFoundError
 
 my_client = pymongo.MongoClient(database_config["url"].format(database_config["user"], database_config["password"]))
-my_db = my_client["games"]
+if "collection" in database_config:
+    my_db = my_client[database_config["collection"]]
+else:
+    my_db = my_client["games"]

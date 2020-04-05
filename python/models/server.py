@@ -8,6 +8,11 @@ from dbconnect import my_db
 def set_day(guild_id, time_input):
     try:
         document = Server.find_one({"server": guild_id})
+        if document is None:
+            document = Server({
+                "server": guild_id
+            })
+            document.save()
         time.strptime(time_input, '%H:%M')
         time_array = time_input.split(':')
         if int(time_array[0]) < 10 and len(time_array[0]) < 2:
@@ -24,6 +29,11 @@ def set_day(guild_id, time_input):
 def set_night(guild_id, time_input):
     try:
         document = Server.find_one({"server": guild_id})
+        if document is None:
+            document = Server({
+                "server": guild_id
+            })
+            document.save()
         time.strptime(time_input, '%H:%M')
         time_array = time_input.split(':')
         if int(time_array[0]) < 10 and len(time_array[0]) < 2:
@@ -39,6 +49,11 @@ def set_night(guild_id, time_input):
 
 def set_warning(guild_id, minutes):
     document = Server.find_one({"server": guild_id})
+    if document is None:
+        document = Server({
+            "server": guild_id
+        })
+        document.save()
     document["warning"] = int(minutes)
     try:
         document.save()
@@ -53,7 +68,7 @@ def time_format():
     def validate(value):
         try:
             time.strptime(value, '%H:%M')
-            h, m  = value.split(':')
+            h, m = value.split(':')
             if int(h) < 10 and len(h) < 2:
                 return "Invalid time format"
         except ValueError:
