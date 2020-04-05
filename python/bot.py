@@ -205,9 +205,14 @@ class Bot(commands.Cog):
         else:
             await ctx.send("Please make sure the number isn't bigger than 180.")
 
-    @commands.command()
+    @commands.command(**files.command_parameters['gettime'])
     async def gettime(self, ctx):
-        server_document = models.server.Server.find_one({ "server": ctx.guild.id })
+        server_document = models.server.Server.find_one({"server": ctx.guild.id})
+        if server_document is None:
+            server_document = models.server.Server({
+                "server": ctx.guild.id
+            })
+            server_document.save()
         await ctx.send(f"Day time is at {server_document['daytime']}")
         await ctx.send(f"Night time is at {server_document['nighttime']}")
         await ctx.send(f"Warning happens {server_document['warning']} minutes before nighttime")

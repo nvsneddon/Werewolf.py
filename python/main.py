@@ -5,6 +5,7 @@ import files
 import bot
 import models.server
 import models.villager
+import models.game
 import os
 
 
@@ -15,7 +16,10 @@ client = commands.Bot(command_prefix='!')
 async def on_ready():
     client.add_cog(bot.Bot(client))
     print("The werewolves are howling!")
-
+    game_cog = client.get_cog("Game")
+    games_document = models.game.Game.find({})
+    for game in games_document:
+        game_cog.schedule_day_and_night(game["server"])
 
 @client.event
 async def on_guild_remove(guild):
