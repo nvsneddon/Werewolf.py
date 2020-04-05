@@ -205,7 +205,7 @@ class Bot(commands.Cog):
         else:
             await ctx.send("Please make sure the number isn't bigger than 180.")
 
-    @commands.command()
+    @commands.command(**files.command_parameters['gettime'])
     async def gettime(self, ctx):
         server_document = models.server.Server.find_one({ "server": ctx.guild.id })
         await ctx.send(f"Day time is at {server_document['daytime']}")

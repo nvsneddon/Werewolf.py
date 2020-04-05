@@ -14,5 +14,9 @@
     "exit":{
         "brief": "Stops the bot.",
         "description": "This command stops the bot from running. This will stop the werewolf game and loose all progress of the game."
+    },
+    "gettime": {
+        "brief": "See what time night and day happens",
+        "description": "See what time night and day happens as well as when I warn you of nighttime coming."
     }
 }
