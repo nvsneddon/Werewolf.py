@@ -129,7 +129,8 @@ class Bot(commands.Cog):
         town_square_category = await ctx.guild.create_category_channel(files.channels_config["category-name"])
         for i, j in files.channels_config["category-permissions"].items():
             target = discord.utils.get(ctx.guild.roles, name=i)
-            await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+            permissions = files.readJsonFromConfig("permissions.json")
+            await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**permissions["none"]))
         bot_role = discord.utils.get(ctx.guild.me.roles, managed=True)
         permissions = files.readJsonFromConfig("permissions.json")
         await town_square_category.set_permissions(bot_role,
@@ -143,6 +144,9 @@ class Bot(commands.Cog):
             channel_id_dict[i] = channel.id
             async for x in (channel.history(limit=1)):
                 await x.pin()
+        for i, j in files.channels_config["category-permissions"].items():
+            target = discord.utils.get(ctx.guild.roles, name=i)
+            await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
 
         channels = models.channels.Channels.find_one({"server": ctx.guild.id})
         if channels is None:
