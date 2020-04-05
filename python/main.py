@@ -4,7 +4,7 @@ from discord.ext import commands
 import files
 import bot
 import models.server
-import sys
+import os
 
 
 client = commands.Bot(command_prefix='!')
@@ -71,4 +71,4 @@ async def on_message(message):
 
 
 if __name__ == "__main__":
-    client.run(sys.argv[1])
+    client.run(files.config["token"])
