@@ -41,7 +41,7 @@ class Election(commands.Cog):
         await ctx.send(message)
 
     # TODO Figure out how to get the guild_id at nighttime
-    def stop_vote(self, guild_id=681696629224505376):
+    def stop_vote(self, guild_id):
         leading = self.__get_leading(guild_id)
         models.election.delete_many({"server": guild_id})
         return leading
