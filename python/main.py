@@ -4,6 +4,7 @@ from discord.ext import commands
 import files
 import bot
 import models.server
+import models.villager
 import os
 
 
@@ -48,8 +49,15 @@ async def on_guild_join(guild):
         "!changeday, !changenight, and !changewarning.\nHave fun :) "
     )
 
-
-
+@client.event
+async def on_member_remove(member):
+    v = models.villager.Villager.find_one({
+        "server": member.guild.id,
+        "discord_id": member.id
+    })
+    if v is not None:
+        announcements_channel = member.guild.get_channel(files.getChannelId("announcements", member.guild.id))
+        # await announcements_channel.send(files.werewolfMessages[])
 
 @client.event
 async def on_message(message):

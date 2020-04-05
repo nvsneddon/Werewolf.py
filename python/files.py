@@ -102,7 +102,7 @@ def fileFoundInConfig(filename: str) -> bool:
 #         return {}
 
 
-def getChannelId(channel: str, server=681696629224505376) -> int:
+def getChannelId(channel: str, server) -> int:
 
     x = models.channels.Channels.find_one({"server": server})
     if x is None:

@@ -128,7 +128,7 @@ class Game(commands.Cog):
             other_id: int = game_document["inlove"][0]
             game_document["inlove"].remove(other_id)
             game_document.save()
-            town_square_id = files.getChannelId("announcements")
+            town_square_id = files.getChannelId("announcements", guild.id)
             town_square_channel = guild.get_channel(town_square_id)
             other_member = guild.get_member(other_id)
             other_document = models.villager.Villager.find_one({
@@ -147,7 +147,7 @@ class Game(commands.Cog):
         for x in files.channels_config["channels"]:
             if x == "announcements":
                 continue
-            channel = guild.get_channel(files.getChannelId(x))
+            channel = guild.get_channel(files.getChannelId(x, guild.id))
             await channel.set_permissions(member, overwrite=None)
         await member.edit(roles=[dead_role])
 
@@ -272,7 +272,7 @@ class Game(commands.Cog):
             "villagercount": num_villagers
         })
         game_object.save()
-        self.__bot.loop.create_task(self.__afterlife_message(afterlife_message))
+        self.__bot.loop.create_task(self.__afterlife_message(afterlife_message, guild_id))
 
     def schedule_day_and_night(self, guild_id):
         server_document = models.server.Server.find_one({
@@ -301,8 +301,8 @@ class Game(commands.Cog):
             abilities.start_game(guild_id, night=True)
             print("It is nighttime")
 
-    async def __afterlife_message(self, message):
-        afterlife_id = files.getChannelId("afterlife")
+    async def __afterlife_message(self, message, guild_id):
+        afterlife_id = files.getChannelId("afterlife", guild_id)
         afterlife_channel = self.__bot.get_channel(afterlife_id)
         await afterlife_channel.send(message)
         async for x in (afterlife_channel.history(limit=1)):
@@ -346,13 +346,13 @@ class Game(commands.Cog):
         abilities.use_ability("werewolves", ctx.guild.id)
         if target.id == game_document["protected"]:
             await ctx.send("That person has been protected. You just wasted your kill!")
-            announcement_id = files.getChannelId("announcements")
-            announcements_channel = ctx.guild.get_channel(announcement_id)
+            announcement_id = files.getChannelId("announcements", ctx.guild.id)
+            announcements_channel = ctx.guild.get_channel(announcement_id, ctx.guild.id)
             await announcements_channel.send(
                 f"The werewolves have tried to kill {target.mention} who was protected. We're glad you're alive.")
         else:
             await ctx.send("Killing {}".format(target.mention))
-            announcement_id = files.getChannelId("announcements")
+            announcement_id = files.getChannelId("announcements", ctx.guild.id)
             announcements_channel = ctx.guild.get_channel(announcement_id)
             await announcements_channel.send(
                 files.werewolfMessages[target_document["character"]]["killed"].format(target.mention))
@@ -407,8 +407,8 @@ class Game(commands.Cog):
         game_document["hunter_ids"].remove(ctx.author.id)
         game_document.save()
         lynched_message = files.werewolfMessages[dead_villager_document["character"]]["hunter"].format(dead_villager.mention)
-        town_square_channel = ctx.guild.get_channel(files.getChannelId("town-square"))
-        announcements_channel = ctx.guild.get_channel(files.getChannelId("announcements"))
+        town_square_channel = ctx.guild.get_channel(files.getChannelId("town-square", ctx.guild.id))
+        announcements_channel = ctx.guild.get_channel(files.getChannelId("announcements", ctx.guild.id))
         await announcements_channel.send(lynched_message)
         await town_square_channel.send(lynched_message)
         await self.die_from_db(villager_id=dead_villager.id, guild_id=ctx.guild.id)
@@ -499,7 +499,7 @@ class Game(commands.Cog):
             abilities.use_ability("dead_wolves", ctx.guild.id)
         else:
             abilities.use_ability("spirits", ctx.guild.id)
-        channel = ctx.guild.get_channel(files.getChannelId("mason"))
+        channel = ctx.guild.get_channel(files.getChannelId("mason", ctx.guild.id))
         await channel.send("You have received a message from above.")
         await channel.send(word)
 
@@ -550,7 +550,7 @@ class Game(commands.Cog):
         town_square_channel = guild.get_channel(town_square_id)
         announcements_id = files.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
-        town_square_id = files.getChannelId("town-square")
+        town_square_id = files.getChannelId("town-square", guild.id)
         town_square_channel = guild.get_channel(town_square_id)
         to_vote = []
         villagers = models.villager.Villager.find({
@@ -611,7 +611,7 @@ class Game(commands.Cog):
             self.__bot.loop.create_task(self.starve_die(guild))
 
     async def daytimeannounce(self, guild_id):
-        announcements_id = files.getChannelId("announcements", 681696629224505376)
+        announcements_id = files.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
 
         await announcements_channel.send("It is daytime")
@@ -620,7 +620,7 @@ class Game(commands.Cog):
         await self.startvote(announcements_channel.guild)
 
     async def starve_die(self, guild):
-        announcements_id = files.getChannelId("announcements")
+        announcements_id = files.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
         game_document = models.game.Game.find_one({
             "server": guild.id
