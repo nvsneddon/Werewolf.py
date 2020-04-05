@@ -52,5 +52,5 @@ jobs:
     runOnce:
       deploy:
         steps:
-        - script: echo my first deployment
+        - script: '~/Documents/werewolf/run.sh'
 
