@@ -71,4 +71,4 @@ async def on_message(message):
 
 
 if __name__ == "__main__":
-    client.run(os.environ.get("TEST_BOT_TOKEN"))
+    client.run(files.config["token"])
