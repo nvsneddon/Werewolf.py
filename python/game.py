@@ -51,26 +51,6 @@ def distribute_roles(roles):
     return cards
 
 
-async def finishGame(guild):
-    playing_role = discord.utils.get(
-        guild.roles, name="Playing")
-
-    villagers = models.villager.Villager.find({"server": guild.id})
-    for v in villagers:
-        member = guild.get_member(v["discord_id"])
-
-        await member.edit(roles=[playing_role])
-        for x in files.channels_config["channels"]:
-            if x == "announcements":
-                continue
-            channel = discord.utils.get(guild.channels, name=x)
-            await channel.set_permissions(member, overwrite=None)
-        v.remove()
-    models.game.delete_many({"server": guild.id})
-    models.election.delete_many({"server": guild.id})
-    abilities.finish_game(guild.id)
-
-
 class Game(commands.Cog):
 
     def __init__(self, bot):
@@ -188,6 +168,27 @@ class Game(commands.Cog):
         await announcements_channel.send("Let the games begin!")
         await ctx.send("The game has started!")
 
+    async def finishGame(self, guild):
+        playing_role = discord.utils.get(
+            guild.roles, name="Playing")
+
+        villagers = models.villager.Villager.find({"server": guild.id})
+        for v in villagers:
+            member = guild.get_member(v["discord_id"])
+
+            await member.edit(roles=[playing_role])
+            for x in files.channels_config["channels"]:
+                if x == "announcements":
+                    continue
+                channel = discord.utils.get(guild.channels, name=x)
+                await channel.set_permissions(member, overwrite=None)
+            v.remove()
+        models.game.delete_many({"server": guild.id})
+        models.election.delete_many({"server": guild.id})
+        abilities.finish_game(guild.id)
+        self.clear_schedule(str(guild.id))
+
+
     async def __announce_winner(self, guild_id):
         game = models.game.Game.find_one({ "server": guild_id })
         if game is None:
@@ -199,17 +200,17 @@ class Game(commands.Cog):
         if self.__cupidwinner(guild_id, game["inlove"]):
             await announcements_channel.send("The only alive people left are the two people in love. Cupid wins.")
             with announcements_channel.typing():
-                await finishGame(guild)
+                await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
         elif game["werewolfcount"] > game["villagercount"]:
             await announcements_channel.send("Werewolves outnumber the villagers. Werewolves win")
             with announcements_channel.typing():
-                await finishGame(guild)
+                await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
         elif game["werewolfcount"] == 0:
             await announcements_channel.send("All werewolves are dead. Villagers win!")
             with announcements_channel.typing():
-                await finishGame(guild)
+                await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
 
     def __cupidwinner(self, guild_id, love):
@@ -278,14 +279,14 @@ class Game(commands.Cog):
         server_document = models.server.Server.find_one({
             "server": guild_id
         })
-        schedule.every().day.at(server_document["daytime"]).do(self.daytime, guild_id).tag("game", str(guild_id))
+        schedule.every().day.at(server_document["daytime"]).do(self.daytime, guild_id).tag("game", str(guild_id), str(guild_id) + "daytime")
         warn_voting_time = datetime.datetime(10, 1, 2, int(
             server_document['nighttime'][:2]), int(server_document['nighttime'][3:5])) - \
                            datetime.timedelta(minutes=server_document['warning'])
         warn_voting_time_string = f"{warn_voting_time.hour:02d}:{warn_voting_time.minute:02d}"
-        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(guild_id))
+        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(guild_id) + "warning")
         schedule.every().day.at(server_document["nighttime"]).do(self.nighttime, guild_id).tag("game",
-                                                                                                     str(guild_id))
+                                                                                                     str(guild_id) + "nighttime")
         night_array = server_document["nighttime"].split(':')
         day_array = server_document["daytime"].split(':')
         check_time = datetime.datetime.now().time()
@@ -315,7 +316,7 @@ class Game(commands.Cog):
     @decorators.is_admin()
     async def endgame(self, ctx):
         with ctx.typing():
-            await finishGame(ctx.guild)
+            await self.finishGame(ctx.guild)
             await ctx.send("Game has ended")
 
     @commands.command(**files.command_parameters['kill'])
@@ -588,10 +589,10 @@ class Game(commands.Cog):
             await self.die_from_db(dead_villager.id, guild.id)
 
     def cog_unload(self):
-        self.stop_game()
+        self.clear_schedule()
         return super().cog_unload()
 
-    def stop_game(self, tag="game"):
+    def clear_schedule(self, tag="game"):
         schedule.clear(str(tag))
         # self.__bot.remove_cog("Election")
         # if self.__election_cog is not None:

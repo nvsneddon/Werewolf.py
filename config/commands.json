@@ -4,12 +4,21 @@
     "help": "If you don't understand how to play the game, use this command and the bot will tell you what you need to do."
   },
   "countpeople": {
-    "alias": ["peoplecount", "werewolfcount", "villagercount", "count"],
+    "alias": [
+      "peoplecount",
+      "werewolfcount",
+      "villagercount",
+      "count"
+    ],
     "brief": "Counts the werewolves alive and the villagers alive",
     "help": "Counts the werewolves who are alive and the villagers who are alive."
   },
   "startlynch": {
-    "alias": ["startwerewolfvote", "killvote", "lynch"],
+    "alias": [
+      "startwerewolfvote",
+      "killvote",
+      "lynch"
+    ],
     "brief": "Start a vote to kill someone.",
     "help": "Start the voting process. The vote will close at night time automatically if the vote hasn't been closed yet."
   },
@@ -18,16 +27,20 @@
     "help": "The parameters are numbers that represent the following roles:\nwerewolf, seer, bodyguard, cupid, hunter, baker, mason"
   },
   "vote": {
-    "alias": ["castvote"],
+    "alias": [
+      "castvote"
+    ],
     "brief": "Cast a vote for the person",
     "help": "Cast your vote for the person of your choosing."
   },
-  "showleading":{
+  "showleading": {
     "brief": "Shows you who is in the lead",
     "help": "Shows you who is in the lead."
   },
-  "showvote" : {
-    "alias": ["showscore"],
+  "showvote": {
+    "alias": [
+      "showscore"
+    ],
     "brief": "Shows you who everyone voted for.",
     "help": "Shows you who everyone voted for and how many votes everyone got"
   },
@@ -44,37 +57,56 @@
     "help": "Use this if you locked your vote and you want to change your mind."
   },
   "investigate": {
-    "alias": ["see", "look", "suspect"],
+    "alias": [
+      "see",
+      "look",
+      "suspect"
+    ],
     "brief": "Use this to investigate someone",
     "help": "In order to investigate, you must also say who you want to investigate after invoking the command. You will see if that person is a werewolf or not. You can only investigate once per day. The ability to investigate renews every morning."
   },
   "shoot": {
-    "alias": ["fireaway"],
+    "alias": [
+      "fireaway"
+    ],
     "brief": "Shoot anyone of your choice before you die.",
     "help": "As you're now dying, you have the opportunity to kill someone. Just type this command along with the person's name and you'll be able to take someone down with you."
   },
   "kill": {
-    "alias" :["murder"],
+    "alias": [
+      "murder"
+    ],
     "brief": "Kill someone of your choice. Only once per night.",
     "help": "Because you're a werewolf, you get to kill someone every night as a team. Once someone uses this command, it can't be used until the beginning of the next night. Once nighttime is over, it's too late to kill someone."
   },
   "protect": {
-    "alias": ["save", "defend", "shield"],
+    "alias": [
+      "save",
+      "defend",
+      "shield"
+    ],
     "brief": "Use this to protect someone from the werewolves.",
     "help": "Protect anyone of your choice from the werewolves. Your ability renews every sunrise. Also remember, you can protect yourself, but you can't protect the same person twice in a row. "
   },
   "match": {
-    "alias": ["matchlove", "makeinlove"],
+    "alias": [
+      "matchlove",
+      "makeinlove"
+    ],
     "brief": "Make two people fall in love",
     "help": "Make two people of your choice fall in love so strong that they'd rather die than live without their love. You only have two arrows, so don't mess up."
   },
   "sendmessage": {
-    "alias": ["sendword"],
+    "alias": [
+      "sendword"
+    ],
     "brief": "Send a one word message to the masons.",
     "help": "Send a one word message to the masons who will work to listen to the message. They're still working on communing with the dead, so you may have to give them a hint. You can give one hint or message per night. The ability renews every sunset."
   },
   "sendhint": {
-    "alias": ["sendhelp"],
+    "alias": [
+      "sendhelp"
+    ],
     "brief": "Send a hint about the last message to the masons.",
     "help": "Send a hint to help the masons decipher the last message. You can give one hint or message per night. The ability renews every sunset."
   },
@@ -96,5 +128,9 @@
   },
   "notplaying": {
     "brief": "Mark yourself as not playing"
+  },
+  "gettime": {
+    "brief": "See what time night and day happens",
+    "description": "See what time night and day happens as well as when I warn you of nighttime coming."
   }
 }
