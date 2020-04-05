@@ -122,49 +122,50 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addcategory(self, ctx):
-        x = models.channels.Channels.find_one({"server": ctx.guild.id})
-        if x is not None:
-            await ctx.send("You already have the channels set up.")
-            return
-        town_square_category = await ctx.guild.create_category_channel(files.channels_config["category-name"])
-        for i, j in files.channels_config["category-permissions"].items():
-            target = discord.utils.get(ctx.guild.roles, name=i)
+        with ctx.typing():
+            x = models.channels.Channels.find_one({"server": ctx.guild.id})
+            if x is not None:
+                await ctx.send("You already have the channels set up.")
+                return
+            town_square_category = await ctx.guild.create_category_channel(files.channels_config["category-name"])
+            for i, j in files.channels_config["category-permissions"].items():
+                target = discord.utils.get(ctx.guild.roles, name=i)
+                permissions = files.readJsonFromConfig("permissions.json")
+                await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**permissions["none"]))
+            bot_role = discord.utils.get(ctx.guild.me.roles, managed=True)
             permissions = files.readJsonFromConfig("permissions.json")
-            await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**permissions["none"]))
-        bot_role = discord.utils.get(ctx.guild.me.roles, managed=True)
-        permissions = files.readJsonFromConfig("permissions.json")
-        await town_square_category.set_permissions(bot_role,
-                                                   overwrite=discord.PermissionOverwrite(**permissions["manage"]))
-        channel_id_dict = dict()
-        channel_id_dict["guild"] = ctx.guild.id
-        for i in files.channels_config["channels"]:
-            await ctx.guild.create_text_channel(name=i, category=town_square_category)
-            channel = discord.utils.get(ctx.guild.channels, name=i)
-            await channel.send('\n'.join(files.werewolfMessages["channel_messages"][i]))
-            channel_id_dict[i] = channel.id
-            async for x in (channel.history(limit=1)):
-                await x.pin()
-        for i, j in files.channels_config["category-permissions"].items():
-            target = discord.utils.get(ctx.guild.roles, name=i)
-            await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+            await town_square_category.set_permissions(bot_role,
+                                                       overwrite=discord.PermissionOverwrite(**permissions["manage"]))
+            channel_id_dict = dict()
+            channel_id_dict["guild"] = ctx.guild.id
+            for i in files.channels_config["channels"]:
+                await ctx.guild.create_text_channel(name=i, category=town_square_category)
+                channel = discord.utils.get(ctx.guild.channels, name=i)
+                await channel.send('\n'.join(files.werewolfMessages["channel_messages"][i]))
+                channel_id_dict[i] = channel.id
+                async for x in (channel.history(limit=1)):
+                    await x.pin()
+            for i, j in files.channels_config["category-permissions"].items():
+                target = discord.utils.get(ctx.guild.roles, name=i)
+                await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
 
-        channels = models.channels.Channels.find_one({"server": ctx.guild.id})
-        if channels is None:
-            channels = models.channels.Channels({
-                "server": ctx.guild.id,
-                "channels": channel_id_dict
-            })
-            channels.save()
-        else:
-            channels.update_instance({"channels": channel_id_dict})
+            channels = models.channels.Channels.find_one({"server": ctx.guild.id})
+            if channels is None:
+                channels = models.channels.Channels({
+                    "server": ctx.guild.id,
+                    "channels": channel_id_dict
+                })
+                channels.save()
+            else:
+                channels.update_instance({"channels": channel_id_dict})
 
-        for i, j in files.channels_config["channel-permissions"].items():
-            ch = discord.utils.get(town_square_category.channels, name=i)
-            if ch is None:
-                print("The name is", i)
-            for k, l in j.items():
-                target = discord.utils.get(ctx.guild.roles, name=k)
-                await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
+            for i, j in files.channels_config["channel-permissions"].items():
+                ch = discord.utils.get(town_square_category.channels, name=i)
+                if ch is None:
+                    print("The name is", i)
+                for k, l in j.items():
+                    target = discord.utils.get(ctx.guild.roles, name=k)
+                    await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
 
     def cog_unload(self):
         return super().cog_unload()
@@ -173,14 +174,15 @@ class Bot(commands.Cog):
     @is_admin()
     @decorators.is_no_game()
     async def removecategory(self, ctx):
-        c = discord.utils.get(ctx.guild.categories,
-                              name=files.channels_config["category-name"])
-        for i in c.channels:
-            await i.delete()
-        await c.delete()
+        with ctx.typing():
+            c = discord.utils.get(ctx.guild.categories,
+                                  name=files.channels_config["category-name"])
+            for i in c.channels:
+                await i.delete()
+            await c.delete()
 
-        channel = models.channels.Channels.find_one({"server": ctx.guild.id})
-        channel.remove()
+            channel = models.channels.Channels.find_one({"server": ctx.guild.id})
+            channel.remove()
 
     @commands.command()
     @is_admin()
