@@ -69,7 +69,9 @@ async def on_member_remove(member):
     })
     if v is not None:
         announcements_channel = member.guild.get_channel(models.channels.getChannelId("announcements", member.guild.id))
-        # await announcements_channel.send(files.werewolfMessages[])
+        await announcements_channel.send(files.werewolfMessages[v["character"]]["leave"])
+        game_cog = client.get_cog("Game")
+        await game_cog.die_from_db(villager_id=member.id, guild_id=member.guild.id, leaving=True)
 
 @client.event
 async def on_message(message):

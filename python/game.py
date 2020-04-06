@@ -65,7 +65,7 @@ class Game(commands.Cog):
         # self.schedule_day_and_night(guild_id)
         # self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
 
-    async def die_from_db(self, villager_id: int, guild_id: int):
+    async def die_from_db(self, villager_id: int, guild_id: int, leaving=False):
         v = models.villager.Villager.find_one({
             "server": guild_id,
             "discord_id": villager_id
@@ -79,7 +79,7 @@ class Game(commands.Cog):
         else:
             game_document["villagercount"] -= 1
         game_document.save()
-        if v["character"] == "hunter":
+        if v["character"] == "hunter" and not leaving:
             game_document["hunter_ids"].append(v["discord_id"])
             game_document.save()
             return
@@ -342,6 +342,10 @@ class Game(commands.Cog):
             "discord_id": target.id,
             "server": ctx.guild.id
         })
+        if target.id in game_document["hunter_ids"]:
+            await ctx.send("You can't kill the hunter after the hunter has already been killed. "
+                           "The hunter will die when he shoots. Don't worry!")
+            return
         if target_document is None:
             await ctx.send("That person could not be found. Please try again.")
             return
