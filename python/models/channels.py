@@ -1,3 +1,6 @@
+import json
+import os
+
 import mongothon
 
 from dbconnect import my_db
@@ -27,3 +30,23 @@ if __name__ == "__main__":
     print("The thing is", y)
     x.remove()
     # test.save()
+
+
+def getChannelId(channel: str, server) -> int:
+
+    x = Channels.find_one({"server": server})
+    if x is None:
+        dir_name = os.path.dirname(__file__)
+        f = open(os.path.join(dir_name, "../config/channel_id_list.json"))
+        channels = {}
+        channels["channels"] = {}
+        channels["server"] = server
+        read_file = json.loads(f.read())
+        for x, y in read_file.items():
+            if x == "guild":
+                continue
+            channels["channels"][x] = y
+        f.close()
+        x = Channels(channels)
+        x.save()
+    return x["channels"][channel]

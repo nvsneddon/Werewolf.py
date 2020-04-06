@@ -1,7 +1,5 @@
 import json
 import os
-from datetime import datetime
-import models.channels
 
 dirname = os.path.dirname(__file__)
 try:
@@ -19,6 +17,11 @@ except FileNotFoundError:
 try:
     f3 = open(os.path.join(dirname, "../config/discord-config.json"))
     config = json.loads(f3.read())
+    if "send_message" in config:
+        send_message_flag = config["send_message"]
+    else:
+        send_message_flag = False
+    print("Sending messages" if send_message_flag else "Not sending messages")
     f3.close()
 except FileNotFoundError:
     print("Please enter your token:")
@@ -102,21 +105,3 @@ def fileFoundInConfig(filename: str) -> bool:
 #         return {}
 
 
-def getChannelId(channel: str, server) -> int:
-
-    x = models.channels.Channels.find_one({"server": server})
-    if x is None:
-        dir_name = os.path.dirname(__file__)
-        f = open(os.path.join(dir_name, "../config/channel_id_list.json"))
-        channels = {}
-        channels["channels"] = {}
-        channels["server"] = server
-        read_file = json.loads(f.read())
-        for x, y in read_file.items():
-            if x == "guild":
-                continue
-            channels["channels"][x] = y
-        f.close()
-        x = models.channels.Channels(channels)
-        x.save()
-    return x["channels"][channel]
