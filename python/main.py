@@ -26,7 +26,7 @@ async def on_ready():
             x = models.server.Server({"server": guild.id})
             x.save()
     for game in games_document:
-        game_cog.schedule_day_and_night(game["server"])
+        game_cog.schedule_day_and_night(game["server"], reschedule=True)
     print("The werewolves are howling!")
 
 @client.event

@@ -151,7 +151,7 @@ class Game(commands.Cog):
                 return
             for player in players:
                 await player.edit(roles=[alive_role])
-            self.schedule_day_and_night(ctx.guild.id)
+            nighttime = self.schedule_day_and_night(ctx.guild.id)
             self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args, send_message_flag=files.send_message_flag)
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
             for x in players:
@@ -168,6 +168,7 @@ class Game(commands.Cog):
         announcements_id = models.channels.getChannelId("announcements", ctx.guild.id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         await announcements_channel.send("Let the games begin!")
+        await announcements_channel.send(f"It is {'nighttime' if nighttime else 'daytime'}")
         await ctx.send("The game has started!")
 
     async def finishGame(self, guild):
@@ -277,7 +278,7 @@ class Game(commands.Cog):
         game_object.save()
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message, guild_id))
 
-    def schedule_day_and_night(self, guild_id):
+    def schedule_day_and_night(self, guild_id, reschedule=False):
         server_document = models.server.Server.find_one({
             "server": guild_id
         })
@@ -294,15 +295,13 @@ class Game(commands.Cog):
         check_time = datetime.datetime.now().time()
         daytime_time = datetime.time(int(day_array[0]), int(day_array[1]))
         nighttime_time = datetime.time(int(night_array[0]), int(night_array[1]))
-        time_flag = daytime_time <= check_time <= nighttime_time
-        if daytime_time > nighttime_time:
-            time_flag = not time_flag
-        if time_flag:
-            abilities.start_game(guild_id, night=False)
-            print("It is daytime")
-        else:
-            abilities.start_game(guild_id, night=True)
-            print("It is nighttime")
+        is_nighttime = not (daytime_time <= check_time <= nighttime_time)
+        if daytime_time > nighttime_time: # If daytime is bigger, that means that being between the values means
+                                          # that it's nighttime
+            is_nighttime = not is_nighttime
+        if not reschedule:
+            abilities.start_game(guild_id, night=is_nighttime)
+        return is_nighttime
 
     async def __afterlife_message(self, message, guild_id):
         afterlife_id = models.channels.getChannelId("afterlife", guild_id)
@@ -350,7 +349,7 @@ class Game(commands.Cog):
         if target.id == game_document["protected"]:
             await ctx.send("That person has been protected. You just wasted your kill!")
             announcement_id = models.channels.getChannelId("announcements", ctx.guild.id)
-            announcements_channel = ctx.guild.get_channel(announcement_id, ctx.guild.id)
+            announcements_channel = ctx.guild.get_channel(announcement_id)
             await announcements_channel.send(
                 f"The werewolves have tried to kill {target.mention} who was protected. We're glad you're alive.")
         else:
