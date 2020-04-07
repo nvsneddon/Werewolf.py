@@ -1,5 +1,5 @@
 # Werewolf
-This is a discord bot that narrates a game of real time werewolf, werewolf with a day/night cycle spanning 24 hours, giving an interesting twist on werewolf. The bot can narrate on its own without any input from anyone that's not playing the game. How to use the bot and how to play the game is better seen in the how to play guide found [here](./how-to-play.md)
+This is a discord bot that narrates a game of real time werewolf, werewolf with a day/night cycle spanning 24 hours, giving an interesting twist on werewolf. The bot can narrate on its own without any input from anyone that's not playing the game. If you're just someone that's playing a game and want to know how real time werewolf works and how to use the bot as a player, you can [click here](./how-to-play.md)
 
 
 ## How to host a game
