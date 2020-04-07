@@ -79,7 +79,7 @@ The bot needs to do two things before it can start narrating games.
 
 You can do this with the command !setupserver. 
 
-#### !setupserver
+#### setupserver command
 
 This command has two parts, creating the roles and creating the channels along with the town category. 
 Creating the category requires the bot to have special permissions granted to it. You can run the !setupserver and it will do everything if you grant it administrative privileges temporarily. (You can ungrant the admin privileges as soon as it's done setting up the server). 
@@ -142,5 +142,5 @@ You can grant your account access to bot-admin and you'll still be able to start
 Good question. It's because the channels for the werewolf game have special permissions to keep people who are playing the game from seeing who the werewolves, seer, 
 bodyguard, etc are. When the game goes, everyone that is alive cannot see the channels that they aren't specifically invited to. They'll be invited to the channels
 that correspond to their role (Werewolves will get access to the werewolf channel, seers to the seer channel, etc.) Because by default, these channels are restricted
-the narrator bot has to mark its role as an exception to those restrictions so that the narrator can narrate as expected. If you want to set up the permissions for the channel category "The Town" yourself, you can follow the instructions [here](####!setupserver) and you'll never have to grant the narrator admin privileges. 
+the narrator bot has to mark its role as an exception to those restrictions so that the narrator can narrate as expected. If you want to set up the permissions for the channel category "The Town" yourself, you can follow the instructions [here](####setupserver-commmand) and you'll never have to grant the narrator admin privileges. 
 
