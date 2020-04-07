@@ -8,12 +8,12 @@ def delete_many(filter):
 
 
 ability_schema = mongothon.Schema({
-    "server": {"type": int, "default": False},
-    "spirits": {"type": bool, "default": False},
-    "dead_wolves": {"type": bool, "default": False},
-    "werewolves": {"type": bool, "default": False},
-    "seer": {"type": bool, "default": False},
-    "bodyguard": {"type": bool, "default": False},
+    "server": {"type": int, "default": True},
+    "spirits": {"type": bool, "default": True},
+    "dead_wolves": {"type": bool, "default": True},
+    "werewolves": {"type": bool, "default": True},
+    "seer": {"type": bool, "default": True},
+    "bodyguard": {"type": bool, "default": True},
     "cupid": {"type": bool, "default": True}
 })
 

@@ -3,6 +3,7 @@ import random
 import threading
 import time
 import typing
+import sys
 
 import discord
 import schedule
@@ -11,6 +12,7 @@ from discord.ext import commands
 import decorators
 import election
 import files
+import models.channels
 import models.villager
 import models.election
 import models.server
@@ -20,7 +22,7 @@ import abilities
 
 
 async def declare_winner(bot, winner, guild_id):
-    announcements_id = files.getChannelId("announcements", guild_id)
+    announcements_id = models.channels.getChannelId("announcements", guild_id)
     announcements_channel = bot.get_channel(announcements_id)
     if winner == "werewolves":
         await announcements_channel.send("Werewolves outnumber the villagers. Werewolves won.")
@@ -63,7 +65,7 @@ class Game(commands.Cog):
         # self.schedule_day_and_night(guild_id)
         # self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
 
-    async def die_from_db(self, villager_id: int, guild_id: int):
+    async def die_from_db(self, villager_id: int, guild_id: int, leaving=False):
         v = models.villager.Villager.find_one({
             "server": guild_id,
             "discord_id": villager_id
@@ -77,7 +79,7 @@ class Game(commands.Cog):
         else:
             game_document["villagercount"] -= 1
         game_document.save()
-        if v["character"] == "hunter":
+        if v["character"] == "hunter" and not leaving:
             game_document["hunter_ids"].append(v["discord_id"])
             game_document.save()
             return
@@ -108,7 +110,7 @@ class Game(commands.Cog):
             other_id: int = game_document["inlove"][0]
             game_document["inlove"].remove(other_id)
             game_document.save()
-            town_square_id = files.getChannelId("announcements", guild.id)
+            town_square_id = models.channels.getChannelId("announcements", guild.id)
             town_square_channel = guild.get_channel(town_square_id)
             other_member = guild.get_member(other_id)
             other_document = models.villager.Villager.find_one({
@@ -127,12 +129,13 @@ class Game(commands.Cog):
         for x in files.channels_config["channels"]:
             if x == "announcements":
                 continue
-            channel = guild.get_channel(files.getChannelId(x, guild.id))
+            channel = guild.get_channel(models.channels.getChannelId(x, guild.id))
             await channel.set_permissions(member, overwrite=None)
         await member.edit(roles=[dead_role])
 
     @commands.command(**files.command_parameters["startgame"])
     @decorators.is_admin()
+    @decorators.is_no_game()
     async def startgame(self, ctx, *args: int):
         with ctx.typing():
             alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
@@ -149,8 +152,8 @@ class Game(commands.Cog):
                 return
             for player in players:
                 await player.edit(roles=[alive_role])
-            self.schedule_day_and_night(ctx.guild.id)
-            self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args, send_message_flag=False)
+            nighttime = self.schedule_day_and_night(ctx.guild.id)
+            self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args, send_message_flag=files.send_message_flag)
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
             for x in players:
                 v_model = models.villager.Villager.find_one({
@@ -163,9 +166,10 @@ class Game(commands.Cog):
                     channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                     await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
-        announcements_id = files.getChannelId("announcements", ctx.guild.id)
+        announcements_id = models.channels.getChannelId("announcements", ctx.guild.id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         await announcements_channel.send("Let the games begin!")
+        await announcements_channel.send(f"It is {'nighttime' if nighttime else 'daytime'}")
         await ctx.send("The game has started!")
 
     async def finishGame(self, guild):
@@ -194,7 +198,7 @@ class Game(commands.Cog):
         if game is None:
             print("No game found to announce winner. Please try again")
             return
-        announcements_id = files.getChannelId("announcements", guild_id)
+        announcements_id = models.channels.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         guild = self.__bot.get_guild(guild_id)
         if self.__cupidwinner(guild_id, game["inlove"]):
@@ -275,7 +279,7 @@ class Game(commands.Cog):
         game_object.save()
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message, guild_id))
 
-    def schedule_day_and_night(self, guild_id):
+    def schedule_day_and_night(self, guild_id, reschedule=False):
         server_document = models.server.Server.find_one({
             "server": guild_id
         })
@@ -292,18 +296,16 @@ class Game(commands.Cog):
         check_time = datetime.datetime.now().time()
         daytime_time = datetime.time(int(day_array[0]), int(day_array[1]))
         nighttime_time = datetime.time(int(night_array[0]), int(night_array[1]))
-        time_flag = daytime_time <= check_time <= nighttime_time
-        if daytime_time > nighttime_time:
-            time_flag = not time_flag
-        if time_flag:
-            abilities.start_game(guild_id, night=False)
-            print("It is daytime")
-        else:
-            abilities.start_game(guild_id, night=True)
-            print("It is nighttime")
+        is_nighttime = not (daytime_time <= check_time <= nighttime_time)
+        if daytime_time > nighttime_time: # If daytime is bigger, that means that being between the values means
+                                          # that it's nighttime
+            is_nighttime = not is_nighttime
+        if not reschedule:
+            abilities.start_game(guild_id, night=is_nighttime)
+        return is_nighttime
 
     async def __afterlife_message(self, message, guild_id):
-        afterlife_id = files.getChannelId("afterlife", guild_id)
+        afterlife_id = models.channels.getChannelId("afterlife", guild_id)
         afterlife_channel = self.__bot.get_channel(afterlife_id)
         await afterlife_channel.send(message)
         async for x in (afterlife_channel.history(limit=1)):
@@ -341,19 +343,23 @@ class Game(commands.Cog):
             "discord_id": target.id,
             "server": ctx.guild.id
         })
+        if target.id in game_document["hunter_ids"]:
+            await ctx.send("You can't kill the hunter after the hunter has already been killed. "
+                           "The hunter will die when he shoots. Don't worry!")
+            return
         if target_document is None:
             await ctx.send("That person could not be found. Please try again.")
             return
         abilities.use_ability("werewolves", ctx.guild.id)
         if target.id == game_document["protected"]:
             await ctx.send("That person has been protected. You just wasted your kill!")
-            announcement_id = files.getChannelId("announcements", ctx.guild.id)
-            announcements_channel = ctx.guild.get_channel(announcement_id, ctx.guild.id)
+            announcement_id = models.channels.getChannelId("announcements", ctx.guild.id)
+            announcements_channel = ctx.guild.get_channel(announcement_id)
             await announcements_channel.send(
                 f"The werewolves have tried to kill {target.mention} who was protected. We're glad you're alive.")
         else:
             await ctx.send("Killing {}".format(target.mention))
-            announcement_id = files.getChannelId("announcements", ctx.guild.id)
+            announcement_id = models.channels.getChannelId("announcements", ctx.guild.id)
             announcements_channel = ctx.guild.get_channel(announcement_id)
             await announcements_channel.send(
                 files.werewolfMessages[target_document["character"]]["killed"].format(target.mention))
@@ -408,8 +414,8 @@ class Game(commands.Cog):
         game_document["hunter_ids"].remove(ctx.author.id)
         game_document.save()
         lynched_message = files.werewolfMessages[dead_villager_document["character"]]["hunter"].format(dead_villager.mention)
-        town_square_channel = ctx.guild.get_channel(files.getChannelId("town-square", ctx.guild.id))
-        announcements_channel = ctx.guild.get_channel(files.getChannelId("announcements", ctx.guild.id))
+        town_square_channel = ctx.guild.get_channel(models.channels.getChannelId("town-square", ctx.guild.id))
+        announcements_channel = ctx.guild.get_channel(models.channels.getChannelId("announcements", ctx.guild.id))
         await announcements_channel.send(lynched_message)
         await town_square_channel.send(lynched_message)
         await self.die_from_db(villager_id=dead_villager.id, guild_id=ctx.guild.id)
@@ -500,7 +506,7 @@ class Game(commands.Cog):
             abilities.use_ability("dead_wolves", ctx.guild.id)
         else:
             abilities.use_ability("spirits", ctx.guild.id)
-        channel = ctx.guild.get_channel(files.getChannelId("mason", ctx.guild.id))
+        channel = ctx.guild.get_channel(models.channels.getChannelId("mason", ctx.guild.id))
         await channel.send("You have received a message from above.")
         await channel.send(word)
 
@@ -539,7 +545,7 @@ class Game(commands.Cog):
         await ctx.send("{} and {} are in love now".format(person1, person2))
         # self.__bot.remove_command("match")
         read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
-        love_channel = ctx.guild.get_channel(files.getChannelId("lovebirds", ctx.guild.id))
+        love_channel = ctx.guild.get_channel(models.channels.getChannelId("lovebirds", ctx.guild.id))
         for x in game_document["inlove"]:
             await love_channel.set_permissions(ctx.guild.get_member(x),
                                                overwrite=discord.PermissionOverwrite(**read_write_permission))
@@ -547,11 +553,11 @@ class Game(commands.Cog):
                                 "You two are now in love! :heart:".format(member1.mention, member2.mention))
 
     async def startvote(self, guild):
-        town_square_id = files.getChannelId("town-square", guild.id)
+        town_square_id = models.channels.getChannelId("town-square", guild.id)
         town_square_channel = guild.get_channel(town_square_id)
-        announcements_id = files.getChannelId("announcements", guild.id)
+        announcements_id = models.channels.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
-        town_square_id = files.getChannelId("town-square", guild.id)
+        town_square_id = models.channels.getChannelId("town-square", guild.id)
         town_square_channel = guild.get_channel(town_square_id)
         to_vote = []
         villagers = models.villager.Villager.find({
@@ -568,7 +574,7 @@ class Game(commands.Cog):
         cog = self.__bot.get_cog("Election")
         result = cog.stop_vote(guild.id)
 
-        announcements_id = files.getChannelId("announcements", guild.id)
+        announcements_id = models.channels.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
         await announcements_channel.send("The voting has closed.")
         if len(result) == 0:
@@ -612,7 +618,7 @@ class Game(commands.Cog):
             self.__bot.loop.create_task(self.starve_die(guild))
 
     async def daytimeannounce(self, guild_id):
-        announcements_id = files.getChannelId("announcements", guild_id)
+        announcements_id = models.channels.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
 
         await announcements_channel.send("It is daytime")
@@ -621,7 +627,7 @@ class Game(commands.Cog):
         await self.startvote(announcements_channel.guild)
 
     async def starve_die(self, guild):
-        announcements_id = files.getChannelId("announcements", guild.id)
+        announcements_id = models.channels.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
         game_document = models.game.Game.find_one({
             "server": guild.id
@@ -648,7 +654,7 @@ class Game(commands.Cog):
             self.__bot.loop.create_task(self.stopvote(self.__bot.get_guild(guild_id)))
 
     async def nighttimeannounce(self, guild_id):
-        announcements_id = files.getChannelId("announcements", guild_id)
+        announcements_id = models.channels.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         await announcements_channel.send("It is nighttime")
 
@@ -656,7 +662,7 @@ class Game(commands.Cog):
         self.__bot.loop.create_task(self.almostnighttimeannounce(guild_id))
 
     async def almostnighttimeannounce(self, guild_id):
-        town_square_id = files.getChannelId("town-square", guild_id)
+        town_square_id = models.channels.getChannelId("town-square", guild_id)
         town_square_channel = self.__bot.get_channel(town_square_id)
         x = files.config["minutes-before-warning"]
         await town_square_channel.send(f"{x} minute{'s' if x > 1 else ''} left until nighttime.")

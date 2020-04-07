@@ -1,7 +1,5 @@
 import json
 import os
-from datetime import datetime
-import models.channels
 
 dirname = os.path.dirname(__file__)
 try:
@@ -19,11 +17,24 @@ except FileNotFoundError:
 try:
     f3 = open(os.path.join(dirname, "../config/discord-config.json"))
     config = json.loads(f3.read())
+    if "send_message" in config:
+        send_message_flag = config["send_message"]
+    else:
+        send_message_flag = False
+    print("Sending messages" if send_message_flag else "Not sending messages")
     f3.close()
 except FileNotFoundError:
     print("Please enter your token:")
     config = dict()
     config['token'] = str(input())
+    print("Should the bot send PMs to each player to say who they are? (Y/N)")
+    print("Unless this program is used for testing, please select Y or else it will be hard for people to know what role they are.")
+    answer = input("Y/N: ")
+    while answer.lower() != "y" and answer.lower() != "n":
+        print("Invalid selection. Please use Y or N to say if the bot should send PMs to the players.")
+        answer = input("Y/N: ")
+    config['send_message'] = (answer.lower() == 'y')
+    print("Sending messages" if config['send_message'] else "Not sending messages")
     f3 = open(os.path.join(dirname, "../config/discord-config.json"), "w")
     f3.write(json.dumps(config))
     f3.close()
@@ -102,21 +113,3 @@ def fileFoundInConfig(filename: str) -> bool:
 #         return {}
 
 
-def getChannelId(channel: str, server) -> int:
-
-    x = models.channels.Channels.find_one({"server": server})
-    if x is None:
-        dir_name = os.path.dirname(__file__)
-        f = open(os.path.join(dir_name, "../config/channel_id_list.json"))
-        channels = {}
-        channels["channels"] = {}
-        channels["server"] = server
-        read_file = json.loads(f.read())
-        for x, y in read_file.items():
-            if x == "guild":
-                continue
-            channels["channels"][x] = y
-        f.close()
-        x = models.channels.Channels(channels)
-        x.save()
-    return x["channels"][channel]

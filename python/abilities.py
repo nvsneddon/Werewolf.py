@@ -1,12 +1,12 @@
 import models.abilities
 
 ROLES = {
-    "spirits": False,
-    "dead_wolves": False,
-    "werewolves": False,
-    "seer": False,
-    "bodyguard": False,
-    "cupid": True
+    "spirits",
+    "dead_wolves",
+    "werewolves",
+    "seer",
+    "bodyguard",
+    "cupid"
 }
 
 NIGHT = {"seer", "spirits", "dead_wolves", "werewolves"}
@@ -20,9 +20,7 @@ def start_game(guild_id: int, night=False):
         "server": guild_id
     })
     m.save()
-    if night:
-        nighttime(guild_id)
-    else:
+    if not night:
         daytime(guild_id)
 
 
