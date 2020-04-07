@@ -24,7 +24,7 @@
   },
   "startgame": {
     "brief": "Starts a game of werewolf",
-    "help": "The parameters are numbers that represent the following roles:\nwerewolf, seer, bodyguard, cupid, hunter, baker, mason"
+    "help": "The parameters are numbers that represent the following roles:\nwerewolf, seer, bodyguard, cupid, hunter, baker, mason\nTo start a game with 2 werewolves, 1 seer, one bodyguard, and one hunter, you type in !startgame 2 1 1 0 1. Every number not included is assumed to be 0."
   },
   "vote": {
     "alias": [

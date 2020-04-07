@@ -54,11 +54,19 @@ async def on_guild_join(guild):
         await guild.create_text_channel(name="bot-admin", overwrites=overwrite, category=town_square_category)
     channel = discord.utils.get(guild.channels, name="bot-admin")
     await channel.send(
-        "Hi there! I've made this channel for you. On here, you can be the admin to the bot. I'll let you decide "
+        "Hi there! I've made this channel for you. :) On here, you can be the admin to the bot. I'll let you decide "
         f"who will be allowed to access this channel.\nDaytime is set to begin at {x['daytime']} and nighttime is set "
         f"to begin at {x['nighttime']}. I will remind you {x['warning']} minutes before nighttime approaches.\n"
         "You can also configure these options in this bot-admin channel by using the commands"
-        "!changeday, !changenight, and !changewarning.\nHave fun :) "
+        "!changeday, !changenight, and !changewarning.\n\n"
+        "To get started, please type !addroles and then !addcategory.\nAddroles will set up the needed roles for me to "
+        "work (Alive, Dead, Playing).\nAddcategory will add the town-square channels needed for the game.\n"
+        "The addcategory command does require admin permissions temporarily for it to work.\n"
+        "That means you need to grant me admin permissions and run !addcategory.\n"
+        "After you did that, you can uncheck the admin privileges. "
+        "To start a game, use the startgame command. If you type !help startgame, you'll see the roles that you can "
+        "give out."
+        "Have fun :) "
     )
 
 @client.event
