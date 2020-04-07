@@ -135,6 +135,7 @@ class Game(commands.Cog):
 
     @commands.command(**files.command_parameters["startgame"])
     @decorators.is_admin()
+    @decorators.is_no_game()
     async def startgame(self, ctx, *args: int):
         with ctx.typing():
             alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
