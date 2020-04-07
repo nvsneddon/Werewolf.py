@@ -79,7 +79,7 @@ The bot needs to do two things before it can start narrating games.
 
 You can do this with the command !setupserver. 
 
-#### setupserver command
+#### !setupserver
 
 This command has two parts, creating the roles and creating the channels along with the town category. 
 Creating the category requires the bot to have special permissions granted to it. You can run the !setupserver and it will do everything if you grant it administrative privileges temporarily. (You can ungrant the admin privileges as soon as it's done setting up the server). 
