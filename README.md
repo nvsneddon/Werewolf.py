@@ -24,7 +24,7 @@ The bot-admin channel is to run the bot on your server.
 ####Set up
 To get the server to have the appropriate roles and channels, please run the following command.
 !addroles (This will add the dead, alive, playing, notplaying roles)
-!addcategory (Adds the town category as well as all channels for werewolf)
+!addchannels (Adds the town category as well as all channels for werewolf)
 
 After that, you can use the command to !startgame
 

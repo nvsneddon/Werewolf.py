@@ -43,16 +43,6 @@ class Bot(commands.Cog):
             await ctx.send(str(error))
         print(error)
 
-    @commands.command(**files.command_parameters['echo'])
-    async def echo(self, ctx, *args):
-        if len(args) > 0:
-            output = ''
-            for x in args:
-                output += x
-                output += ' '
-            print(output)
-            await ctx.send(output)
-
     @commands.command(**files.command_parameters['tickle'])
     async def tickle(self, ctx):
         await ctx.send(":rofl:  Stop it!  :rofl: :rofl:")
@@ -121,7 +111,7 @@ class Bot(commands.Cog):
 
     @commands.command()
     @is_admin()
-    async def addcategory(self, ctx):
+    async def addchannels(self, ctx):
         bot_roles = ctx.guild.me.roles
         is_administrator = False
         for x in bot_roles:
@@ -189,7 +179,7 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     @decorators.is_no_game()
-    async def removecategory(self, ctx):
+    async def removechannels(self, ctx):
         with ctx.typing():
             c = discord.utils.get(ctx.guild.categories,
                                   name=files.channels_config["category-name"])
