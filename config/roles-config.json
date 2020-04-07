@@ -16,16 +16,6 @@
         "add_reactions": true
     },
     "roles": {
-        "Owner": {
-            "colour": [52,152,219],
-            "color": [52,152,219],
-            "permissions-update": null 
-        },
-        "Mayor": {
-            "colour": [155,89,182],
-            "color": [155,89,182],
-            "permissions-update": null 
-        },
         "Alive": {
             "colour": [46,204,113],
             "color": [46,204,113],

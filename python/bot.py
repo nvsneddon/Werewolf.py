@@ -132,8 +132,8 @@ class Bot(commands.Cog):
             await ctx.send(
                 "I need to be an admin to do this. Once I'm done doing this, I don't have to be an admin anymore")
             return
-        await ctx.send("Creating town-square")
-        with ctx.typing(): # This is where the fun begins
+        await ctx.send("Creating the town channels")
+        with ctx.typing():  # This is where the fun begins
             x = models.channels.Channels.find_one({"server": ctx.guild.id})
             if x is not None:
                 await ctx.send("You already have the channels set up.")
@@ -144,11 +144,14 @@ class Bot(commands.Cog):
                 permissions = files.readJsonFromConfig("permissions.json")
                 await town_square_category.set_permissions(target,
                                                            overwrite=discord.PermissionOverwrite(**permissions["none"]))
-            bot_role = discord.utils.get(ctx.guild.me.roles,
-                                         managed=True)  # This line is why the bot needs admin powers for this part
+
+            bot_role = discord.utils.get(ctx.guild.me.roles, managed=True)
             permissions = files.readJsonFromConfig("permissions.json")
             await town_square_category.set_permissions(bot_role,
                                                        overwrite=discord.PermissionOverwrite(**permissions["manage"]))
+            # This last line is why the bot needs admin powers for this part. It's assigning itself permissions to
+            # manage the channel (it let's people die, assigns people to their special channels and keeps the game
+            # running).
             channel_id_dict = dict()
             channel_id_dict["guild"] = ctx.guild.id
             for i in files.channels_config["channels"]:
@@ -179,7 +182,6 @@ class Bot(commands.Cog):
                 for k, l in j.items():
                     target = discord.utils.get(ctx.guild.roles, name=k)
                     await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
-        await ctx.send("All done. I don't need to be an administrator anymore.")
 
     def cog_unload(self):
         return super().cog_unload()
