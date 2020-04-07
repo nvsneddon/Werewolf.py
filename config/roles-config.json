@@ -13,11 +13,7 @@
         "embed_links": true,
         "attach_files": true,
         "connect": true,
-        "add_reactions": true,
-        "speak": true,
-        "mute_members": true,
-        "deafen_members": true,
-        "use_voice_activation": true
+        "add_reactions": true
     },
     "roles": {
         "Owner": {
