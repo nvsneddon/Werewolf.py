@@ -16,14 +16,30 @@ The server owner can decide who can interact with the bot-admin channel by grant
 
 ### Setting up the server
 The bot needs to do two things before it can start narrating games. 
-1. Create the needed roles for the game with !addroles
+1. Create the needed roles for the game
     * Alive
     * Dead
     * Playing
-2. Create the channels for the town with !addchannels
-(Side note, this command needs admin permission right now. You can find a full explanation [here](#FAQS))
+2. Create the channels for the town
 
-Once those things have been done, you can start a game
+You can do this with the command !setupserver. 
+
+#### !setupserver
+
+This command has two parts, creating the roles and creating the channels along with the town category. 
+Creating the category requires the bot to have special permissions granted to it. You can run the !setupserver and it will do everything if you grant it administrative privileges temporarily. (You can ungrant the admin privileges as soon as it's done setting up the server). 
+
+If you do not want to grant the bot admin privileges, you can still run the !setupserver command and it will set up as much as it can on its own. Afterwards, you need to manually set up the permissions for the narrator in the town category. The bot will need the following permissions in the category "The Town":
+* Manage Channel
+* Manage Permissions
+* Read Text Channels & see Voice Channels
+* Send messages
+* Manage Messages
+* Read Message History
+
+Once the bot has those permissions granted in the town category, you can use the !setupserver command to finish where you started off and the bot will set up the channels it needs to run the game.
+
+Once the server has been set up, you can start a game of werewolf.
 
 ## For players
 
