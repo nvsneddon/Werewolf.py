@@ -198,7 +198,8 @@ class Bot(commands.Cog):
             await c.delete()
 
             channel = models.channels.Channels.find_one({"server": ctx.guild.id})
-            channel.remove()
+            if channel is not None:
+                channel.remove()
 
     @commands.command()
     @is_admin()

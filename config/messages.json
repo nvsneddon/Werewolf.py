@@ -147,10 +147,9 @@
     ],
     "channel_messages": {
         "announcements": [
-            "This place is for any announcements from me. You'll get the latest news on who died!",
+            "This place is for any announcements from me. You'll get the latest news on what's going on in town!",
             "I'll also let you know when it's day and night and when voting opens and closes."
         ],
-
         "town-square": [
             "This place is for everyone to chat and stuff here. We also hold our elections here.",
             "If you need help, please type !help or !help [Command] for extra guidance.",
