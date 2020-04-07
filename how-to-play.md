@@ -9,24 +9,6 @@ More on how to use the narrator will be given with how to play.
 If you don't know how to play werewolf, you can go to this [link](https://www.playwerewolf.co/rules) to get the basic idea of how to play the game.
 This version of werewolf runs a bit differently, as the daytime/nighttime cycle takes 24 hours, making this a more realistic feeling version of werewolf.
 
-## How to host the game
-To host the game, you can invite the narrator bot to your server and the narrator will take care of most things. As the server owner or admin, you do have some responsibility 
-to ensure that the game runs smoothly. The narrator responds to admin commands given to it from the bot-admin channel that it will create automatically when invited to a server.
-The server owner can decide who can interact with the bot-admin channel by granting the appropriate permissions. 
-
-### Setting up the server
-The bot needs to do two things before it can start narrating games. 
-1. Create the needed roles for the game with !addroles
-    * Alive
-    * Dead
-    * Playing
-2. Create the channels for the town with !addchannels
-(Side note, this command needs admin permission right now. You can find a full explanation [here](#FAQS))
-
-Once those things have been done, you can start a game
-
-## For players
-
 To use the narrator, you can invoke the bot using the ! prefix. Try out using !ping and see it give you a response. 
 
 ### Playing the game
@@ -78,9 +60,42 @@ There are three win conditions
 * Werewolves win when there are more werewolves than villagers. Note that 4 villagers to 4 werewolves doesn't yet secure a win for the werewolves.
 * Villagers win when every werewolf is dead
 * The two lovebirds and cupid win when the two love birds are the last two people alive. (That means that both of them should work together to survive even when the love birds are on different teams.)
-###
 
 ## For server admins
+
+
+## How to host the game
+To host the game, you can invite the narrator bot to your server and the narrator will take care of most things. As the server owner or admin, you do have some responsibility 
+to ensure that the game runs smoothly. The narrator responds to admin commands given to it from the bot-admin channel that it will create automatically when invited to a server.
+The server owner can decide who can interact with the bot-admin channel by granting the appropriate permissions. 
+
+### Setting up the server
+The bot needs to do two things before it can start narrating games. 
+1. Create the needed roles for the game
+    * Alive
+    * Dead
+    * Playing
+2. Create the channels for the town
+
+You can do this with the command !setupserver. 
+
+#### !setupserver
+
+This command has two parts, creating the roles and creating the channels along with the town category. 
+Creating the category requires the bot to have special permissions granted to it. You can run the !setupserver and it will do everything if you grant it administrative privileges temporarily. (You can ungrant the admin privileges as soon as it's done setting up the server). 
+
+If you do not want to grant the bot admin privileges, you can still run the !setupserver command and it will set up as much as it can on its own. Afterwards, you need to manually set up the permissions for the narrator in the town category. The bot will need the following permissions in the category "The Town":
+* Manage Channel
+* Manage Permissions
+* Read Text Channels & see Voice Channels
+* Send messages
+* Manage Messages
+* Read Message History
+
+Once the bot has those permissions granted in the town category, you can use the !setupserver command to finish where you started off and the bot will set up the channels it needs to run the game.
+
+Once the server has been set up, you can start a game of werewolf.
+
 
 ### Managing time
 Because this is real time, there are set times every day for the nighttime phase to start and the daytime phase to start.
@@ -124,11 +139,8 @@ You can grant your account access to bot-admin and you'll still be able to start
 ### FAQs
 * Why does the bot need admin permissions to create the town square channels?
 
-Good question. It's because the channels have special permissions to keep people who are playing the game from seeing who the werewolves, seer, 
+Good question. It's because the channels for the werewolf game have special permissions to keep people who are playing the game from seeing who the werewolves, seer, 
 bodyguard, etc are. When the game goes, everyone that is alive cannot see the channels that they aren't specifically invited to. They'll be invited to the channels
 that correspond to their role (Werewolves will get access to the werewolf channel, seers to the seer channel, etc.) Because by default, these channels are restricted
-the narrator bot has to mark its role as an exception to those restrictions so that the narrator can narrate as expected. The problem is that no bot without administrator rights
-can make that grant itself an exception to channel permissions, even with every other permission was granted. My current working solution to deploy the bot without having to give admin privileges is to 
-only ask for the admin permissions before running this command. That way you don't have to worry about the narrator doing stuff you don't want it to.
-If someone can find a way to get this to work without admin permissions, please let me know. I'd love to find a good working solution around this problem.
+the narrator bot has to mark its role as an exception to those restrictions so that the narrator can narrate as expected. If you want to set up the permissions for the channel category "The Town" yourself, you can follow the instructions [here](#setupserver) and you'll never have to grant the narrator admin privileges. 
 
