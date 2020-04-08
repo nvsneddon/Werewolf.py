@@ -55,6 +55,24 @@ to try and throw the masons off. These messages can be sent in the afterlife cha
 !sendmessage short
 The masons can get up to two messages per night, one from the dead werewolves and one from the dead masons.  
 
+### Voting
+
+Every day, you have the chance to vote for someone to be lynched. To vote, you need to be in the town-square.
+
+!vote is the command to vote for someone. If you wanted to vote for someone named John you would simply type !vote John.
+
+!showvotes will show you who voted for whom and how many votes everyone has. It's very useful for getting a good overview of how the voting works.
+
+!showleading will show you who is leading the vote.
+
+!lock will lock your vote and solidify it as your final vote. If your vote is locked, it cannot be changed anymore. If you do decide you want to unlock your vote, you can use the !unlock commmand.
+
+**Then why do a lock at all?**
+Because by default, the vote will go on until nighttime hits, and then it will end and the leading person in the vote will be killed. Locking your vote has the ability to speed up the vote. If more than half of the people have locked their votes for one person, the remaining votes wouldn't affect the outcome of the vote because the majority of the people voted for one person. If this happens, the vote will end early. To have this happen, more than half of all the alive players need to have a locked vote for one person. Locking is saying I'm sure enough I want it to count towards killing someone.
+
+**What happens during a tie?**
+It takes a random player from the tie and kills that person. So only one dies, but it's unknown who dies until it happens.
+
 ### Win conditions
 There are three win conditions
 * Werewolves win when there are more werewolves than villagers. Note that 4 villagers to 4 werewolves doesn't yet secure a win for the werewolves.
