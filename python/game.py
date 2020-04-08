@@ -662,12 +662,13 @@ class Game(commands.Cog):
         self.__bot.loop.create_task(self.almostnighttimeannounce(guild_id))
 
     async def almostnighttimeannounce(self, guild_id):
-        town_square_id = models.channels.getChannelId("town-square", guild_id)
-        town_square_channel = self.__bot.get_channel(town_square_id)
-        x = files.config["minutes-before-warning"]
-        await town_square_channel.send(f"{x} minute{'s' if x > 1 else ''} left until nighttime.")
+        announcements_id = models.channels.getChannelId("announcements", guild_id)
+        announcement_channel = self.__bot.get_channel(announcements_id)
+        server_document = models.server.Server.find_one({"server": guild_id})
+        x = server_document["warning"]
+        await announcement_channel.send(f"{x} minute{'s' if x > 1 else ''} left until nighttime.")
         if election.is_vote(guild_id):
-            await town_square_channel.send("Once nighttime falls, the lynch vote will be finished.")
+            await announcement_channel.send("Once nighttime falls, the lynch vote will be finished.")
 
     def findMember(self, name: str, guild_id: int):
         guild = self.__bot.get_guild(guild_id)
