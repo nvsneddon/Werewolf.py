@@ -113,7 +113,6 @@ class Bot(commands.Cog):
     async def addroles(self, ctx):
         await add_roles_subroutine(ctx)
 
-
     @commands.command()
     @is_admin()
     async def setupserver(self, ctx):
@@ -129,7 +128,6 @@ class Bot(commands.Cog):
                                "category, or temporarily grant me admin permissions and I can fix the rest.\n Once "
                                "you're done with that, you can type the same command again and I'll continue setting "
                                "everything up.")
-
 
     @commands.command()
     @is_admin()
@@ -173,12 +171,10 @@ class Bot(commands.Cog):
         channel_id_dict = dict()
         channel_id_dict["guild"] = guild.id
         for i in files.channels_config["channels"]:
-            await guild.create_text_channel(name=i, category=town_square_category)
-            channel = discord.utils.get(guild.channels, name=i)
-            await channel.send('\n'.join(files.werewolfMessages["channel_messages"][i]))
+            channel = await guild.create_text_channel(name=i, category=town_square_category,
+                                                      topic='\n'.join(files.werewolfMessages["channel_messages"][i]))
             channel_id_dict[i] = channel.id
-            async for x in (channel.history(limit=1)):
-                await x.pin()
+
         await self.unhide_town_category(guild, town_square_category)
         channels = models.channels.Channels.find_one({"server": guild.id})
         if channels is None:
