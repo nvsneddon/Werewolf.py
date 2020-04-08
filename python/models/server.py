@@ -89,7 +89,8 @@ server_schema = mongothon.Schema({
     "server": {"type": int, "required": True},
     "daytime": {"type": str, "default": "08:00", "validates": time_format()},
     "nighttime": {"type": str, "default": "20:00", "validates": time_format()},
-    "warning": {"type": int, "default": 30, "validates": validate_warning()}
+    "warning": {"type": int, "default": 30, "validates": validate_warning()},
+    "prefix": {"type": str, "default": "!"}
 })
 
 Server = mongothon.create_model(server_schema, my_db['server'])

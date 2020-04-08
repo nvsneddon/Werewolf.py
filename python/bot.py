@@ -80,6 +80,21 @@ class Bot(commands.Cog):
     async def ping(self, ctx):
         await ctx.send(":ping_pong: Pong!")
 
+    @commands.command()
+    @is_admin()
+    async def changeprefix(self, ctx, new_prefix):
+        server_document = models.server.Server.find_one({
+            "server": ctx.guild.id
+        })
+        if server_document is None:
+            server_document = models.server.Server({
+                "server": ctx.guild.id
+            })
+            server_document.save()
+        server_document["prefix"] = new_prefix
+        server_document.save()
+        await ctx.send(f"Prefix changed to {new_prefix}")
+
     @commands.command(**files.command_parameters['playing'])
     @decorators.is_no_game()
     async def playing(self, ctx):

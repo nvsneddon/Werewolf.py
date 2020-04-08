@@ -8,7 +8,20 @@ import models.server
 import models.villager
 import models.game
 
-client = commands.Bot(command_prefix='!')
+
+def get_prefix(bot, message):
+    guild = message.guild
+    server_document = models.server.Server.find_one({
+        "server": guild.id
+    })
+    if server_document is None or guild is None:
+        return "!"
+    if "prefix" not in server_document:
+        return "!"
+    return server_document["prefix"]
+
+
+client = commands.Bot(command_prefix=get_prefix)
 
 
 @client.event
