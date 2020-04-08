@@ -30,6 +30,20 @@ def has_role(r):
     return commands.check(predicate)
 
 
+async def add_roles_subroutine(ctx):
+    for i, j in files.roles_config["roles"].items():
+        if discord.utils.get(ctx.guild.roles, name=i) is not None:
+            continue
+        permission_object = discord.Permissions().none()
+        permission_object.update(**files.roles_config["general-permissions"])
+        if j["permissions-update"] is not None:
+            permission_object.update(**j["permissions-update"])
+        c = discord.Color.from_rgb(*j["color"])
+        await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
+        message = i + " role created"
+        await ctx.send(message)
+
+
 class Bot(commands.Cog):
 
     def __init__(self, bot):
@@ -82,17 +96,25 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addroles(self, ctx):
-        for i, j in files.roles_config["roles"].items():
-            if discord.utils.get(ctx.guild.roles, name=i) is not None:
-                continue
-            permission_object = discord.Permissions().none()
-            permission_object.update(**files.roles_config["general-permissions"])
-            if j["permissions-update"] is not None:
-                permission_object.update(**j["permissions-update"])
-            c = discord.Color.from_rgb(*j["color"])
-            await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
-            message = i + " role created"
-            await ctx.send(message)
+        await add_roles_subroutine(ctx)
+
+
+    @commands.command()
+    @is_admin()
+    async def setupserver(self, ctx):
+        await ctx.send("Setting up server!")
+        with ctx.typing():  # This is where the fun begins
+            await add_roles_subroutine(ctx)
+            x = models.channels.Channels.find_one({"server": ctx.guild.id})
+            if x is not None:
+                await ctx.send("You already have the channels set up.")
+                return
+            if not await self.create_channels(ctx.guild):
+                await ctx.send("I did all that I could. I need you to either give me permissions to access the town "
+                               "category, or temporarily grant me admin permissions and I can fix the rest.\n Once "
+                               "you're done with that, you can type the same command again and I'll continue setting "
+                               "everything up.")
+
 
     @commands.command()
     @is_admin()

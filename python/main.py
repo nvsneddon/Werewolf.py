@@ -7,8 +7,6 @@ import models.channels
 import models.server
 import models.villager
 import models.game
-import os
-
 
 client = commands.Bot(command_prefix='!')
 
@@ -29,9 +27,11 @@ async def on_ready():
         game_cog.schedule_day_and_night(game["server"], reschedule=True)
     print("The werewolves are howling!")
 
+
 @client.event
 async def on_guild_remove(guild):
     models.server.delete_many({"server": guild.id})
+
 
 @client.event
 async def on_guild_join(guild):
@@ -53,21 +53,20 @@ async def on_guild_join(guild):
         town_square_category = await guild.create_category_channel(name="Admin")
         await guild.create_text_channel(name="bot-admin", overwrites=overwrite, category=town_square_category)
     channel = discord.utils.get(guild.channels, name="bot-admin")
-    await channel.send(
-        "Hi there! I've made this channel for you. :) On here, you can be the admin to the bot. I'll let you decide "
-        f"who will be allowed to access this channel.\nDaytime is set to begin at {x['daytime']} and nighttime is set "
-        f"to begin at {x['nighttime']}. I will remind you {x['warning']} minutes before nighttime approaches.\n"
-        "You can also configure these options in this bot-admin channel by using the commands"
-        "!changeday, !changenight, and !changewarning.\n\n"
-        "To get started, please type !addroles and then !addchannels.\nAddroles will set up the needed roles for me to "
-        "work (Alive, Dead, Playing).\nAddchannels will add the town-square channels needed for the game.\n"
-        "The addchannels command does require admin permissions temporarily for it to work.\n"
-        "That means you need to grant me admin permissions and run !addchannels.\n"
-        "After you did that, you can uncheck the admin privileges. "
-        "To start a game, use the startgame command. If you type !help startgame, you'll see the roles that you can "
-        "give out."
-        "Have fun :) "
-    )
+    message = f"Hi there! I've made this channel for you. :) On here, you can be the admin to the bot. I'll let you " \
+              f"decide who will be allowed to access this channel.\nDaytime is set to begin at {x['daytime']} and " \
+              f"nighttime is set to begin at {x['nighttime']}. I will remind you {x['warning']} minutes before " \
+              f"nighttime approaches.\nYou can also configure these options in this bot-admin channel by using the " \
+              f"commands !changeday, !changenight, and !changewarning.\n\nTo get started, please type !setupserver " \
+              f"and I'll get everything done that is needed.\nPlease be aware that a small part of this requires " \
+              f"either admin privileges granted to me or manually making the permissions overwrite I need to work in " \
+              f"the town-square.\nIf you want a painless setup, please grant me admin permissions temporarily and " \
+              f"type !setupserver.  Once that's finished, I don't need admin privileges anymore.\n" \
+              f"If you don't want to grant me admin permissions, I'll walk you through on what to do once " \
+              f"I've done everything I can.\n" \
+              f"Have fun :) "
+    await channel.send(message)
+
 
 @client.event
 async def on_member_remove(member):
@@ -80,6 +79,7 @@ async def on_member_remove(member):
         await announcements_channel.send(files.werewolfMessages[v["character"]]["leave"])
         game_cog = client.get_cog("Game")
         await game_cog.die_from_db(villager_id=member.id, guild_id=member.guild.id, leaving=True)
+
 
 @client.event
 async def on_message(message):
