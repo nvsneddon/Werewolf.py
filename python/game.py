@@ -119,7 +119,6 @@ class Game(commands.Cog):
             })
             await town_square_channel.send(
                 files.werewolfMessages[other_document["character"]]["inlove"].format(other_member.mention))
-            # await self.die(guild, other)
             await self.die_from_db(other_id, guild.id)
         v["alive"] = False
         v.save()
@@ -324,7 +323,6 @@ class Game(commands.Cog):
     @commands.command(**files.command_parameters['kill'])
     @decorators.is_from_channel("werewolves")
     @decorators.is_game()
-    # @decorators.has_ability("werewolves")
     async def kill(self, ctx, person_name):
         game_document = models.game.Game.find_one({
             "server": ctx.guild.id
@@ -359,14 +357,29 @@ class Game(commands.Cog):
                 f"The werewolves have tried to kill {target.mention} who was protected. We're glad you're alive.")
         else:
             await ctx.send("Killing {}".format(target.mention))
-            announcement_id = models.channels.getChannelId("announcements", ctx.guild.id)
-            announcements_channel = ctx.guild.get_channel(announcement_id)
-            await announcements_channel.send(
-                files.werewolfMessages[target_document["character"]]["killed"].format(target.mention))
-            await self.die_from_db(target.id, ctx.guild.id)
+            game_document["dying_villager_id"] = target.id
+            game_document.save()
+
+
+    async def announce_dead(self, guild):
+        game_document = models.game.Game.find_one({"server": guild.id})
+        target_id = game_document["dying_villager_id"]
+        target_document = models.villager.Villager.find_one({
+            "discord_id": target_id,
+            "server": guild.id
+        })
+        target = guild.get_member(target_id)
+        announcement_id = models.channels.getChannelId("announcements", guild.id)
+        announcements_channel = guild.get_channel(announcement_id)
+        await announcements_channel.send(
+            files.werewolfMessages[target_document["character"]]["killed"].format(target.mention))
+        game_document["dying_villager_id"] = -1
+        game_document.save()
+        await self.die_from_db(target_id, guild.id)
 
     @commands.command(**files.command_parameters['countpeople'])
     async def countpeople(self, ctx):
+
         game = models.game.Game.find_one({
             "server": ctx.guild.id
         })
@@ -613,18 +626,22 @@ class Game(commands.Cog):
         game_document["protected"] = -1
         game_document.save()
         abilities.daytime(guild_id)
-        self.__bot.loop.create_task(self.daytimeannounce(guild_id))
-        if game_document["bakerdead"]:
-            self.__bot.loop.create_task(self.starve_die(guild))
+        self.__bot.loop.create_task(self.daytimeannounce(guild_id, bakerdead=game_document["bakerdead"]))
 
-    async def daytimeannounce(self, guild_id):
+
+    async def daytimeannounce(self, guild_id, bakerdead):
         announcements_id = models.channels.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
-
         await announcements_channel.send("It is daytime")
+
+        if bakerdead:
+            await self.starve_die(guild)
         # if self.__bakerdead and self.__bakerdays > 0:
         #     await announcements_channel.send(f"You have {self.__bakerdays} days left")
-        await self.startvote(announcements_channel.guild)
+        await self.announce_dead(guild=self.__bot.get_guild(guild_id))
+        game_doc = models.game.Game.find_one({ "server": guild_id })
+        if game_doc is not None:
+            await self.startvote(announcements_channel.guild)
 
     async def starve_die(self, guild):
         announcements_id = models.channels.getChannelId("announcements", guild.id)

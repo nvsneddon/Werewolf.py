@@ -14,6 +14,7 @@ game_schema = mongothon.Schema({
     "bakerdead": {"type": bool, "default": False},
     "voting": {"type": bool, "default": False},
     "last_protected_id": {"type": int, "default": -1},
+    "dying_villager_id": {"type": int, "default": -1},
     "protected": {"type": int, "default": -1},
     "hunter_ids": {"type": list, "default": []},
     "starving": {"type": list, "default": []},
