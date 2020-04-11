@@ -44,7 +44,7 @@ The baker has no special ability but instead devotes their time to baking delici
 Every day, up to three villagers will die of starvation until the werewolves win. If you're the baker, do your best not to get killed.
 
 ##### Masons
-The masons are a secret group of people that know who each other are. They know that they aren't masons, so you can trust them (unless one of them is in love with a werewolf). 
+The masons are a secret group of people that know who each other are. They know that they aren't werewolves, so you can trust them (unless one of them is in love with a werewolf). 
 They also receive messages from the dead every night. These are one worded clues that can help the masons. However, the dead werewolves can also send a message, so the masons have to find out what message is trustworthy
 and which message isn't. 
 
