@@ -30,6 +30,20 @@ def has_role(r):
     return commands.check(predicate)
 
 
+async def add_roles_subroutine(ctx):
+    for i, j in files.roles_config["roles"].items():
+        if discord.utils.get(ctx.guild.roles, name=i) is not None:
+            continue
+        permission_object = discord.Permissions().none()
+        permission_object.update(**files.roles_config["general-permissions"])
+        if j["permissions-update"] is not None:
+            permission_object.update(**j["permissions-update"])
+        c = discord.Color.from_rgb(*j["color"])
+        await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
+        message = i + " role created"
+        await ctx.send(message)
+
+
 class Bot(commands.Cog):
 
     def __init__(self, bot):
@@ -66,6 +80,21 @@ class Bot(commands.Cog):
     async def ping(self, ctx):
         await ctx.send(":ping_pong: Pong!")
 
+    @commands.command()
+    @is_admin()
+    async def changeprefix(self, ctx, new_prefix):
+        server_document = models.server.Server.find_one({
+            "server": ctx.guild.id
+        })
+        if server_document is None:
+            server_document = models.server.Server({
+                "server": ctx.guild.id
+            })
+            server_document.save()
+        server_document["prefix"] = new_prefix
+        server_document.save()
+        await ctx.send(f"Prefix changed to {new_prefix}")
+
     @commands.command(**files.command_parameters['playing'])
     @decorators.is_no_game()
     async def playing(self, ctx):
@@ -82,17 +111,23 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addroles(self, ctx):
-        for i, j in files.roles_config["roles"].items():
-            if discord.utils.get(ctx.guild.roles, name=i) is not None:
-                continue
-            permission_object = discord.Permissions().none()
-            permission_object.update(**files.roles_config["general-permissions"])
-            if j["permissions-update"] is not None:
-                permission_object.update(**j["permissions-update"])
-            c = discord.Color.from_rgb(*j["color"])
-            await ctx.guild.create_role(name=i, permissions=permission_object, color=c)
-            message = i + " role created"
-            await ctx.send(message)
+        await add_roles_subroutine(ctx)
+
+    @commands.command()
+    @is_admin()
+    async def setupserver(self, ctx):
+        await ctx.send("Setting up server!")
+        with ctx.typing():  # This is where the fun begins
+            await add_roles_subroutine(ctx)
+            x = models.channels.Channels.find_one({"server": ctx.guild.id})
+            if x is not None:
+                await ctx.send("You already have the channels set up.")
+                return
+            if not await self.create_channels(ctx.guild):
+                await ctx.send("I did all that I could. I need you to either give me permissions to access the town "
+                               "category, or temporarily grant me admin permissions and I can fix the rest.\n Once "
+                               "you're done with that, you can type the same command again and I'll continue setting "
+                               "everything up.")
 
     @commands.command()
     @is_admin()
@@ -112,66 +147,83 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def addchannels(self, ctx):
-        bot_roles = ctx.guild.me.roles
+        with ctx.typing():  # This is where the fun begins
+            x = models.channels.Channels.find_one({"server": ctx.guild.id})
+            if x is not None:
+                await ctx.send("You already have the channels set up.")
+                return
+            if not await self.create_channels(ctx.guild):
+                await ctx.send("I did all that I could. I need you to either give me permissions to access the town "
+                               "category, or temporarily grant me admin permissions and I can fix the rest.\n Once "
+                               "you're done with that, you can type the same command again and I'll continue setting "
+                               "everything up.")
+
+    async def create_channels(self, guild):
+        town_square_category = discord.utils.get(guild.categories,
+                                                 name=files.channels_config["category-name"])
+        if town_square_category is None:
+            town_square_category = await self.create_category(guild)
+            if town_square_category is None:  # admin permissions not given
+                return False
+
+        await self.hide_town_category(guild, town_square_category)
+
+        channel_id_dict = dict()
+        channel_id_dict["guild"] = guild.id
+        for i in files.channels_config["channels"]:
+            channel = await guild.create_text_channel(name=i, category=town_square_category,
+                                                      topic='\n'.join(files.werewolfMessages["channel_messages"][i]))
+            channel_id_dict[i] = channel.id
+
+        await self.unhide_town_category(guild, town_square_category)
+        channels = models.channels.Channels.find_one({"server": guild.id})
+        if channels is None:
+            channels = models.channels.Channels({
+                "server": guild.id,
+                "channels": channel_id_dict
+            })
+            channels.save()
+        else:
+            channels.update_instance({"channels": channel_id_dict})
+        for i, j in files.channels_config["channel-permissions"].items():
+            ch = discord.utils.get(town_square_category.channels, name=i)
+            if ch is None:
+                print("The name is", i)
+            for k, l in j.items():
+                target = discord.utils.get(guild.roles, name=k)
+                await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
+        return True
+
+    async def unhide_town_category(self, guild, town_square_category):
+        for i, j in files.channels_config["category-permissions"].items():
+            target = discord.utils.get(guild.roles, name=i)
+            await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
+
+    async def create_category(self, guild):
+        town_square_category = await guild.create_category_channel(files.channels_config["category-name"])
+        bot_role = discord.utils.get(guild.me.roles, managed=True)
+        permissions = files.readJsonFromConfig("permissions.json")
+        bot_roles = guild.me.roles
         is_administrator = False
         for x in bot_roles:
             if x.permissions.administrator:
                 is_administrator = True
                 break
         if not is_administrator:
-            await ctx.send(
-                "I need to be an admin to do this. Once I'm done doing this, I don't have to be an admin anymore")
-            return
-        await ctx.send("Creating the town channels")
-        with ctx.typing():  # This is where the fun begins
-            x = models.channels.Channels.find_one({"server": ctx.guild.id})
-            if x is not None:
-                await ctx.send("You already have the channels set up.")
-                return
-            town_square_category = await ctx.guild.create_category_channel(files.channels_config["category-name"])
-            for i, j in files.channels_config["category-permissions"].items():
-                target = discord.utils.get(ctx.guild.roles, name=i)
-                permissions = files.readJsonFromConfig("permissions.json")
-                await town_square_category.set_permissions(target,
-                                                           overwrite=discord.PermissionOverwrite(**permissions["none"]))
+            return None
+        await town_square_category.set_permissions(bot_role,
+                                                   overwrite=discord.PermissionOverwrite(**permissions["manage"]))
+        # This last line is why the bot needs admin powers for this part. It's assigning itself permissions to
+        # manage the channel (it let's people die, assigns people to their special channels and keeps the game
+        # running).
+        return town_square_category
 
-            bot_role = discord.utils.get(ctx.guild.me.roles, managed=True)
+    async def hide_town_category(self, guild, town_square_category):
+        for i in files.channels_config["category-permissions"]:
+            target = discord.utils.get(guild.roles, name=i)
             permissions = files.readJsonFromConfig("permissions.json")
-            await town_square_category.set_permissions(bot_role,
-                                                       overwrite=discord.PermissionOverwrite(**permissions["manage"]))
-            # This last line is why the bot needs admin powers for this part. It's assigning itself permissions to
-            # manage the channel (it let's people die, assigns people to their special channels and keeps the game
-            # running).
-            channel_id_dict = dict()
-            channel_id_dict["guild"] = ctx.guild.id
-            for i in files.channels_config["channels"]:
-                await ctx.guild.create_text_channel(name=i, category=town_square_category)
-                channel = discord.utils.get(ctx.guild.channels, name=i)
-                await channel.send('\n'.join(files.werewolfMessages["channel_messages"][i]))
-                channel_id_dict[i] = channel.id
-                async for x in (channel.history(limit=1)):
-                    await x.pin()
-            for i, j in files.channels_config["category-permissions"].items():
-                target = discord.utils.get(ctx.guild.roles, name=i)
-                await town_square_category.set_permissions(target, overwrite=discord.PermissionOverwrite(**j))
-
-            channels = models.channels.Channels.find_one({"server": ctx.guild.id})
-            if channels is None:
-                channels = models.channels.Channels({
-                    "server": ctx.guild.id,
-                    "channels": channel_id_dict
-                })
-                channels.save()
-            else:
-                channels.update_instance({"channels": channel_id_dict})
-
-            for i, j in files.channels_config["channel-permissions"].items():
-                ch = discord.utils.get(town_square_category.channels, name=i)
-                if ch is None:
-                    print("The name is", i)
-                for k, l in j.items():
-                    target = discord.utils.get(ctx.guild.roles, name=k)
-                    await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
+            await town_square_category.set_permissions(target,
+                                                       overwrite=discord.PermissionOverwrite(**permissions["none"]))
 
     def cog_unload(self):
         return super().cog_unload()
@@ -185,7 +237,7 @@ class Bot(commands.Cog):
                                   name=files.channels_config["category-name"])
             for i in c.channels:
                 await i.delete()
-            await c.delete()
+            # await c.delete()
 
             channel = models.channels.Channels.find_one({"server": ctx.guild.id})
             if channel is not None:
