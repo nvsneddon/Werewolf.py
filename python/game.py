@@ -358,10 +358,9 @@ class Game(commands.Cog):
         abilities.use_ability("werewolves", ctx.guild.id)
         if target.id == game_document["protected"]:
             await ctx.send("That person has been protected. You just wasted your kill!")
-            announcement_id = models.channels.getChannelId("announcements", ctx.guild.id)
-            announcements_channel = ctx.guild.get_channel(announcement_id)
-            await announcements_channel.send(
-                f"The werewolves have tried to kill {target.mention} who was protected. We're glad you're alive.")
+            message = "The werewolves have tried to kill someone but failed to do so because that person was protected."
+            game_document["morning_messages"].append(message)
+            game_document.save()
         else:
             await ctx.send("Killing {}".format(target.mention))
             killing_message = files.werewolfMessages[target_document["character"]]["killed"].format(target.mention)
