@@ -62,8 +62,6 @@ class Game(commands.Cog):
         self.schedthread.start()
         self.__bot.add_cog(election.Election(self.__bot))
 
-        # self.schedule_day_and_night(guild_id)
-        # self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
 
     async def die_from_db(self, villager_id: int, guild_id: int, leaving=False, announce_at_day=False):
         v = models.villager.Villager.find_one({
@@ -374,7 +372,6 @@ class Game(commands.Cog):
         messages = game_document["morning_messages"]
         announcement_id = models.channels.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcement_id)
-        print(messages)
         for m in messages:
             await announcements_channel.send(m)
         game_document["morning_messages"] = []
