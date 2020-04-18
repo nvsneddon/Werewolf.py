@@ -90,6 +90,7 @@ server_schema = mongothon.Schema({
     "daytime": {"type": str, "default": "08:00", "validates": time_format()},
     "nighttime": {"type": str, "default": "20:00", "validates": time_format()},
     "warning": {"type": int, "default": 30, "validates": validate_warning()},
+    "announce_character": {"type": bool, "default": True},
     "prefix": {"type": str, "default": "!"}
 })
 
