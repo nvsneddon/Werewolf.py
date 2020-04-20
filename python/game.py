@@ -691,7 +691,9 @@ class Game(commands.Cog):
         game_document = models.game.Game.find_one({
             "server": guild.id
         })
-        for _ in range(random.choice([0,1,1,1,2,2,3])):
+        num = random.choice([0,1,1,1,2,2,3])
+        print(num)
+        for _ in range(num):
             dead_id = random.choice(game_document["starving"])
             dead_villager = models.villager.Villager.find_one({
                 "server": guild.id,
