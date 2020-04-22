@@ -9,4 +9,4 @@ then
 	source ./venv/bin/activate
 fi
 cd python/
-python3 main.py
+python3.8 main.py

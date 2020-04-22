@@ -171,8 +171,11 @@ class Bot(commands.Cog):
         channel_id_dict = dict()
         channel_id_dict["guild"] = guild.id
         for i in files.channels_config["channels"]:
+            channel_message = '\n'.join(files.werewolfMessages["channel_messages"][i])
             channel = await guild.create_text_channel(name=i, category=town_square_category,
-                                                      topic='\n'.join(files.werewolfMessages["channel_messages"][i]))
+                                                      topic=channel_message)
+            msg = await channel.send(channel_message)
+            await msg.pin()
             channel_id_dict[i] = channel.id
 
         await self.unhide_town_category(guild, town_square_category)
@@ -269,6 +272,17 @@ class Bot(commands.Cog):
             await ctx.send(f"Warning set to {minutes} before nighttime")
         else:
             await ctx.send("Please make sure the number isn't bigger than 180.")
+
+    @commands.command()
+    @is_admin()
+    async def changeannouncement(self, ctx):
+        server_document = models.server.Server.find_one({ "server": ctx.guild.id })
+        if "announce_character" not in server_document:
+            server_document["announce_character"] = True
+            server_document.save()
+        server_document["announce_character"] = not server_document["announce_character"]
+        server_document.save()
+        await ctx.send(f"The narrator will now {'not ' if not server_document['announce_character'] else ''}announce the character roles.")
 
     @commands.command(**files.command_parameters['gettime'])
     async def gettime(self, ctx):

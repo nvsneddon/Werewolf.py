@@ -8,7 +8,7 @@
         "killed": "That's weird. The werewolves have turned cannibalistic and have killed one of their own. {} is now dead!",
         "lynched": "Congratulations villagers. You have killed {}, who was a werewolf\nThat means we can all sleep better at night! At least some of you!",
         "inlove": "This werewolf {} died because of their love for the other that has died.",
-        "hunter": "You did the right thing by killing {}. One werewolf is now dead!",
+        "hunter": "The hunter did the right thing by killing {}. One werewolf is now dead!",
         "starve": "This shouldn't happen. {} was a werewolf who cannot starve. I guess I have a bug! Please fix me!",
         "leave": "The werewolf {} was tired of the town and decided to leave the game. That's sad."
     },
@@ -23,7 +23,7 @@
         "killed": "Last night, the werewolves have taken your seer {}. I wonder who saw that coming.",
         "lynched": "You guys killed the seer {}! You guys should have done better!",
         "inlove": "The seer saw someone to love. Now that that person is gone, so is the seer {}.",
-        "hunter": "You shot the seer, {}. That sucks!",
+        "hunter": "The hunter shot the seer, {}. That sucks!",
         "starve": "Our seer has starved. We'll all miss {}",
         "leave": "Our seer {} saw enough and wanted to leave."
     },
@@ -38,7 +38,7 @@
         "killed": "Our good bodyguard {} has been killed.",
         "lynched": "You guys killed your last line of defense. The bodyguard {} is nowhere to protect you guys.",
         "inlove": "The bodyguard {} who could not save their love in time decided to follow their love to the grave.",
-        "hunter": "You shot the bodyguard {}. Now who will protect us?",
+        "hunter": "The hunter shot the bodyguard {}. Now who will protect us?",
         "starve": "The bodyguard {} has starved.",
         "leave": "The bodyguard {} got tired of protecting people and has now left the game."
     },
@@ -53,7 +53,7 @@
         "killed": "Well, cupid was killed. At least {} did the job (I hope)!",
         "lynched": "You guys killed our cupid {}. All cupid did was spread love and you respond with death? Shame on you!",
         "inlove": "Our cupid {} died because even cupid is capable of falling in love.",
-        "hunter": "You shot {}, who did nothing but create love. We will miss cupid!",
+        "hunter": "The hunter shot {}, who did nothing but create love. We will miss cupid!",
         "starve": "Our cupid {} starved. :(",
         "leave": "Our cupid {} decided to leave us and quit the game. That's sad."
     },
@@ -68,7 +68,7 @@
         "killed": "The nice villager {} has died. This person will surely be missed.",
         "lynched": "It turns out {} was just nothing more than an ordinary villager. You betrayed your village! Better luck next time.",
         "inlove": "Our good villager {} decided that life without a loved one is not a life worth living. Love is weird sometimes!",
-        "hunter": "You just shot the villager {}.",
+        "hunter": "The hunter just shot the villager {}.",
         "starve": "{} has died of starvation. What a sad way for a villager to die.",
         "leave": "One of the villagers {} got scared of dying, or board of living here and decided to leave the game."
     },
@@ -81,7 +81,7 @@
         "killed": "The hunter {} has died. It's now time for his moment to shine and for him to kill someone else. To kill someone now, please go to the town-square and type !shoot person",
         "lynched": "You just voted to kill the great hunter {}. The hunter's understandably angry and will kill one of you before the hunter dies. To kill someone now, please go to the town-square and type !shoot person",
         "inlove": "The hunter decided that life without a loved one is not a life worth living. The hunter {} will shoot someone before taking their own life. To kill someone now, please go to the town-square and type !shoot person",
-        "hunter": "You shot a fellow hunter!{}. To kill someone now, please go to the town-square and type !shoot person",
+        "hunter": "The hunter shot a fellow hunter!{}. Now the other hunter can also kill someone.",
         "starve": "It's too bad that the hunter {} has starved!",
         "leave": "The hunter {} went hunting afar and never came back. I guess he won't be in the game anymore."
     },
@@ -94,7 +94,7 @@
         "killed": "Our fantastic baker, {}, has died. That's not good at all. Now some of you will starve to death.",
         "lynched": "You just killed the baker {}! I don't know why you did that, but great job.", 
         "inlove": "When the baker lost his buns, he went on a hunger strike. Then {} died grieving his loss!",
-        "hunter": "You shot the baker {}. Now everyone will start to starve.",
+        "hunter": "The hunter shot the baker {}. Now we have no more food and will go hungry.",
         "starve": "Our other baker {} also starved.",
         "leave": "The baker {} has left us. We are now on our own and we'll start to starve."
     },
@@ -107,7 +107,7 @@
         "killed": "The baby wolf {} got killed by its own family! In frustration, they will start to kill two people at night!",
         "lynched": "You just killed the baby wolf, {}. Now its wolf family will start to hunt two people at night!",
         "inlove": "What do you know! The baby werewolf had a secret love that it kept from its family! Now that its love died, so shall {}.",
-        "hunter": "You shot the baby wolf {}. Now the other wolves are angry!",
+        "hunter": "The hunter shot the baby wolf {}. Now the other wolves are angry!",
         "starve": "This shouldn't happen. The babywolf {} starved. I have a bug that needs fixing",
         "leave": "The baby wolf {} left and got lost. How the wolves are really angry and will kill twice per night."
     },
@@ -123,7 +123,7 @@
         "killed": "{} has died as a loyal mason. Now it will be harder to know what the spirits are saying. ",
         "lynched": "It turns out {} was a mason. Try not to kill people who are on your side next time.",
         "inlove": "{0} had a bigger secret than being a mason. {0} was in love and determined that being alone is worse than death! Now he's dead.",
-        "hunter": "You shot {}, who was nothing but a mason. How does that make you feel?",
+        "hunter": "The hunter shot {}, who was nothing but a mason. I hope the hunter feels good about going to the afterlife with an innocent soul?",
         "starve": "One of the masons {} is now dead because of a lack of food.",
         "leave": "One of the masons {} decided to go to a better place to obtain the highest level of spirituality."
     },

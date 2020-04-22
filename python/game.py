@@ -62,8 +62,6 @@ class Game(commands.Cog):
         self.schedthread.start()
         self.__bot.add_cog(election.Election(self.__bot))
 
-        # self.schedule_day_and_night(guild_id)
-        # self.initialize_game(guild_id, members, randomshuffle, roles, send_message_flag)
 
     async def die_from_db(self, villager_id: int, guild_id: int, leaving=False, announce_at_day=False):
         v = models.villager.Villager.find_one({
@@ -86,11 +84,13 @@ class Game(commands.Cog):
         if v["character"] == "baker":
             game_document["bakerdead"] = True
             villagers = models.villager.Villager.find({
-                "server": guild_id
+                "server": guild_id,
+                "werewolf": False,
+                "discord_id": { "$ne": villager_id }
             })
             for v in villagers:
-                if v["alive"] and not v["werewolf"] and v["discord_id"] != villager_id:
-                    game_document["starving"].append(v["discord_id"])
+                # if v["alive"] and not v["werewolf"] and v["discord_id"] != villager_id:
+                game_document["starving"].append(v["discord_id"])
         game_document.save()
 
         await self.die(guild, villager_id, announce_at_day)
@@ -105,6 +105,9 @@ class Game(commands.Cog):
             "server": guild.id,
             "discord_id": villager_id
         })
+        server_document = models.server.Server.find_one({
+            "server": guild.id
+        })
         if v["discord_id"] in game_document["inlove"]:
             game_document["inlove"].remove(v["discord_id"])
             other_id: int = game_document["inlove"][0]
@@ -117,8 +120,19 @@ class Game(commands.Cog):
                 "server": guild.id,
                 "discord_id": other_id
             })
-            love_message = files.werewolfMessages[other_document["character"]]["inlove"].format(
-                other_member.mention)
+            if "announce_character" not in server_document:
+                server_document["announce_character"] = True
+                server_document.save()
+            if server_document["announce_character"]:
+                love_message = files.werewolfMessages[other_document["character"]]["inlove"].format(
+                    other_member.mention)
+            else:
+                if character == "hunter":
+                    love_message = files.werewolfMessages["hunter"]["killed"].format(other_member.mention)
+                elif other_document["werewolf"]:
+                    love_message = files.werewolfMessages["werewolf"]["killed"].format(other_member.mention)
+                else:
+                    love_message = files.werewolfMessages["villager"]["killed"].format(other_member.mention)
             if announce_at_day:
                 game_document["morning_messages"].append(love_message)
                 game_document.save()
@@ -185,8 +199,10 @@ class Game(commands.Cog):
         villagers = models.villager.Villager.find({"server": guild.id})
         for v in villagers:
             member = guild.get_member(v["discord_id"])
-
-            await member.edit(roles=[playing_role])
+            if files.send_message_flag:
+                await member.edit(roles=[])
+            else:
+                await member.edit(roles=[playing_role])
             for x in files.channels_config["channels"]:
                 if x == "announcements":
                     continue
@@ -313,9 +329,10 @@ class Game(commands.Cog):
     async def __afterlife_message(self, message, guild_id):
         afterlife_id = models.channels.getChannelId("afterlife", guild_id)
         afterlife_channel = self.__bot.get_channel(afterlife_id)
-        await afterlife_channel.send(message)
-        async for x in (afterlife_channel.history(limit=1)):
-            await x.pin()
+        msg = await afterlife_channel.send(message)
+        await msg.pin()
+        # async for x in (afterlife_channel.history(limit=1)):
+        #     await x.pin()
 
     async def __sendPM(self, member, message):
         await member.send(message)
@@ -358,13 +375,26 @@ class Game(commands.Cog):
         abilities.use_ability("werewolves", ctx.guild.id)
         if target.id == game_document["protected"]:
             await ctx.send("That person has been protected. You just wasted your kill!")
-            announcement_id = models.channels.getChannelId("announcements", ctx.guild.id)
-            announcements_channel = ctx.guild.get_channel(announcement_id)
-            await announcements_channel.send(
-                f"The werewolves have tried to kill {target.mention} who was protected. We're glad you're alive.")
+            message = "The werewolves have tried to kill someone but failed to do so because that person was protected."
+            game_document["morning_messages"].append(message)
+            game_document.save()
         else:
             await ctx.send("Killing {}".format(target.mention))
-            killing_message = files.werewolfMessages[target_document["character"]]["killed"].format(target.mention)
+            character = target_document["character"]
+            server_document = models.server.Server.find_one({"server": ctx.guild.id})
+            if "announce_character" not in server_document:
+                server_document["announce_character"] = True
+                server_document.save()
+            if server_document["announce_character"]:
+                killing_message = files.werewolfMessages[target_document["character"]]["killed"].format(target.mention)
+            else:
+                is_werewolf = target_document["werewolf"]
+                if character == "hunter":
+                    killing_message = files.werewolfMessages["hunter"]["killed"].format(target.mention)
+                elif is_werewolf:
+                    killing_message = files.werewolfMessages["werewolf"]["killed"].format(target.mention)
+                else:
+                    killing_message = files.werewolfMessages["villager"]["killed"].format(target.mention)
             game_document["morning_messages"].append(killing_message)
             game_document.save()
             await self.die_from_db(target.id, ctx.guild.id, announce_at_day=True)
@@ -375,7 +405,6 @@ class Game(commands.Cog):
         messages = game_document["morning_messages"]
         announcement_id = models.channels.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcement_id)
-        print(messages)
         for m in messages:
             await announcements_channel.send(m)
         game_document["morning_messages"] = []
@@ -604,9 +633,22 @@ class Game(commands.Cog):
                 await announcements_channel.send(
                     f"You couldn't decide on only one person, but someone has to die! Because you guys couldn't pick, I'll pick someone myself.\n"
                     f"I'll pick {dead_villager.mention}! No hard feelings!")
-            # await self.die(guild, dead_villager.id)
-            # dead_villager.die(guild.id)
-            lynched_message = files.werewolfMessages[dead_player["character"]]["lynched"].format(dead_villager.mention)
+            server_document = models.server.Server.find_one({"server": guild.id})
+            if "announce_character" not in server_document:
+                server_document["announce_character"] = True
+                server_document.save()
+            if server_document["announce_character"]:
+                lynched_message = files.werewolfMessages[dead_player["character"]]["lynched"].format(dead_villager.mention)
+            else:
+                character = dead_player["character"]
+                is_werewolf = dead_player["werewolf"]
+                if character == "hunter":
+                    lynched_message = files.werewolfMessages["hunter"]["lynched"].format(dead_villager.mention)
+                elif is_werewolf:
+                    lynched_message = files.werewolfMessages["werewolf"]["lynched"].format(dead_villager.mention)
+                else:
+                    lynched_message = files.werewolfMessages["villager"]["lynched"].format(dead_villager.mention)
+            # lynched_message = files.werewolfMessages[dead_player["character"]]["lynched"].format(dead_villager.mention)
             await announcements_channel.send(lynched_message)
             # await self.die(guild, dead_villager.id)
             await self.die_from_db(dead_villager.id, guild.id)
@@ -638,11 +680,12 @@ class Game(commands.Cog):
         announcements_channel = self.__bot.get_channel(announcements_id)
         await announcements_channel.send("It is daytime")
 
+        guild = self.__bot.get_guild(guild_id)
         if bakerdead:
             await self.starve_die(guild)
         # if self.__bakerdead and self.__bakerdays > 0:
         #     await announcements_channel.send(f"You have {self.__bakerdays} days left")
-        await self.announce_dead(guild=self.__bot.get_guild(guild_id))
+        await self.announce_dead(guild=guild)
         game_doc = models.game.Game.find_one({ "server": guild_id })
         if game_doc is not None:
             await self.startvote(announcements_channel.guild)
@@ -653,7 +696,9 @@ class Game(commands.Cog):
         game_document = models.game.Game.find_one({
             "server": guild.id
         })
-        for _ in range(random.choice([0,0,1,1,1,2,2,3])):
+        num = random.choice([0,0,1,1,1,2,2,3])
+        i = 0
+        while i < num:
             dead_id = random.choice(game_document["starving"])
             dead_villager = models.villager.Villager.find_one({
                 "server": guild.id,
@@ -666,6 +711,7 @@ class Game(commands.Cog):
             await announcements_channel.send(files.werewolfMessages[dead_villager["character"]]["starve"].format(
                 guild.get_member(dead_id).mention))
             await self.die_from_db(dead_id, guild.id)
+            i += 1
 
     def nighttime(self, guild_id):
         # self.__killed = False
