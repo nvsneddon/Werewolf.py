@@ -21,24 +21,28 @@ def get_prefix(bot, message):
     return server_document["prefix"]
 
 
+beginning = True
 client = commands.Bot(command_prefix=get_prefix)
 
 
 @client.event
 async def on_ready():
     game_cog = client.get_cog("Bot")
+    global beginning
     if game_cog is None:
         client.add_cog(bot.Bot(client))
         game_cog = client.get_cog("Game")
-    games_document = models.game.Game.find({})
-    for guild in client.guilds:
-        x = models.server.Server.find_one({"server": guild.id})
-        if x is None:
-            x = models.server.Server({"server": guild.id})
-            x.save()
-    for game in games_document:
-        game_cog.schedule_day_and_night(game["server"], reschedule=True)
-    print("The werewolves are howling!")
+    if beginning:
+        games_document = models.game.Game.find({})
+        for guild in client.guilds:
+            x = models.server.Server.find_one({"server": guild.id})
+            if x is None:
+                x = models.server.Server({"server": guild.id})
+                x.save()
+        for game in games_document:
+            game_cog.schedule_day_and_night(game["server"], reschedule=True)
+        print("The werewolves are howling!")
+        beginning = False
 
 
 @client.event
