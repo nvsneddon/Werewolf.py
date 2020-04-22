@@ -84,11 +84,13 @@ class Game(commands.Cog):
         if v["character"] == "baker":
             game_document["bakerdead"] = True
             villagers = models.villager.Villager.find({
-                "server": guild_id
+                "server": guild_id,
+                "werewolf": False,
+                "discord_id": { "$ne": villager_id }
             })
             for v in villagers:
-                if v["alive"] and not v["werewolf"] and v["discord_id"] != villager_id:
-                    game_document["starving"].append(v["discord_id"])
+                # if v["alive"] and not v["werewolf"] and v["discord_id"] != villager_id:
+                game_document["starving"].append(v["discord_id"])
         game_document.save()
 
         await self.die(guild, villager_id, announce_at_day)
@@ -102,6 +104,9 @@ class Game(commands.Cog):
         v = models.villager.Villager.find_one({
             "server": guild.id,
             "discord_id": villager_id
+        })
+        server_document = models.server.Server.find_one({
+            "server": guild.id
         })
         if v["discord_id"] in game_document["inlove"]:
             game_document["inlove"].remove(v["discord_id"])
@@ -691,9 +696,9 @@ class Game(commands.Cog):
         game_document = models.game.Game.find_one({
             "server": guild.id
         })
-        num = random.choice([0,1,1,1,2,2,3])
-        print(num)
-        for _ in range(num):
+        num = random.choice([0,0,1,1,1,2,2,3])
+        i = 0
+        while i < num:
             dead_id = random.choice(game_document["starving"])
             dead_villager = models.villager.Villager.find_one({
                 "server": guild.id,
@@ -706,6 +711,7 @@ class Game(commands.Cog):
             await announcements_channel.send(files.werewolfMessages[dead_villager["character"]]["starve"].format(
                 guild.get_member(dead_id).mention))
             await self.die_from_db(dead_id, guild.id)
+            i += 1
 
     def nighttime(self, guild_id):
         # self.__killed = False
