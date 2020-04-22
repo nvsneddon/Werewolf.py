@@ -110,6 +110,8 @@ async def on_message(message):
     #         await message.author.send("Thanks for submitting. Your question will be answered shortly.")
     #         await bot.get_guild().owner.send(question)
     # else:
+    if message.content.startswith("!volt"):
+        return
     await client.process_commands(message)
 
 
