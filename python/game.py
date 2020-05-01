@@ -127,12 +127,12 @@ class Game(commands.Cog):
                 love_message = files.werewolfMessages[other_document["character"]]["inlove"].format(
                     other_member.mention)
             else:
-                if character == "hunter":
-                    love_message = files.werewolfMessages["hunter"]["killed"].format(other_member.mention)
+                if other_document["character"] == "hunter":
+                    love_message = files.werewolfMessages["hunter"]["inlove"].format(other_member.mention)
                 elif other_document["werewolf"]:
-                    love_message = files.werewolfMessages["werewolf"]["killed"].format(other_member.mention)
+                    love_message = files.werewolfMessages["werewolf"]["inlove"].format(other_member.mention)
                 else:
-                    love_message = files.werewolfMessages["villager"]["killed"].format(other_member.mention)
+                    love_message = files.werewolfMessages["villager"]["inlove"].format(other_member.mention)
             if announce_at_day:
                 game_document["morning_messages"].append(love_message)
                 game_document.save()
