@@ -15,9 +15,9 @@ ONE_TIME = {"cupid"}
 
 
 def start_game(guild_id: int, night=False):
-    models.abilities.delete_many({"server": guild_id})
+    models.abilities.delete_many({"server": str(guild_id)})
     m = models.abilities.Abilities({
-        "server": guild_id
+        "server": str(guild_id)
     })
     m.save()
     if not night:
@@ -26,7 +26,7 @@ def start_game(guild_id: int, night=False):
 
 def daytime(guild_id):
     ability_document = models.abilities.Abilities.find_one({
-        "server": guild_id
+        "server": str(guild_id)
     })
     for x in ROLES:
         if x in ONE_TIME:
@@ -40,7 +40,7 @@ def daytime(guild_id):
 
 def nighttime(guild_id):
     ability_document = models.abilities.Abilities.find_one({
-        "server": guild_id
+        "server": str(guild_id)
     })
     for x in ability_document:
         if x in NIGHT:
@@ -52,7 +52,7 @@ def check_ability(character: str, guild_id):
     if character not in ROLES:
         raise Exception("character role not found.")
     ability_document = models.abilities.Abilities.find_one({
-        "server": guild_id
+        "server": str(guild_id)
     })
     if ability_document is None:
         return False
@@ -63,7 +63,7 @@ def use_ability(character, guild_id):
     if character not in ROLES:
         raise Exception("character role not found.")
     ability_document = models.abilities.Abilities.find_one({
-        "server": guild_id
+        "server": str(guild_id)
     })
     ability_document[character] = False
     ability_document.save()
@@ -71,6 +71,6 @@ def use_ability(character, guild_id):
 
 def finish_game(guild_id):
     abilities_document = models.abilities.Abilities.find_one({
-        "server": guild_id
+        "server": str(guild_id)
     })
     abilities_document.remove()
