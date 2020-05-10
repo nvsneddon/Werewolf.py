@@ -75,7 +75,6 @@ def is_vote_channel():
         })
         if election_document is None:
             return False
-        print(election_document["channel"], str(ctx.channel.id))
         return election_document["channel"] == str(ctx.channel.id)
 
     return commands.check(predicate)
