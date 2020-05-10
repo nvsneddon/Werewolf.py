@@ -8,20 +8,21 @@ import models.election
 import models.villager
 
 def is_vote(guild_id):
-    db_election = models.election.Election.find_one({"server": guild_id})
+    db_election = models.election.Election.find_one({"server": str(guild_id)})
     return db_election is not None
 
 def start_vote(channel, guild_id, people):
     casted_votes = {}
     for x in people:
         casted_votes[str(x)] = 0
-    models.election.delete_many({"server": guild_id})
-    models.villager.Villager.find({"server": guild_id})
+    models.election.delete_many({"server": str(guild_id)})
+    # models.villager.Villager.find({"server": str(guild_id)})
+    models.villager.Villager.find({"server": str(guild_id)})
     models.election.Election({
-        "server": guild_id,
+        "server": str(guild_id),
         "casted_votes": casted_votes,
         "people": people,
-        "channel": channel.id
+        "channel": str(channel.id)
     }).save()
 
 
@@ -43,25 +44,25 @@ class Election(commands.Cog):
     # TODO Figure out how to get the guild_id at nighttime
     def stop_vote(self, guild_id):
         leading = self.__get_leading(guild_id)
-        models.election.delete_many({"server": guild_id})
+        models.election.delete_many({"server": str(guild_id)})
         return leading
 
     @commands.command(**command_parameters['lock'])
     @decorators.is_vote_channel()
     @decorators.is_election()
     async def lock(self, ctx):
-        db_election = models.election.Election.find_one({"server": ctx.guild.id})
+        db_election = models.election.Election.find_one({"server": str(ctx.guild.id)})
         # voter = str(ctx.message.author)
-        if ctx.message.author.id not in db_election["locked"]:
+        if str(ctx.message.author.id) not in db_election["locked"]:
             if str(ctx.message.author.id) not in db_election["voted"]:
                 await ctx.send("You haven't voted for someone yet. You can't lock a vote for no one.")
                 return
             id_voted_for = db_election['voted'][str(ctx.message.author.id)]
             await ctx.send(f"You have locked your vote for {ctx.guild.get_member(id_voted_for).display_name}")
-            db_election["locked"].append(ctx.message.author.id)
+            db_election["locked"].append(str(ctx.message.author.id))
             vote_counts = {}
             for i in db_election["locked"]:
-                votee = db_election['voted'][str(i)]
+                votee = db_election['voted'][i]
                 if votee in vote_counts:
                     vote_counts[votee] += 1
                 else:
@@ -81,11 +82,11 @@ class Election(commands.Cog):
     @decorators.is_vote_channel()
     @decorators.is_election()
     async def unlock(self, ctx):
-        db_election = models.election.Election.find_one({"server": ctx.guild.id})
-        if ctx.message.author.id not in db_election["locked"]:
+        db_election = models.election.Election.find_one({"server": str(ctx.guild.id)})
+        if str(ctx.message.author.id) not in db_election["locked"]:
             await ctx.send("You haven't locked your vote, so you can't unlock.")
         else:
-            db_election["locked"].remove(ctx.message.author.id)
+            db_election["locked"].remove(str(ctx.message.author.id))
             await ctx.send("Vote has been unlocked.")
             db_election.save()
 
@@ -93,8 +94,8 @@ class Election(commands.Cog):
     @decorators.is_vote_channel()
     @decorators.is_election()
     async def vote(self, ctx, voteestring: str):
-        db_election = models.election.Election.find_one({"server": ctx.guild.id})
-        if ctx.message.author.id in db_election["locked"]:
+        db_election = models.election.Election.find_one({"server": str(ctx.guild.id)})
+        if str(ctx.message.author.id) in db_election["locked"]:
             await ctx.send("You've already locked your vote")
             return
         # votee = self.findCandidate(voteestring)
@@ -117,7 +118,7 @@ class Election(commands.Cog):
     @commands.command(**command_parameters['showvote'])
     @decorators.is_election()
     async def showvote(self, ctx):
-        db_election = models.election.Election.find_one({"server": ctx.guild.id})
+        db_election = models.election.Election.find_one({"server": str(ctx.guild.id)})
         voted_people = ""
         who_voted = {}
         for x in sorted(db_election['voted'], key=db_election["casted_votes"].get, reverse=True):
@@ -151,7 +152,7 @@ class Election(commands.Cog):
         return -1
 
     def __get_leading(self, guild_id):
-        db_election = models.election.Election.find_one({"server": guild_id})
+        db_election = models.election.Election.find_one({"server": str(guild_id)})
         max_tally = 0
         leading = []
         for id, votes in db_election["casted_votes"].items():

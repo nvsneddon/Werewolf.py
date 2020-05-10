@@ -71,11 +71,12 @@ def findPerson(ctx, *args):
 def is_vote_channel():
     def predicate(ctx):
         election_document = models.election.Election.find_one({
-            "server": ctx.guild.id
+            "server": str(ctx.guild.id)
         })
         if election_document is None:
             return False
-        return election_document["channel"] == ctx.channel.id
+        print(election_document["channel"], str(ctx.channel.id))
+        return election_document["channel"] == str(ctx.channel.id)
 
     return commands.check(predicate)
 
@@ -83,7 +84,7 @@ def is_vote_channel():
 def is_election():
     def predicate(ctx):
         election_document = models.election.Election.find_one({
-            "server": ctx.guild.id
+            "server": str(ctx.guild.id)
         })
         return election_document is not None
 
