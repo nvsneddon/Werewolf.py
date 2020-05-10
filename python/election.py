@@ -129,7 +129,7 @@ class Election(commands.Cog):
         # db_election["casted_votes"].get
         for x in sorted(who_voted, key=lambda x: db_election["casted_votes"].get(str(x)), reverse=True):
             y = who_voted[x]
-            voting_list = [ctx.guild.get_member(int(a)).display_name for a in y]
+            voting_list = [f"{':lock:' if str(a) in db_election['locked'] else ':unlock:'} {ctx.guild.get_member(int(a)).display_name}" for a in y]
             voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for " \
                             f"{ctx.guild.get_member(x).display_name} "
             voted_people += "\n\t"
