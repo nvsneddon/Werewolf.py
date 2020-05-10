@@ -119,7 +119,7 @@ class Bot(commands.Cog):
         await ctx.send("Setting up server!")
         with ctx.typing():  # This is where the fun begins
             await add_roles_subroutine(ctx)
-            x = models.channels.Channels.find_one({"server": ctx.guild.id})
+            x = models.channels.Channels.find_one({"server": str(ctx.guild.id)})
             if x is not None:
                 await ctx.send("You already have the channels set up.")
                 return
@@ -148,7 +148,7 @@ class Bot(commands.Cog):
     @is_admin()
     async def addchannels(self, ctx):
         with ctx.typing():  # This is where the fun begins
-            x = models.channels.Channels.find_one({"server": ctx.guild.id})
+            x = models.channels.Channels.find_one({"server": str(ctx.guild.id)})
             if x is not None:
                 await ctx.send("You already have the channels set up.")
                 return
@@ -169,20 +169,20 @@ class Bot(commands.Cog):
         await self.hide_town_category(guild, town_square_category)
 
         channel_id_dict = dict()
-        channel_id_dict["guild"] = guild.id
+        channel_id_dict["guild"] = str(guild.id)
         for i in files.channels_config["channels"]:
             channel_message = '\n'.join(files.werewolfMessages["channel_messages"][i])
             channel = await guild.create_text_channel(name=i, category=town_square_category,
                                                       topic=channel_message)
             msg = await channel.send(channel_message)
             await msg.pin()
-            channel_id_dict[i] = channel.id
+            channel_id_dict[i] = str(channel.id)
 
         await self.unhide_town_category(guild, town_square_category)
-        channels = models.channels.Channels.find_one({"server": guild.id})
+        channels = models.channels.Channels.find_one({"server": str(guild.id)})
         if channels is None:
             channels = models.channels.Channels({
-                "server": guild.id,
+                "server": str(guild.id),
                 "channels": channel_id_dict
             })
             channels.save()
@@ -190,8 +190,6 @@ class Bot(commands.Cog):
             channels.update_instance({"channels": channel_id_dict})
         for i, j in files.channels_config["channel-permissions"].items():
             ch = discord.utils.get(town_square_category.channels, name=i)
-            if ch is None:
-                print("The name is", i)
             for k, l in j.items():
                 target = discord.utils.get(guild.roles, name=k)
                 await ch.set_permissions(target, overwrite=discord.PermissionOverwrite(**l))
@@ -242,7 +240,7 @@ class Bot(commands.Cog):
                 await i.delete()
             # await c.delete()
 
-            channel = models.channels.Channels.find_one({"server": ctx.guild.id})
+            channel = models.channels.Channels.find_one({"server": str(ctx.guild.id)})
             if channel is not None:
                 channel.remove()
 
