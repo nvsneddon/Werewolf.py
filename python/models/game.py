@@ -23,3 +23,8 @@ game_schema = mongothon.Schema({
 })
 
 Game = mongothon.create_model(game_schema, my_db['game'])
+
+if __name__ == '__main__':
+    x = Game.find_one({"server": 695805513480536074})
+    x["villagercount"] = 15
+    x.save()

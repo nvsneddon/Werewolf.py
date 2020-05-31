@@ -391,6 +391,11 @@ class Game(commands.Cog):
                 is_werewolf = target_document["werewolf"]
                 if character == "hunter":
                     killing_message = files.werewolfMessages["hunter"]["killed"].format(target.mention)
+                    killed_member = ctx.guild.get_member(target.id)
+                    await killed_member.send(f"Hi! You've been targeted in {ctx.guild.name} by the werewolves so you "
+                                             f"need to go to town square now to !shoot someone before you die. "
+                                             f"Let the host know if you have any questions.")
+
                 elif is_werewolf:
                     killing_message = files.werewolfMessages["werewolf"]["killed"].format(target.mention)
                 else:

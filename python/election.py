@@ -10,8 +10,7 @@ import models.villager
 def is_vote(guild_id):
     db_election = models.election.Election.find_one({"server": guild_id})
     return db_election is not None
-
-def start_vote(channel, guild_id, people):
+ start_vote(channel, guild_id, people):
     casted_votes = {}
     for x in people:
         casted_votes[str(x)] = 0
