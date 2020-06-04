@@ -17,6 +17,7 @@ game_schema = mongothon.Schema({
     "morning_messages": {"type": list, "default": []},
     "protected": {"type": int, "default": -1},
     "hunter_ids": {"type": list, "default": []},
+    "real_time": {"type": bool, "default": True},
     "starving": {"type": list, "default": []},
     "werewolfcount": {"type": int, "required": True},
     "villagercount": {"type": int, "required": True},
