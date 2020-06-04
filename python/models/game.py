@@ -8,14 +8,14 @@ def delete_many(filter):
 
 
 game_schema = mongothon.Schema({
-    "server": {"type": int, "required": True},
+    "server": {"type": str, "required": True},
     "players": {"type": list, "required": True},  # list of villager discord_id
     "inlove": {"type": list, "default": []},
     "bakerdead": {"type": bool, "default": False},
     "voting": {"type": bool, "default": False},
-    "last_protected_id": {"type": int, "default": -1},
+    "last_protected_id": {"type": str, "default": -1},
     "morning_messages": {"type": list, "default": []},
-    "protected": {"type": int, "default": -1},
+    "protected": {"type": str, "default": -1},
     "hunter_ids": {"type": list, "default": []},
     "starving": {"type": list, "default": []},
     "werewolfcount": {"type": int, "required": True},

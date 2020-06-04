@@ -93,7 +93,7 @@ def is_election():
 def is_game():
     def predicate(ctx):
         game_document = models.game.Game.find_one({
-            "server": ctx.guild.id
+            "server": str(ctx.guild.id)
         })
         return game_document is not None
 
@@ -102,7 +102,7 @@ def is_game():
 def is_no_game():
     def predicate(ctx):
         game_document = models.game.Game.find_one({
-            "server": ctx.guild.id
+            "server": str(ctx.guild.id)
         })
         return game_document is None
 
@@ -112,11 +112,11 @@ def is_no_game():
 def hunter():
     def predicate(ctx):
         game_document = models.game.Game.find_one({
-            "server": ctx.guild.id
+            "server": str(ctx.guild.id)
         })
         if game_document is None:
             return False
 
-        return ctx.message.author.id in game_document["hunter_ids"]
+        return str(ctx.message.author.id) in game_document["hunter_ids"]
 
     return commands.check(predicate)

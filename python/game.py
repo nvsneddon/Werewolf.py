@@ -65,11 +65,11 @@ class Game(commands.Cog):
 
     async def die_from_db(self, villager_id: int, guild_id: int, leaving=False, announce_at_day=False):
         v = models.villager.Villager.find_one({
-            "server": guild_id,
-            "discord_id": villager_id
+            "server": str(guild_id),
+            "discord_id": str(villager_id)
         })
         game_document = models.game.Game.find_one({
-            "server": guild_id
+            "server": str(guild_id)
         })
         guild = self.__bot.get_guild(guild_id)
         if v["werewolf"]:
@@ -99,18 +99,18 @@ class Game(commands.Cog):
 
     async def die(self, guild, villager_id, announce_at_day=False):
         game_document = models.game.Game.find_one({
-            "server": guild.id
+            "server": str(guild.id)
         })
         v = models.villager.Villager.find_one({
-            "server": guild.id,
-            "discord_id": villager_id
+            "server": str(guild.id),
+            "discord_id": str(villager_id)
         })
         server_document = models.server.Server.find_one({
             "server": guild.id
         })
         if v["discord_id"] in game_document["inlove"]:
             game_document["inlove"].remove(v["discord_id"])
-            other_id: int = game_document["inlove"][0]
+            other_id: str = game_document["inlove"][0]
             game_document["inlove"].remove(other_id)
             game_document.save()
             town_square_id = models.channels.getChannelId("announcements", guild.id)
@@ -144,7 +144,7 @@ class Game(commands.Cog):
         v["alive"] = False
         v.save()
         game_document.save()
-        member = guild.get_member(v["discord_id"])
+        member = guild.get_member(int(v["discord_id"]))
         dead_role = discord.utils.get(guild.roles, name="Dead")
         for x in files.channels_config["channels"]:
             if x == "announcements":
@@ -209,14 +209,14 @@ class Game(commands.Cog):
                 channel = discord.utils.get(guild.channels, name=x)
                 await channel.set_permissions(member, overwrite=None)
             v.remove()
-        models.game.delete_many({"server": guild.id})
-        models.election.delete_many({"server": guild.id})
+        models.game.delete_many({"server": str(guild.id)})
+        models.election.delete_many({"server": str(guild.id)})
         abilities.finish_game(guild.id)
         self.clear_schedule(str(guild.id))
 
 
     async def __announce_winner(self, guild_id):
-        game = models.game.Game.find_one({ "server": guild_id })
+        game = models.game.Game.find_one({ "server": str(guild_id) })
         if game is None:
             print("No game found to announce winner. Please try again")
             return
@@ -225,23 +225,17 @@ class Game(commands.Cog):
         guild = self.__bot.get_guild(guild_id)
         if self.__cupidwinner(guild_id, game["inlove"]):
             await announcements_channel.send("The only alive people left are the two people in love. Cupid wins.")
-            with announcements_channel.typing():
-                await self.finishGame(guild)
-            await announcements_channel.send("The game has ended!")
         elif game["werewolfcount"] > game["villagercount"]:
             await announcements_channel.send("Werewolves outnumber the villagers. Werewolves win")
-            with announcements_channel.typing():
-                await self.finishGame(guild)
-            await announcements_channel.send("The game has ended!")
         elif game["werewolfcount"] == 0:
             await announcements_channel.send("All werewolves are dead. Villagers win!")
-            with announcements_channel.typing():
-                await self.finishGame(guild)
-            await announcements_channel.send("The game has ended!")
+        with announcements_channel.typing():
+            await self.finishGame(guild)
+        await announcements_channel.send("The game has ended!")
 
     def __cupidwinner(self, guild_id, love):
         villagers = models.villager.Villager.find({
-            "server": guild_id,
+            "server": str(guild_id),
             "alive": True
         })
         for v in villagers:
@@ -291,9 +285,9 @@ class Game(commands.Cog):
             message = '\n'.join(files.werewolfMessages[character]["welcome"])
             if send_message_flag:
                 self.__bot.loop.create_task(self.__sendPM(x, message))
-        models.game.delete_many({"server": guild_id})
+        models.game.delete_many({"server": str(guild_id)})
         game_object = models.game.Game({
-            "server": guild_id,
+            "server": str(guild_id),
             "players": [x.id for x in members],
             "werewolfcount": num_werewolves,
             "villagercount": num_villagers
@@ -401,11 +395,10 @@ class Game(commands.Cog):
 
 
     async def announce_dead(self, guild):
-        game_document = models.game.Game.find_one({"server": guild.id})
-        messages = game_document["morning_messages"]
+        game_document = models.game.Game.find_one({"server": str(guild.id)})
         announcement_id = models.channels.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcement_id)
-        for m in messages:
+        for m in game_document["morning_messages"]:
             await announcements_channel.send(m)
         game_document["morning_messages"] = []
         game_document.save()
@@ -414,7 +407,7 @@ class Game(commands.Cog):
     async def countpeople(self, ctx):
 
         game = models.game.Game.find_one({
-            "server": ctx.guild.id
+            "server": str(ctx.guild.id)
         })
         if game is None:
             await ctx.send("You don't have a game going on!")
@@ -667,9 +660,9 @@ class Game(commands.Cog):
     def daytime(self, guild_id: int):
         guild = self.__bot.get_guild(guild_id)
         game_document = models.game.Game.find_one({
-            "server": guild_id
+            "server": str(guild_id)
         })
-        game_document["protected"] = -1
+        game_document["protected"] = ""
         game_document.save()
         abilities.daytime(guild_id)
         self.__bot.loop.create_task(self.daytimeannounce(guild_id, bakerdead=game_document["bakerdead"]))
@@ -686,7 +679,7 @@ class Game(commands.Cog):
         # if self.__bakerdead and self.__bakerdays > 0:
         #     await announcements_channel.send(f"You have {self.__bakerdays} days left")
         await self.announce_dead(guild=guild)
-        game_doc = models.game.Game.find_one({ "server": guild_id })
+        game_doc = models.game.Game.find_one({ "server": str(guild_id) })
         if game_doc is not None:
             await self.startvote(announcements_channel.guild)
 
@@ -694,24 +687,21 @@ class Game(commands.Cog):
         announcements_id = models.channels.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
         game_document = models.game.Game.find_one({
-            "server": guild.id
+            "server": str(guild.id)
         })
-        num = random.choice([0,0,1,1,1,2,2,3])
-        i = 0
-        while i < num:
-            dead_id = random.choice(game_document["starving"])
+        for _ in range(random.choice([0,0,1,1,1,2,2,3])):
+            dead_id_str = random.choice(game_document["starving"])
             dead_villager = models.villager.Villager.find_one({
-                "server": guild.id,
-                "discord_id": dead_id
+                "server": str(guild.id),
+                "discord_id": dead_id_str
             })
-            game_document["starving"].remove(dead_id)
+            game_document["starving"].remove(dead_id_str)
             game_document.save()
             if not dead_villager["alive"]:
                 continue
             await announcements_channel.send(files.werewolfMessages[dead_villager["character"]]["starve"].format(
-                guild.get_member(dead_id).mention))
-            await self.die_from_db(dead_id, guild.id)
-            i += 1
+                guild.get_member(dead_id_str).mention))
+            await self.die_from_db(int(dead_id_str), guild.id)
 
     def nighttime(self, guild_id):
         # self.__killed = False
