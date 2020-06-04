@@ -369,6 +369,9 @@ class Game(commands.Cog):
             await ctx.send("You can't kill the hunter after the hunter has already been killed. "
                            "The hunter will die when he shoots. Don't worry!")
             return
+        if not target_document["alive"]:
+            await ctx.send("That person is already dead. Try again!")
+            return
         if target_document is None:
             await ctx.send("That person could not be found. Please try again.")
             return
@@ -391,6 +394,8 @@ class Game(commands.Cog):
                 is_werewolf = target_document["werewolf"]
                 if character == "hunter":
                     killing_message = files.werewolfMessages["hunter"]["killed"].format(target.mention)
+                    killed_member = ctx.guild.get_member(target.id)
+                    await killed_member.send(f"Hi! You've been targeted in {ctx.guild.name} by the werewolves so you need to go to town square now to !shoot someone before you die. Let the host know if you have any questions.")
                 elif is_werewolf:
                     killing_message = files.werewolfMessages["werewolf"]["killed"].format(target.mention)
                 else:
@@ -534,6 +539,9 @@ class Game(commands.Cog):
     @decorators.is_from_channel("afterlife")
     @decorators.is_game()
     async def sendmessage(self, ctx, word: str):
+        if ctx.guild.id == 695805513480536074:
+            await ctx.send("This is temporarily disabled. I'm sorry :cry:")
+            return
         v = models.villager.Villager.find_one({
             "server": ctx.guild.id,
             "discord_id": ctx.author.id

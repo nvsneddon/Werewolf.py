@@ -108,9 +108,9 @@ class Election(commands.Cog):
                 db_election["casted_votes"][str(db_election["voted"][str(voter_id)])] -= 1
             db_election["casted_votes"][str(votee_id)] += 1
             db_election["voted"][str(voter_id)] = votee_id
+            db_election.save()
             votee = ctx.guild.get_member(votee_id)
             await ctx.send(f"Your vote for {votee.mention} has been confirmed")
-            db_election.save()
         else:
             await ctx.send("You can't vote for that person. Please try again.")
 
@@ -128,7 +128,8 @@ class Election(commands.Cog):
         # db_election["casted_votes"].get
         for x in sorted(who_voted, key=lambda x: db_election["casted_votes"].get(str(x)), reverse=True):
             y = who_voted[x]
-            voting_list = [ctx.guild.get_member(int(a)).display_name for a in y]
+            # voting_list = [ctx.guild.get_member(int(a)).display_name for a in y]
+            voting_list = [f"{':lock:' if int(a) in db_election['locked'] else ':unlock:'} {ctx.guild.get_member(int(a)).display_name}" for a in y]
             voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for " \
                             f"{ctx.guild.get_member(x).display_name} "
             voted_people += "\n\t"
