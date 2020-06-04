@@ -7,10 +7,13 @@ from files import command_parameters
 import models.election
 import models.villager
 
+
 def is_vote(guild_id):
     db_election = models.election.Election.find_one({"server": guild_id})
     return db_election is not None
- start_vote(channel, guild_id, people):
+
+
+def start_vote(channel, guild_id, people):
     casted_votes = {}
     for x in people:
         casted_votes[str(x)] = 0
@@ -68,13 +71,12 @@ class Election(commands.Cog):
             vote_counts_sorted_keys = sorted(vote_counts, key=vote_counts.get, reverse=True)
             votes = vote_counts[vote_counts_sorted_keys[0]]
             db_election.save()
-            if votes > len(db_election["casted_votes"])/2:
+            if votes > len(db_election["casted_votes"]) / 2:
                 await ctx.send("Half of the people locked their votes for one person, so the voting will end now.")
                 cog = self.__bot.get_cog("Game")
                 await cog.stopvote(ctx.guild)
         else:
             await ctx.send("You've already locked your vote.")
-
 
     @commands.command(**command_parameters['unlock'])
     @decorators.is_vote_channel()
@@ -128,7 +130,9 @@ class Election(commands.Cog):
         for x in sorted(who_voted, key=lambda x: db_election["casted_votes"].get(str(x)), reverse=True):
             y = who_voted[x]
             # voting_list = [ctx.guild.get_member(int(a)).display_name for a in y]
-            voting_list = [f"{':lock:' if int(a) in db_election['locked'] else ':unlock:'} {ctx.guild.get_member(int(a)).display_name}" for a in y]
+            voting_list = [
+                f"{':lock:' if int(a) in db_election['locked'] else ':unlock:'} {ctx.guild.get_member(int(a)).display_name}"
+                for a in y]
             voted_people += f"{len(voting_list)} {'person' if len(voting_list) == 1 else 'people'} voted for " \
                             f"{ctx.guild.get_member(x).display_name} "
             voted_people += "\n\t"
@@ -146,7 +150,8 @@ class Election(commands.Cog):
             name = name[2:-1]
         for x in people:
             member = self.__bot.get_guild(server_id).get_member(x["discord_id"])
-            if name.lower() == member.display_name.lower() or str(member.id) == name or name.lower() == member.name.lower() or name.lower() == str(member).lower():
+            if name.lower() == member.display_name.lower() or str(
+                    member.id) == name or name.lower() == member.name.lower() or name.lower() == str(member).lower():
                 return member.id
         return -1
 
@@ -166,4 +171,3 @@ class Election(commands.Cog):
                 v = self.__bot.get_guild(guild_id).get_member(id)
                 leading.append(v.mention)
         return leading
-
