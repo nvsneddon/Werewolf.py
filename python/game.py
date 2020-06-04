@@ -296,6 +296,9 @@ class Game(commands.Cog):
         game_object.save()
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message, guild_id))
 
+    def reset_schedule(self):
+        schedule.clear()
+
     def schedule_day_and_night(self, guild_id, reschedule=False):
         server_document = models.server.Server.find_one({
             "server": guild_id
@@ -306,11 +309,8 @@ class Game(commands.Cog):
             server_document['nighttime'][:2]), int(server_document['nighttime'][3:5])) - \
                            datetime.timedelta(minutes=server_document['warning'])
         warn_voting_time_string = f"{warn_voting_time.hour:02d}:{warn_voting_time.minute:02d}"
-        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(
-            guild_id) + "warning")
-        schedule.every().day.at(server_document["nighttime"]).do(self.nighttime, guild_id).tag("game",
-                                                                                               str(
-                                                                                                   guild_id) + "nighttime")
+        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(guild_id), str(guild_id) + "warning")
+        schedule.every().day.at(server_document["nighttime"]).do(self.nighttime, guild_id).tag("game", str(guild_id), str(guild_id) + "nighttime")
         night_array = server_document["nighttime"].split(':')
         day_array = server_document["daytime"].split(':')
         check_time = datetime.datetime.now().time()
@@ -318,7 +318,7 @@ class Game(commands.Cog):
         nighttime_time = datetime.time(int(night_array[0]), int(night_array[1]))
         is_nighttime = not (daytime_time <= check_time <= nighttime_time)
         if daytime_time > nighttime_time:  # If daytime is bigger, that means that being between the values means
-            # that it's nighttime
+                                            # that it's nighttime
             is_nighttime = not is_nighttime
         if not reschedule:
             abilities.start_game(guild_id, night=is_nighttime)
