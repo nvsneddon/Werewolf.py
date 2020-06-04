@@ -127,12 +127,12 @@ class Game(commands.Cog):
                 love_message = files.werewolfMessages[other_document["character"]]["inlove"].format(
                     other_member.mention)
             else:
-                if character == "hunter":
-                    love_message = files.werewolfMessages["hunter"]["killed"].format(other_member.mention)
+                if other_document["character"] == "hunter":
+                    love_message = files.werewolfMessages["hunter"]["inlove"].format(other_member.mention)
                 elif other_document["werewolf"]:
-                    love_message = files.werewolfMessages["werewolf"]["killed"].format(other_member.mention)
+                    love_message = files.werewolfMessages["werewolf"]["inlove"].format(other_member.mention)
                 else:
-                    love_message = files.werewolfMessages["villager"]["killed"].format(other_member.mention)
+                    love_message = files.werewolfMessages["villager"]["inlove"].format(other_member.mention)
             if announce_at_day:
                 game_document["morning_messages"].append(love_message)
                 game_document.save()
@@ -395,7 +395,10 @@ class Game(commands.Cog):
                 if character == "hunter":
                     killing_message = files.werewolfMessages["hunter"]["killed"].format(target.mention)
                     killed_member = ctx.guild.get_member(target.id)
-                    await killed_member.send(f"Hi! You've been targeted in {ctx.guild.name} by the werewolves so you need to go to town square now to !shoot someone before you die. Let the host know if you have any questions.")
+                    await killed_member.send(f"Hi! You've been targeted in {ctx.guild.name} by the werewolves so you "
+                                             f"need to go to town square now to !shoot someone before you die. "
+                                             f"Let the host know if you have any questions.")
+
                 elif is_werewolf:
                     killing_message = files.werewolfMessages["werewolf"]["killed"].format(target.mention)
                 else:
