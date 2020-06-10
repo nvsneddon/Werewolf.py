@@ -610,6 +610,11 @@ class Game(commands.Cog):
         await love_channel.send("Welcome {} and {}. "
                                 "You two are now in love! :heart:".format(member1.mention, member2.mention))
 
+    # @commands.command()
+    # async def secretchannel(self, ctx):
+    #     await ctx.guild.create_text_channel(name="", category=town_square_category,
+    #                                     topic=channel_message)
+
     async def startvote(self, guild):
         town_square_id = models.channels.getChannelId("town-square", guild.id)
         town_square_channel = guild.get_channel(town_square_id)
@@ -675,6 +680,7 @@ class Game(commands.Cog):
         # self.__bot.remove_cog("Election")
         # if self.__election_cog is not None:
         #     self.__bot.remove_cog("Election")
+
 
     def daytime(self, guild_id: int):
         guild = self.__bot.get_guild(guild_id)
