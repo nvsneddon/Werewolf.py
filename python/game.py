@@ -223,6 +223,8 @@ class Game(commands.Cog):
             with announcements_channel.typing():
                 await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
+        elif game["inlove"] != []:
+            return
         elif game["werewolfcount"] > game["villagercount"]:
             await announcements_channel.send("Werewolves outnumber the villagers. Werewolves win")
             with announcements_channel.typing():
