@@ -8,7 +8,7 @@ def delete_many(filter):
 
 
 ability_schema = mongothon.Schema({
-    "server": {"type": int, "default": True},
+    "server": {"type": int, "required": True},
     "spirits": {"type": bool, "default": True},
     "dead_wolves": {"type": bool, "default": True},
     "werewolves": {"type": bool, "default": True},

@@ -13,6 +13,13 @@
     "brief": "Counts the werewolves alive and the villagers alive",
     "help": "Counts the werewolves who are alive and the villagers who are alive."
   },
+  "secretchannel": {
+    "alias": [
+      "makesecretchannel"
+    ],
+    "brief": "Create a secret channel where you can invite people to",
+    "help": "Make a secret channel so that you can say stuff to those you trust only."
+  },
   "startlynch": {
     "alias": [
       "startwerewolfvote",

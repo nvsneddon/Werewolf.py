@@ -17,9 +17,15 @@ game_schema = mongothon.Schema({
     "morning_messages": {"type": list, "default": []},
     "protected": {"type": int, "default": -1},
     "hunter_ids": {"type": list, "default": []},
+    "real_time": {"type": bool, "default": True},
     "starving": {"type": list, "default": []},
     "werewolfcount": {"type": int, "required": True},
     "villagercount": {"type": int, "required": True},
 })
 
 Game = mongothon.create_model(game_schema, my_db['game'])
+
+if __name__ == '__main__':
+    x = Game.find_one({"server": 695805513480536074})
+    x["villagercount"] = 15
+    x.save()
