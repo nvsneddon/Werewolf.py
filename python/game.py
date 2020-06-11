@@ -219,7 +219,7 @@ class Game(commands.Cog):
         announcements_channel = self.__bot.get_channel(announcements_id)
         guild = self.__bot.get_guild(guild_id)
         if self.__cupidwinner(guild_id, game["inlove"]):
-            await announcements_channel.send("The only alive people left are the two people in love. Cupid wins.")
+            await announcements_channel.send("The only alive people left are the two people in love. Cupid and the lovebirds win.")
             with announcements_channel.typing():
                 await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
