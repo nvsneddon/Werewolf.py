@@ -54,6 +54,25 @@ def distribute_roles(roles):
     return cards
 
 
+def special_winner(guild_id, undead: list):
+    villagers = models.villager.Villager.find({
+        "server": guild_id,
+        "alive": True
+    })
+    return all(v["discord_id"] in undead for v in villagers)
+
+
+# def cupid_winner(guild_id: int, love: list) -> bool:
+#     villagers = models.villager.Villager.find({
+#         "server": guild_id,
+#         "alive": True
+#     })
+#     for v in villagers:
+#         if v["discord_id"] not in love:
+#             return False
+#     return True
+
+
 class Game(commands.Cog):
 
     def __init__(self, bot):
@@ -210,7 +229,7 @@ class Game(commands.Cog):
         abilities.finish_game(guild.id)
         self.clear_schedule(str(guild.id))
 
-    async def __announce_winner(self, guild_id):
+    async def __announce_winner(self, guild_id: int):
         game = models.game.Game.find_one({"server": guild_id})
         if game is None:
             print("No game found to announce winner. Please try again")
@@ -218,12 +237,19 @@ class Game(commands.Cog):
         announcements_id = models.channels.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         guild = self.__bot.get_guild(guild_id)
-        if self.__cupidwinner(guild_id, game["inlove"]):
-            await announcements_channel.send("The only alive people left are the two people in love. Cupid and the lovebirds win.")
+        if special_winner(guild_id, game["undead"]):
+            await announcements_channel.send("Only the undead are left. The necromancer wins with all of the undead!")
             with announcements_channel.typing():
                 await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
-        elif game["inlove"] != []:
+
+        elif special_winner(guild_id, game["inlove"]):
+            await announcements_channel.send("The only alive people left are the two people in love. Cupid and the "
+                                             "lovebirds win.")
+            with announcements_channel.typing():
+                await self.finishGame(guild)
+            await announcements_channel.send("The game has ended!")
+        elif game["inlove"] or game["undead"]:
             return
         elif game["werewolfcount"] > game["villagercount"]:
             await announcements_channel.send("Werewolves outnumber the villagers. Werewolves win")
@@ -235,16 +261,6 @@ class Game(commands.Cog):
             with announcements_channel.typing():
                 await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
-
-    def __cupidwinner(self, guild_id, love):
-        villagers = models.villager.Villager.find({
-            "server": guild_id,
-            "alive": True
-        })
-        for v in villagers:
-            if v["discord_id"] not in love:
-                return False
-        return True
 
     def timer(self):
         while not self.schedstop.is_set():

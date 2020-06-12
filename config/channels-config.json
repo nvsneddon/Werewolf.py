@@ -6,8 +6,8 @@
         "werewolves",
         "seer",
         "bodyguard",
+        "undead",
         "cupid",
-        "mason",
         "lovebirds",
         "afterlife"
     ],
@@ -147,6 +147,7 @@
     "character-to-channel":{
         "werewolf": "werewolves",
         "seer": "seer",
+        "necromancer": "undead",
         "bodyguard": "bodyguard",
         "cupid": "cupid",
         "mason": "mason"

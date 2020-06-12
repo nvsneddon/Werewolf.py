@@ -146,6 +146,12 @@ class Bot(commands.Cog):
 
     @commands.command()
     @is_admin()
+    async def resetchannels(self, ctx):
+        await self.removechannels(ctx)
+        await self.addchannels(ctx)
+
+    @commands.command()
+    @is_admin()
     async def addchannels(self, ctx):
         with ctx.typing():  # This is where the fun begins
             x = models.channels.Channels.find_one({"server": ctx.guild.id})

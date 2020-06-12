@@ -111,6 +111,12 @@
         "starve": "This shouldn't happen. The babywolf {} starved. I have a bug that needs fixing",
         "leave": "The baby wolf {} left and got lost. How the wolves are really angry and will kill twice per night."
     },
+    "necromancer": {
+        "welcome": [
+            "You are the necromancer. Your goal is to make everyone alive a part of your undead cult.",
+            "Every day and night, you pick someone to be your target and if that person dies, you add them to your undead group."
+        ]
+    },
     "mason": {
         "welcome":[
             "You are a mason. The people in your secret society are trustworthy members that you can rely on.",
@@ -165,6 +171,10 @@
         "bodyguard":  [
             "You can use this channel to protect someone. You can't pick the same person twice.",
             "To protect someone, use the !protect person command."
+        ],
+        "undead": [
+            "If you see this channel, that is because you are undead, or you're a necromancer. If you were the first person here, you were probably the necromancer",
+            "Try to get more undead people into your cult. You all win if everyone \"Alive\" is actually undead."
         ],
         "cupid":  [
             "The place where you can make people fall in love.",

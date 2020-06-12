@@ -12,6 +12,7 @@ ability_schema = mongothon.Schema({
     "spirits": {"type": bool, "default": True},
     "dead_wolves": {"type": bool, "default": True},
     "werewolves": {"type": bool, "default": True},
+    "necromancer": {"type": bool, "default": True},
     "seer": {"type": bool, "default": True},
     "bodyguard": {"type": bool, "default": True},
     "cupid": {"type": bool, "default": True}

@@ -4,13 +4,14 @@ ROLES = {
     "spirits",
     "dead_wolves",
     "werewolves",
+    "necromancer"
     "seer",
     "bodyguard",
     "cupid"
 }
 
-NIGHT = {"seer", "spirits", "dead_wolves", "werewolves"}
-DAY = {"bodyguard"}
+NIGHT = {"seer", "spirits", "dead_wolves", "werewolves", "necromancer"}
+DAY = {"bodyguard", "necromancer"}
 ONE_TIME = {"cupid"}
 
 

@@ -45,7 +45,6 @@ def is_not_character(character_name: str):
 
 def has_ability(character_name: str):
     def predicate(ctx):
-
         return abilities.check_ability(character=character_name, guild_id=ctx.guild.id)
 
     return commands.check(predicate)
@@ -98,6 +97,7 @@ def is_game():
         return game_document is not None
 
     return commands.check(predicate)
+
 
 def is_no_game():
     def predicate(ctx):
