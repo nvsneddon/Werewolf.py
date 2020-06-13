@@ -9,10 +9,10 @@ def delete_many(filter):
 
 undead_schema = mongothon.Schema({
     "server": {"type": int, "required": True},
-    "day_choice": {"type": str, "default": ""},  # I will eventually move all ids over to string type
-    "night_choice": {"type": str, "default": ""},
+    "day_choice": {"type": int, "default": -1},
+    "night_choice": {"type": int, "default": -1},
     "undead": {"type": list, "default": []},
-    "necromancer": {"type": str, "default": ""}
+    "necromancer": {"type": int, "default": -1}
 })
 
 Undead = mongothon.create_model(undead_schema, my_db['undead'])

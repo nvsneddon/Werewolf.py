@@ -17,6 +17,7 @@ import models.villager
 import models.election
 import models.server
 import models.game
+import models.undead
 
 import abilities
 
@@ -200,18 +201,28 @@ class Game(commands.Cog):
             #     await player.edit(roles=[alive_role])
             nighttime = self.schedule_day_and_night(ctx.guild.id)
             self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args,
-                                 send_message_flag=files.send_message_flag)
+                                 send_message_flag=files.send_message_flag, nighttime=nighttime)
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
+
+
             for player in players:
                 v_model = models.villager.Villager.find_one({
                     "server": ctx.guild.id,
                     "discord_id": player.id
                 })
                 character = v_model["character"]
+
                 if character in files.channels_config["character-to-channel"]:
                     channel_name = files.channels_config["character-to-channel"][character]
                     channel = discord.utils.get(ctx.guild.channels, name=channel_name)
                     await channel.set_permissions(player, overwrite=discord.PermissionOverwrite(**read_write_permission))
+                    if character == "necromancer":
+                        undead_document = models.undead.Undead.find_one({
+                            "server": ctx.guild.id,
+                        })
+                        undead_document["undead"].append(player.id)
+                        undead_document.save()
+
 
         announcements_id = models.channels.getChannelId("announcements", ctx.guild.id)
         announcements_channel = self.__bot.get_channel(announcements_id)
@@ -238,6 +249,7 @@ class Game(commands.Cog):
             v.remove()
         models.game.delete_many({"server": guild.id})
         models.election.delete_many({"server": guild.id})
+        models.undead.delete_many({"server": guild.id})
         abilities.finish_game(guild.id)
         self.clear_schedule(str(guild.id))
 
@@ -279,7 +291,7 @@ class Game(commands.Cog):
             schedule.run_pending()
             time.sleep(3)
 
-    def initialize_game(self, guild_id, members, randomshuffle, roles, send_message_flag):
+    def initialize_game(self, guild_id, members, randomshuffle, roles, send_message_flag, nighttime):
         num_werewolves = 0
         num_villagers = 0
         num_players = 0
@@ -320,10 +332,15 @@ class Game(commands.Cog):
         game_object = models.game.Game({
             "server": guild_id,
             "players": [x.id for x in members],
+            "night": nighttime,
             "werewolfcount": num_werewolves,
             "villagercount": num_villagers
         })
         game_object.save()
+        undead_document = models.undead.Undead({
+            "server": guild_id,
+        })
+        undead_document.save()
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message, guild_id))
 
     def reset_schedule(self):
@@ -352,6 +369,11 @@ class Game(commands.Cog):
             is_nighttime = not is_nighttime
         if not reschedule:
             abilities.start_game(guild_id, night=is_nighttime)
+        # game = models.game.Game.find_one({
+        #     "server": guild_id
+        # })
+        # game["night"] = is_nighttime
+        # game.save()
         return is_nighttime
 
     async def __afterlife_message(self, message, guild_id):
@@ -718,6 +740,7 @@ class Game(commands.Cog):
             "server": guild_id
         })
         game_document["protected"] = -1
+        game_document["night"] = False
         game_document.save()
         abilities.daytime(guild_id)
         self.__bot.loop.create_task(self.daytimeannounce(guild_id, bakerdead=game_document["bakerdead"]))
@@ -768,6 +791,11 @@ class Game(commands.Cog):
             self.__bot.loop.create_task(self.stopvote(self.__bot.get_guild(guild_id)))
 
     async def nighttimeannounce(self, guild_id):
+        game = models.game.Game.find_one({
+            "server": guild_id
+        })
+        game["night"] = True
+        game.save()
         announcements_id = models.channels.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         await announcements_channel.send("It is nighttime")

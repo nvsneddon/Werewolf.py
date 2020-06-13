@@ -106,7 +106,7 @@
         ],
         "killed": "The baby wolf {} got killed by its own family! In frustration, they will start to kill two people at night!",
         "lynched": "You just killed the baby wolf, {}. Now its wolf family will start to hunt two people at night!",
-        "inlove": "What do you know! The baby werewolf had a secret love that it kept from its family! Now that its love died, so shall {}.",
+        "inlove": "What do you know? The baby werewolf had a secret love that it kept from its family! Now that its love died, so shall {}.",
         "hunter": "The hunter shot the baby wolf {}. Now the other wolves are angry!",
         "starve": "This shouldn't happen. The babywolf {} starved. I have a bug that needs fixing",
         "leave": "The baby wolf {} left and got lost. How the wolves are really angry and will kill twice per night."
@@ -115,7 +115,13 @@
         "welcome": [
             "You are the necromancer. Your goal is to make everyone alive a part of your undead cult.",
             "Every day and night, you pick someone to be your target and if that person dies, you add them to your undead group."
-        ]
+        ],
+        "killed": "The necromancer {} has been killed last night. Now you guys will really die.",
+        "lynched": "You just lynched the necromancer {}. All of the undead will now die as well.",
+        "inlove": "It turns out the necromancer actually did have a heart. {} is now dead",
+        "hunter": "The hunter shot the necromancer {}. Look at all of the death that is happening.",
+        "starve": "This shouldn't happen. The necromancer {} starved. I have a bug that needs fixing.",
+        "leave": "The necromancer {} decided to leave town forever. With no one to keep the undead alive, they all die as well."
     },
     "mason": {
         "welcome":[

@@ -9,6 +9,7 @@ def delete_many(filter):
 
 game_schema = mongothon.Schema({
     "server": {"type": int, "required": True},
+    "night": {"type": bool},
     "players": {"type": list, "required": True},  # list of villager discord_id
     "inlove": {"type": list, "default": []},
     "bakerdead": {"type": bool, "default": False},
