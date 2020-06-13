@@ -145,6 +145,12 @@ class Bot(commands.Cog):
             await ctx.send(message)
 
     @commands.command()
+    async def count(self, ctx):
+        playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
+        playing_people_iterator = filter(lambda x: playing_role in x.roles, ctx.guild.members)
+        await ctx.send(len(list(playing_people_iterator)))
+
+    @commands.command()
     @is_admin()
     async def resetchannels(self, ctx):
         await self.removechannels(ctx)
@@ -282,13 +288,14 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def changeannouncement(self, ctx):
-        server_document = models.server.Server.find_one({ "server": ctx.guild.id })
+        server_document = models.server.Server.find_one({"server": ctx.guild.id})
         if "announce_character" not in server_document:
             server_document["announce_character"] = True
             server_document.save()
         server_document["announce_character"] = not server_document["announce_character"]
         server_document.save()
-        await ctx.send(f"The narrator will now {'not ' if not server_document['announce_character'] else ''}announce the character roles.")
+        await ctx.send(
+            f"The narrator will now {'not ' if not server_document['announce_character'] else ''}announce the character roles.")
 
     @commands.command(**files.command_parameters['gettime'])
     async def gettime(self, ctx):
