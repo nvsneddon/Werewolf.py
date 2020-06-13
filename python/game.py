@@ -38,11 +38,11 @@ async def declare_winner(bot, winner, guild_id):
 def distribute_roles(roles):
     cards = []
     if len(roles) >= 7:
-        cards += roles[6] * ["mason"]
+        cards += roles[6] * ["baker"]
     if len(roles) >= 6:
-        cards += roles[5] * ["baker"]
+        cards += roles[5] * ["hunter"]
     if len(roles) >= 5:
-        cards += roles[4] * ["hunter"]
+        cards += roles[4] * ["necromancer"]
     if len(roles) >= 4:
         cards += roles[3] * ["cupid"]
     if len(roles) >= 3:
@@ -54,12 +54,12 @@ def distribute_roles(roles):
     return cards
 
 
-def special_winner(guild_id, undead: list):
+def special_winner(guild_id, special_list: list):
     villagers = models.villager.Villager.find({
         "server": guild_id,
         "alive": True
     })
-    return all(v["discord_id"] in undead for v in villagers)
+    return all(v["discord_id"] in special_list for v in villagers)
 
 
 # def cupid_winner(guild_id: int, love: list) -> bool:
@@ -175,7 +175,7 @@ class Game(commands.Cog):
         if not abilities.check_ability("werewolves", ctx.guild.id):
             await ctx.send("You already chose someone to summon. Please wait until the next day or night")
         # await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
-        await channel.set_permissions(player, overwrite=discord.PermissionOverwrite(**read_write_permission))
+        # await channel.set_permissions(player, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
     @commands.command(**files.command_parameters["startgame"])
     @decorators.is_admin()
