@@ -145,6 +145,11 @@ class Bot(commands.Cog):
             await ctx.send(message)
 
     @commands.command()
+    async def count(self, ctx):
+        playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
+        return sum(filter(lambda x: playing_role in x.roles, ctx.guild.members))
+
+    @commands.command()
     @is_admin()
     async def addchannels(self, ctx):
         with ctx.typing():  # This is where the fun begins
