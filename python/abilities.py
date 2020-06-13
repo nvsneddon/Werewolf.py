@@ -4,7 +4,7 @@ ROLES = {
     "spirits",
     "dead_wolves",
     "werewolves",
-    "necromancer"
+    "necromancer",
     "seer",
     "bodyguard",
     "cupid"

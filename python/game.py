@@ -173,9 +173,9 @@ class Game(commands.Cog):
     @decorators.is_game()
     async def summon(self, ctx, member):
         if not abilities.check_ability("werewolves", ctx.guild.id):
-            ctx.send("You already chose someone to summon. Please wait until the next day or night")
+            await ctx.send("You already chose someone to summon. Please wait until the next day or night")
         # await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
-        
+        await channel.set_permissions(player, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
     @commands.command(**files.command_parameters["startgame"])
     @decorators.is_admin()
