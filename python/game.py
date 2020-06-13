@@ -167,6 +167,16 @@ class Game(commands.Cog):
             await channel.set_permissions(member, overwrite=None)
         await member.edit(roles=[dead_role])
 
+
+    @commands.command()
+    @decorators.is_from_channel("undead")
+    @decorators.is_game()
+    async def summon(self, ctx, member):
+        if not abilities.check_ability("werewolves", ctx.guild.id):
+            ctx.send("You already chose someone to summon. Please wait until the next day or night")
+        # await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+        
+
     @commands.command(**files.command_parameters["startgame"])
     @decorators.is_admin()
     @decorators.is_no_game()
@@ -181,25 +191,27 @@ class Game(commands.Cog):
             for member in ctx.guild.members:
                 if playing_role in member.roles:
                     players.append(member)
+                    # await member.edit(roles=member.roles+[alive_role])
+                    await member.edit(roles=[alive_role])
             if len(players) < sum(args):
                 await ctx.send("You gave out too many roles for the number of people. Please try again.")
                 return
-            for player in players:
-                await player.edit(roles=[alive_role])
+            # for player in players:
+            #     await player.edit(roles=[alive_role])
             nighttime = self.schedule_day_and_night(ctx.guild.id)
             self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args,
                                  send_message_flag=files.send_message_flag)
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
-            for x in players:
+            for player in players:
                 v_model = models.villager.Villager.find_one({
                     "server": ctx.guild.id,
-                    "discord_id": x.id
+                    "discord_id": player.id
                 })
                 character = v_model["character"]
                 if character in files.channels_config["character-to-channel"]:
                     channel_name = files.channels_config["character-to-channel"][character]
                     channel = discord.utils.get(ctx.guild.channels, name=channel_name)
-                    await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
+                    await channel.set_permissions(player, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
         announcements_id = models.channels.getChannelId("announcements", ctx.guild.id)
         announcements_channel = self.__bot.get_channel(announcements_id)
