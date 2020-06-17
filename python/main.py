@@ -96,6 +96,7 @@ async def on_member_remove(member):
         await announcements_channel.send(files.werewolfMessages[v["character"]]["leave"])
         game_cog = client.get_cog("Game")
         await game_cog.die_from_db(villager_id=member.id, guild_id=member.guild.id, leaving=True)
+    v.delete()
 
 
 @client.event
