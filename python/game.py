@@ -535,7 +535,7 @@ class Game(commands.Cog):
     @decorators.is_from_channel("afterlife")
     @decorators.is_game()
     async def sendmessage(self, ctx, word: str):
-        if ctx.guild.id == 695805513480536074:
+        if ctx.guild.id == 695805513480536074 or ctx.guild.id == 523892810319921157:
             await ctx.send("This is temporarily disabled. I'm sorry :cry:")
             return
         v = models.villager.Villager.find_one({
