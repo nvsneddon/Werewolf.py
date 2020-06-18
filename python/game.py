@@ -173,8 +173,18 @@ class Game(commands.Cog):
     @decorators.is_from_channel("undead")
     @decorators.is_game()
     async def summon(self, ctx, member):
-        if not abilities.check_ability("werewolves", ctx.guild.id):
+        if not abilities.check_ability("necromancer", ctx.guild.id):
             await ctx.send("You already chose someone to summon. Please wait until the next day or night")
+        abilities.use_ability("necromancer", ctx.guild.id)
+        undead_document = models.undead.Undead.find_one({"server": str(ctx.guild.id)})
+        game_document = models.game.Game.find_one({"server": ctx.guild.id})
+        villager = self.findMember(member, ctx.guild.id)
+        if game_document["night"]:
+            undead_document["night_choice"] = villager.id
+        else:
+            undead_document["day_choice"] = villager.id
+        undead_document.save()
+        await ctx.send(f"You have chosen to summon {villager.mention}")
         # await channel.set_permissions(x, overwrite=discord.PermissionOverwrite(**read_write_permission))
         # await channel.set_permissions(player, overwrite=discord.PermissionOverwrite(**read_write_permission))
 
@@ -218,9 +228,9 @@ class Game(commands.Cog):
                     await channel.set_permissions(player, overwrite=discord.PermissionOverwrite(**read_write_permission))
                     if character == "necromancer":
                         undead_document = models.undead.Undead.find_one({
-                            "server": ctx.guild.id,
+                            "server": str(ctx.guild.id),
                         })
-                        undead_document["undead"].append(player.id)
+                        undead_document["undead"].append(str(player.id))
                         undead_document.save()
 
 
@@ -338,7 +348,7 @@ class Game(commands.Cog):
         })
         game_object.save()
         undead_document = models.undead.Undead({
-            "server": guild_id,
+            "server": str(guild_id),
         })
         undead_document.save()
         self.__bot.loop.create_task(self.__afterlife_message(afterlife_message, guild_id))
@@ -554,7 +564,6 @@ class Game(commands.Cog):
         if not abilities.check_ability("bodyguard", ctx.guild.id):
             await ctx.send("You've been protecting someone and now you're tired. Get some rest until the next morning.")
             return
-        # protector: villager.Villager = self.findVillager(ctx.message.author.name)
         the_protected_one = self.findMember(name=person_name, guild_id=ctx.guild.id)
         if the_protected_one is None:
             await ctx.send("I couldn't find that person!")
@@ -814,14 +823,14 @@ class Game(commands.Cog):
 
     def findMember(self, name: str, guild_id: int):
         guild = self.__bot.get_guild(guild_id)
-        if name[0:3] == "<@!":  # in case the user that is passed in has been mentioned with @
-            id = int(name[3:-1])
-        elif name[0:2] == "<@":
-            id = int(name[2:-1])
+        if name.startswith("<@!"):  # in case the user that is passed in has been mentioned with @
+            v_id = int(name[3:-1])
+        elif name.startswith("<@"):
+            v_id = int(name[2:-1])
         else:
-            id = 0
-        if id != 0:
-            return guild.get_member(id)
+            v_id = 0
+        if v_id != 0:
+            return guild.get_member(v_id)
         villagers = models.villager.Villager.find({
             "server": guild_id
         })

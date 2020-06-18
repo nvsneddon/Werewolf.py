@@ -20,7 +20,7 @@ game_schema = mongothon.Schema({
     "hunter_ids": {"type": list, "default": []},
     "real_time": {"type": bool, "default": True},
     "starving": {"type": list, "default": []},
-    "undead": {"type": list, "default": []},
+    # "undead": {"type": list, "default": []},
     "werewolfcount": {"type": int, "required": True},
     "villagercount": {"type": int, "required": True},
 })
