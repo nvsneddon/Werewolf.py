@@ -5,6 +5,7 @@ from schemer import ValidationException
 import decorators
 from decorators import is_admin, findPerson
 from game import Game
+import random
 import asyncio
 import models.channels
 import models.game
@@ -145,6 +146,27 @@ class Bot(commands.Cog):
             await ctx.send(message)
 
     @commands.command()
+    async def countplayers(self, ctx):
+        playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
+        playing_people_iterator = filter(lambda x: playing_role in x.roles, ctx.guild.members)
+        await ctx.send(len(list(playing_people_iterator)))
+
+    @commands.command()
+    async def taunt(self, ctx):
+        await ctx.send("https://tenor.com/view/montypython-holygrail-gif-8297794")
+
+    @commands.command()
+    async def showboat(self, ctx):
+        boats = (':motorboat:', ':rowboat:', '```                __/___            \n          _____/______|          '
+                                             ' \n  _______/_____\_______\_____     \n  \              < < <       |   '
+                                             ' \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~```',
+                 '```    __|__ |___| |\ \n    |o__| |___| | \ \n    |___| |___| |o \ \n   _|___| |___| |__o\ \n  '
+                 '/...\_____|___|____\_/\n  \   o * o * * o o  /\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n```')
+
+        await ctx.send(random.choice(boats))
+
+
+    @commands.command()
     @is_admin()
     async def addchannels(self, ctx):
         with ctx.typing():  # This is where the fun begins
@@ -276,13 +298,14 @@ class Bot(commands.Cog):
     @commands.command()
     @is_admin()
     async def changeannouncement(self, ctx):
-        server_document = models.server.Server.find_one({ "server": ctx.guild.id })
+        server_document = models.server.Server.find_one({"server": ctx.guild.id})
         if "announce_character" not in server_document:
             server_document["announce_character"] = True
             server_document.save()
         server_document["announce_character"] = not server_document["announce_character"]
         server_document.save()
-        await ctx.send(f"The narrator will now {'not ' if not server_document['announce_character'] else ''}announce the character roles.")
+        await ctx.send(
+            f"The narrator will now {'not ' if not server_document['announce_character'] else ''}announce the character roles.")
 
     @commands.command(**files.command_parameters['gettime'])
     async def gettime(self, ctx):

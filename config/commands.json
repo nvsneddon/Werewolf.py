@@ -4,7 +4,7 @@
     "help": "If you don't understand how to play the game, use this command and the bot will tell you what you need to do."
   },
   "countpeople": {
-    "alias": [
+    "aliases": [
       "peoplecount",
       "werewolfcount",
       "villagercount",
@@ -14,14 +14,14 @@
     "help": "Counts the werewolves who are alive and the villagers who are alive."
   },
   "secretchannel": {
-    "alias": [
+    "aliases": [
       "makesecretchannel"
     ],
     "brief": "Create a secret channel where you can invite people to",
     "help": "Make a secret channel so that you can say stuff to those you trust only."
   },
   "startlynch": {
-    "alias": [
+    "aliases": [
       "startwerewolfvote",
       "killvote",
       "lynch"
@@ -34,7 +34,7 @@
     "help": "The parameters are numbers that represent the following roles:\nwerewolf, seer, bodyguard, cupid, hunter, baker, mason\nTo start a game with 2 werewolves, 1 seer, one bodyguard, and one hunter, you type in !startgame 2 1 1 0 1. Every number not included is assumed to be 0."
   },
   "vote": {
-    "alias": [
+    "aliases": [
       "castvote"
     ],
     "brief": "Cast a vote for the person",
@@ -45,7 +45,7 @@
     "help": "Shows you who is in the lead."
   },
   "showvote": {
-    "alias": [
+    "aliases": [
       "showscore"
     ],
     "brief": "Shows you who everyone voted for.",
@@ -64,7 +64,7 @@
     "help": "Use this if you locked your vote and you want to change your mind."
   },
   "investigate": {
-    "alias": [
+    "aliases": [
       "see",
       "look",
       "suspect"
@@ -73,21 +73,21 @@
     "help": "In order to investigate, you must also say who you want to investigate after invoking the command. You will see if that person is a werewolf or not. You can only investigate once per day. The ability to investigate renews every morning."
   },
   "shoot": {
-    "alias": [
+    "aliases": [
       "fireaway"
     ],
     "brief": "Shoot anyone of your choice before you die.",
     "help": "As you're now dying, you have the opportunity to kill someone. Just type this command along with the person's name and you'll be able to take someone down with you."
   },
   "kill": {
-    "alias": [
+    "aliases": [
       "murder"
     ],
     "brief": "Kill someone of your choice. Only once per night.",
     "help": "Because you're a werewolf, you get to kill someone every night as a team. Once someone uses this command, it can't be used until the beginning of the next night. Once nighttime is over, it's too late to kill someone."
   },
   "protect": {
-    "alias": [
+    "aliases": [
       "save",
       "defend",
       "shield"
@@ -96,22 +96,23 @@
     "help": "Protect anyone of your choice from the werewolves. Your ability renews every sunrise. Also remember, you can protect yourself, but you can't protect the same person twice in a row. "
   },
   "match": {
-    "alias": [
+    "aliases": [
       "matchlove",
-      "makeinlove"
+      "makeinlove",
+      "ship"
     ],
     "brief": "Make two people fall in love",
     "help": "Make two people of your choice fall in love so strong that they'd rather die than live without their love. You only have two arrows, so don't mess up."
   },
   "sendmessage": {
-    "alias": [
+    "aliases": [
       "sendword"
     ],
     "brief": "Send a one word message to the masons.",
     "help": "Send a one word message to the masons who will work to listen to the message. They're still working on communing with the dead, so you may have to give them a hint. You can give one hint or message per night. The ability renews every sunset."
   },
   "sendhint": {
-    "alias": [
+    "aliases": [
       "sendhelp"
     ],
     "brief": "Send a hint about the last message to the masons.",
