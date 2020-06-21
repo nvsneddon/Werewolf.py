@@ -417,6 +417,19 @@ class Game(commands.Cog):
         game_document["morning_messages"] = []
         game_document.save()
 
+    @commands.command()
+    @decorators.is_game()
+    async def showalive(self, ctx):
+        villagers = models.villager.Villager.find({
+            "server": ctx.guild.id,
+            "alive": True
+        })
+        with ctx.typing():
+            for member in map(lambda v: ctx.guild.get_member(v["discord_id"]), villagers):
+                await ctx.send(member.display_name)
+
+
+
     @commands.command(**files.command_parameters['countpeople'])
     async def countpeople(self, ctx):
 

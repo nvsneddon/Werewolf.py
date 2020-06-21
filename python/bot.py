@@ -165,6 +165,7 @@ class Bot(commands.Cog):
 
         await ctx.send(random.choice(boats))
 
+
     @commands.command()
     @is_admin()
     async def addchannels(self, ctx):
