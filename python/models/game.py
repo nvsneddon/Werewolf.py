@@ -16,6 +16,7 @@ game_schema = mongothon.Schema({
     "voting": {"type": bool, "default": False},
     "last_protected_id": {"type": int, "default": -1},
     "morning_messages": {"type": list, "default": []},
+    "dream_sender": {"type": str, "default": ""},
     "protected": {"type": int, "default": -1},
     "hunter_ids": {"type": list, "default": []},
     "real_time": {"type": bool, "default": True},
