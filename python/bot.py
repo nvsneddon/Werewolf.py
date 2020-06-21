@@ -146,7 +146,7 @@ class Bot(commands.Cog):
             await ctx.send(message)
 
     @commands.command()
-    async def count(self, ctx):
+    async def countplayers(self, ctx):
         playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
         playing_people_iterator = filter(lambda x: playing_role in x.roles, ctx.guild.members)
         await ctx.send(len(list(playing_people_iterator)))

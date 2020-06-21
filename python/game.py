@@ -21,18 +21,18 @@ import models.game
 import abilities
 
 
-async def declare_winner(bot, winner, guild_id):
-    announcements_id = models.channels.getChannelId("announcements", guild_id)
-    announcements_channel = bot.get_channel(announcements_id)
-    if winner == "werewolves":
-        await announcements_channel.send("Werewolves outnumber the villagers. Werewolves won.")
-    elif winner == "villagers":
-        await announcements_channel.send("All werewolves are now dead. Villagers win!")
-    elif winner == "cupid":
-        await announcements_channel.send("Cupid did a great job. The last two people alive are the love birds.")
-    elif winner == "bakerdead":
-        await announcements_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses "
-                                         "and win the game.")
+# async def declare_winner(bot, winner, guild_id):
+#     announcements_id = models.channels.getChannelId("announcements", guild_id)
+#     announcements_channel = bot.get_channel(announcements_id)
+#     if winner == "werewolves":
+#         await announcements_channel.send("Werewolves outnumber the villagers. Werewolves won.")
+#     elif winner == "villagers":
+#         await announcements_channel.send("All werewolves are now dead. Villagers win!")
+#     elif winner == "cupid":
+#         await announcements_channel.send("Cupid did a great job. The last two people alive are the love birds.")
+#     elif winner == "bakerdead":
+#         await announcements_channel.send("Everyone has starved. The werewolves survive off of villagers' corpses "
+#                                          "and win the game.")
 
 
 def distribute_roles(roles):
@@ -152,6 +152,9 @@ class Game(commands.Cog):
     @decorators.is_admin()
     @decorators.is_no_game()
     async def startgame(self, ctx, *args: int):
+        cog = self.__bot.get_cog("Bot")
+        await cog.removechannels(ctx)
+        await cog.addchannels(ctx)
         with ctx.typing():
             alive_role = discord.utils.get(ctx.guild.roles, name="Alive")
             playing_role = discord.utils.get(ctx.guild.roles, name="Playing")
@@ -218,7 +221,12 @@ class Game(commands.Cog):
         announcements_id = models.channels.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         guild = self.__bot.get_guild(guild_id)
-        if self.__cupidwinner(guild_id, game["inlove"]):
+        if game["villagercount"] == 0 and game["werewolfcount"] == 0:
+            await announcements_channel.send("No one is alive. So I don't know who won. What do you think? Who won that round?")
+            with announcements_channel.typing():
+                await self.finishGame(guild)
+            await announcements_channel.send("The game has ended!")
+        elif self.__cupidwinner(guild_id, game["inlove"]):
             await announcements_channel.send("The only alive people left are the two people in love. Cupid and the lovebirds win.")
             with announcements_channel.typing():
                 await self.finishGame(guild)
