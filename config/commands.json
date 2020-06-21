@@ -106,7 +106,7 @@
   },
   "sendmessage": {
     "aliases": [
-      "sendword"
+      "senddream"
     ],
     "brief": "Send a one word message to the masons.",
     "help": "Send a one word message to the masons who will work to listen to the message. They're still working on communing with the dead, so you may have to give them a hint. You can give one hint or message per night. The ability renews every sunset."

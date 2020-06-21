@@ -171,8 +171,7 @@ class Game(commands.Cog):
             for player in players:
                 await player.edit(roles=[alive_role])
             nighttime = self.schedule_day_and_night(ctx.guild.id)
-            self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args,
-                                 send_message_flag=files.send_message_flag)
+            self.initialize_game(ctx.guild.id, players, randomshuffle=True, roles=args)
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
             for x in players:
                 v_model = models.villager.Villager.find_one({
@@ -222,12 +221,14 @@ class Game(commands.Cog):
         announcements_channel = self.__bot.get_channel(announcements_id)
         guild = self.__bot.get_guild(guild_id)
         if game["villagercount"] == 0 and game["werewolfcount"] == 0:
-            await announcements_channel.send("No one is alive. So I don't know who won. What do you think? Who won that round?")
+            await announcements_channel.send(
+                "No one is alive. So I don't know who won. What do you think? Who won that round?")
             with announcements_channel.typing():
                 await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
         elif self.__cupidwinner(guild_id, game["inlove"]):
-            await announcements_channel.send("The only alive people left are the two people in love. Cupid and the lovebirds win.")
+            await announcements_channel.send(
+                "The only alive people left are the two people in love. Cupid and the lovebirds win.")
             with announcements_channel.typing():
                 await self.finishGame(guild)
             await announcements_channel.send("The game has ended!")
@@ -259,7 +260,7 @@ class Game(commands.Cog):
             schedule.run_pending()
             time.sleep(3)
 
-    def initialize_game(self, guild_id, members, randomshuffle, roles, send_message_flag):
+    def initialize_game(self, guild_id, members, randomshuffle, roles):
         num_werewolves = 0
         num_villagers = 0
         num_players = 0
@@ -294,7 +295,7 @@ class Game(commands.Cog):
             afterlife_message += f"{x.mention} is a {character}\n"
             cards.pop(0)
             message = '\n'.join(files.werewolfMessages[character]["welcome"])
-            if send_message_flag:
+            if files.send_message_flag:
                 self.__bot.loop.create_task(self.__sendPM(x, message))
         models.game.delete_many({"server": guild_id})
         game_object = models.game.Game({
@@ -319,8 +320,12 @@ class Game(commands.Cog):
             server_document['nighttime'][:2]), int(server_document['nighttime'][3:5])) - \
                            datetime.timedelta(minutes=server_document['warning'])
         warn_voting_time_string = f"{warn_voting_time.hour:02d}:{warn_voting_time.minute:02d}"
-        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(guild_id), str(guild_id) + "warning")
-        schedule.every().day.at(server_document["nighttime"]).do(self.nighttime, guild_id).tag("game", str(guild_id), str(guild_id) + "nighttime")
+        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(guild_id),
+                                                                                                str(
+                                                                                                    guild_id) + "warning")
+        schedule.every().day.at(server_document["nighttime"]).do(self.nighttime, guild_id).tag("game", str(guild_id),
+                                                                                               str(
+                                                                                                   guild_id) + "nighttime")
         night_array = server_document["nighttime"].split(':')
         day_array = server_document["daytime"].split(':')
         check_time = datetime.datetime.now().time()
@@ -328,7 +333,7 @@ class Game(commands.Cog):
         nighttime_time = datetime.time(int(night_array[0]), int(night_array[1]))
         is_nighttime = not (daytime_time <= check_time <= nighttime_time)
         if daytime_time > nighttime_time:  # If daytime is bigger, that means that being between the values means
-                                            # that it's nighttime
+            # that it's nighttime
             is_nighttime = not is_nighttime
         if not reschedule:
             abilities.start_game(guild_id, night=is_nighttime)
@@ -435,8 +440,6 @@ class Game(commands.Cog):
         with ctx.typing():
             for member in map(lambda v: ctx.guild.get_member(v["discord_id"]), villagers):
                 await ctx.send(member.display_name)
-
-
 
     @commands.command(**files.command_parameters['countpeople'])
     async def countpeople(self, ctx):
@@ -559,10 +562,10 @@ class Game(commands.Cog):
     @commands.command(**files.command_parameters['sendmessage'])
     @decorators.is_from_channel("afterlife")
     @decorators.is_game()
-    async def sendmessage(self, ctx, word: str):
-        if ctx.guild.id == 695805513480536074 or ctx.guild.id == 523892810319921157:
-            await ctx.send("This is temporarily disabled. I'm sorry :cry:")
-            return
+    async def sendmessage(self, ctx, dream: str):
+        # if ctx.guild.id == 695805513480536074 or ctx.guild.id == 523892810319921157:
+        #     await ctx.send("This is temporarily disabled. I'm sorry :cry:")
+        #     return
         v = models.villager.Villager.find_one({
             "server": ctx.guild.id,
             "discord_id": ctx.author.id
@@ -570,26 +573,35 @@ class Game(commands.Cog):
         dreamers = models.villager.Villager.find({
             "server": ctx.guild.id,
             "alive": True,
-            "werewolf": False
+            "werewolf": False,
         })
-        the_chosen_dreamer = random.choice(dreamers)
-        is_werewolf = v["werewolf"]
-        if not abilities.check_ability("dead_wolves" if is_werewolf else "spirits", ctx.guild.id):
-            await ctx.send("You've already sent a message or a hint. Wait until the next night.")
+        game = models.game.Game.find_one({"server": ctx.guild.id})
+        the_chosen_dreamer = random.choice(list(dreamers))
+        if not ("w" if v["werewolf"] else "v") in game["dream_sender"]:
+            await ctx.send("You can't send a message right now. Maybe next night.")
             return
-        if len(word.split(' ')) > 1:
+        if len(dream.split(' ')) > 1:
             await ctx.send("You can only send one word at a time")
             return
-        if self.findPlayer(word, ctx.guild.id) is not None:
+        if self.findPlayer(dream, ctx.guild.id) is not None:
             await ctx.send("You cannot use a name of someone playing as the actual word.")
             return
-        if is_werewolf:
-            abilities.use_ability("dead_wolves", ctx.guild.id)
+        if v["werewolf"]:
+            # abilities.use_ability("dead_wolves", ctx.guild.id)
+            game["dream_sender"] = "v"
         else:
-            abilities.use_ability("spirits", ctx.guild.id)
-        channel = ctx.guild.get_channel(models.channels.getChannelId("mason", ctx.guild.id))
-        await channel.send("You have received a message from above.")
-        await channel.send(word)
+            game["dream_sender"] = "w"
+            # abilities.use_ability("spirits", ctx.guild.id)
+        game.save()
+        the_dreamers_dm = ctx.guild.get_member(the_chosen_dreamer["discord_id"])
+        afterlife_channel = ctx.guild.get_channel(models.channels.getChannelId("afterlife", ctx.guild.id))
+        if files.send_message_flag:
+            await the_dreamers_dm.send("You have received a message from above.")
+            await the_dreamers_dm.send(dream)
+        else:
+            await afterlife_channel.send(str(the_dreamers_dm))
+        await afterlife_channel.send("Sent!")
+
 
     @commands.command(**files.command_parameters['match'])
     @decorators.is_from_channel("cupid")
@@ -704,7 +716,6 @@ class Game(commands.Cog):
         # if self.__election_cog is not None:
         #     self.__bot.remove_cog("Election")
 
-
     def daytime(self, guild_id: int):
         guild = self.__bot.get_guild(guild_id)
         game_document = models.game.Game.find_one({
@@ -755,15 +766,29 @@ class Game(commands.Cog):
 
     def nighttime(self, guild_id):
         # self.__killed = False
+
         self.__bot.loop.create_task(self.nighttimeannounce(guild_id))
         abilities.nighttime(guild_id)
         if election.is_vote(guild_id):
             self.__bot.loop.create_task(self.stopvote(self.__bot.get_guild(guild_id)))
 
     async def nighttimeannounce(self, guild_id):
-        announcements_id = models.channels.getChannelId("announcements", guild_id)
-        announcements_channel = self.__bot.get_channel(announcements_id)
+        game = models.game.Game.find_one({"server": guild_id})
+        game["dream_sender"] = random.choice(['v', 'v', 'w', 'w', 'vw'])
+        game.save()
+        # announcements_id = models.channels.getChannelId("announcements", guild_id)
+        announcements_channel = self.__bot.get_channel(models.channels.getChannelId("announcements", guild_id))
+        afterlife_channel = self.__bot.get_channel(models.channels.getChannelId("afterlife", guild_id))
         await announcements_channel.send("It is nighttime")
+        if game["dream_sender"] == 'w':
+            await afterlife_channel.send("Werewolves get to send a dream to a random villager tonight.")
+        elif game["dream_sender"] == 'v':
+            await afterlife_channel.send("Villagers get to send a dream to a random villager tonight.")
+        elif game["dream_sender"] == 'vw':
+            await afterlife_channel.send("The werewolves and the villagers get to both send a dream to a random "
+                                         "villager tonight.")
+        else:
+            await afterlife_channel.send("Something went wrong. Please let whoever is in charge know that the messages in the afterlife are broken.")
 
     def almostnighttime(self, guild_id):
         self.__bot.loop.create_task(self.almostnighttimeannounce(guild_id))
