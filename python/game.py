@@ -63,17 +63,6 @@ def special_winner(guild_id, special_list: list):
     return all(v["discord_id"] in special_list for v in villagers)
 
 
-# def cupid_winner(guild_id: int, love: list) -> bool:
-#     villagers = models.villager.Villager.find({
-#         "server": guild_id,
-#         "alive": True
-#     })
-#     for v in villagers:
-#         if v["discord_id"] not in love:
-#             return False
-#     return True
-
-
 class Game(commands.Cog):
 
     def __init__(self, bot):
@@ -168,7 +157,6 @@ class Game(commands.Cog):
             await channel.set_permissions(member, overwrite=None)
         await member.edit(roles=[dead_role])
 
-
     @commands.command()
     @decorators.is_from_channel("undead")
     @decorators.is_game()
@@ -217,7 +205,6 @@ class Game(commands.Cog):
                                  send_message_flag=files.send_message_flag, nighttime=nighttime)
             read_write_permission = files.readJsonFromConfig("permissions.json")["read_write"]
 
-
             for player in players:
                 v_model = models.villager.Villager.find_one({
                     "server": ctx.guild.id,
@@ -228,14 +215,14 @@ class Game(commands.Cog):
                 if character in files.channels_config["character-to-channel"]:
                     channel_name = files.channels_config["character-to-channel"][character]
                     channel = discord.utils.get(ctx.guild.channels, name=channel_name)
-                    await channel.set_permissions(player, overwrite=discord.PermissionOverwrite(**read_write_permission))
+                    await channel.set_permissions(player,
+                                                  overwrite=discord.PermissionOverwrite(**read_write_permission))
                     if character == "necromancer":
                         undead_document = models.undead.Undead.find_one({
                             "server": str(ctx.guild.id),
                         })
                         undead_document["undead"].append(str(player.id))
                         undead_document.save()
-
 
         announcements_id = models.channels.getChannelId("announcements", ctx.guild.id)
         announcements_channel = self.__bot.get_channel(announcements_id)
@@ -274,19 +261,18 @@ class Game(commands.Cog):
         announcements_id = models.channels.getChannelId("announcements", guild_id)
         announcements_channel = self.__bot.get_channel(announcements_id)
         guild = self.__bot.get_guild(guild_id)
-        if special_winner(guild_id, game["undead"]):
-            await announcements_channel.send("Only the undead are left. The necromancer wins with all of the undead!")
-        if game["villagercount"] == 0 and game["werewolfcount"] == 0:
-            await announcements_channel.send("No one is alive. So I don't know who won. What do you think? Who won that round?")
-            with announcements_channel.typing():
-                await self.finishGame(guild)
-            await announcements_channel.send("The game has ended!")
-        elif self.__cupidwinner(guild_id, game["inlove"]):
-            await announcements_channel.send("The only alive people left are the two people in love. Cupid and the lovebirds win.")
-            with announcements_channel.typing():
-                await self.finishGame(guild)
-            await announcements_channel.send("The game has ended!")
 
+        if game["villagercount"] == 0 and game["werewolfcount"] == 0:
+            await announcements_channel.send(
+                "No one is alive. So I don't know who won. What do you think? Who won that round?")
+            with announcements_channel.typing():
+                await self.finishGame(guild)
+            await announcements_channel.send("The game has ended!")
+        elif special_winner(guild_id, game["undead"]):
+            await announcements_channel.send("Only the undead are left. The necromancer wins with all of the undead!")
+            with announcements_channel.typing():
+                await self.finishGame(guild)
+            await announcements_channel.send("The game has ended!")
         elif special_winner(guild_id, game["inlove"]):
             await announcements_channel.send("The only alive people left are the two people in love. Cupid and the "
                                              "lovebirds win.")
@@ -376,8 +362,12 @@ class Game(commands.Cog):
             server_document['nighttime'][:2]), int(server_document['nighttime'][3:5])) - \
                            datetime.timedelta(minutes=server_document['warning'])
         warn_voting_time_string = f"{warn_voting_time.hour:02d}:{warn_voting_time.minute:02d}"
-        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(guild_id), str(guild_id) + "warning")
-        schedule.every().day.at(server_document["nighttime"]).do(self.nighttime, guild_id).tag("game", str(guild_id), str(guild_id) + "nighttime")
+        schedule.every().day.at(warn_voting_time_string).do(self.almostnighttime, guild_id).tag("game", str(guild_id),
+                                                                                                str(
+                                                                                                    guild_id) + "warning")
+        schedule.every().day.at(server_document["nighttime"]).do(self.nighttime, guild_id).tag("game", str(guild_id),
+                                                                                               str(
+                                                                                                   guild_id) + "nighttime")
         night_array = server_document["nighttime"].split(':')
         day_array = server_document["daytime"].split(':')
         check_time = datetime.datetime.now().time()
@@ -385,7 +375,7 @@ class Game(commands.Cog):
         nighttime_time = datetime.time(int(night_array[0]), int(night_array[1]))
         is_nighttime = not (daytime_time <= check_time <= nighttime_time)
         if daytime_time > nighttime_time:  # If daytime is bigger, that means that being between the values means
-                                            # that it's nighttime
+            # that it's nighttime
             is_nighttime = not is_nighttime
         if not reschedule:
             abilities.start_game(guild_id, night=is_nighttime)
@@ -497,8 +487,6 @@ class Game(commands.Cog):
         with ctx.typing():
             for member in map(lambda v: ctx.guild.get_member(v["discord_id"]), villagers):
                 await ctx.send(member.display_name)
-
-
 
     @commands.command(**files.command_parameters['countpeople'])
     async def countpeople(self, ctx):
@@ -764,7 +752,6 @@ class Game(commands.Cog):
         # self.__bot.remove_cog("Election")
         # if self.__election_cog is not None:
         #     self.__bot.remove_cog("Election")
-
 
     def daytime(self, guild_id: int):
         guild = self.__bot.get_guild(guild_id)
