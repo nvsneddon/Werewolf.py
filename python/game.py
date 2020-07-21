@@ -496,7 +496,10 @@ class Game(commands.Cog):
         if game is None:
             await ctx.send("You don't have a game going on!")
         else:
-            await ctx.send(f"Villagers: {game['villagercount']}\nWerewolves: {game['werewolfcount']}")
+            if ctx.guild.id == 695805513480536074:
+                await ctx.send(f"People alive: {game['villagercount'] + game['werewolfcount']}")
+            else:
+                await ctx.send(f"Villagers: {game['villagercount']}\nWerewolves: {game['werewolfcount']}")
 
     @commands.command(aliases=['daytime'])
     @decorators.is_admin()
@@ -790,12 +793,12 @@ class Game(commands.Cog):
     async def starve_die(self, guild):
         announcements_id = models.channels.getChannelId("announcements", guild.id)
         announcements_channel = guild.get_channel(announcements_id)
-        game_document = models.game.Game.find_one({
-            "server": guild.id
-        })
         num = random.choice([0, 0, 1, 1, 1, 2, 2, 3])
         i = 0
         while i < num:
+            game_document = models.game.Game.find_one({
+                "server": guild.id
+            })
             dead_id = random.choice(game_document["starving"])
             dead_villager = models.villager.Villager.find_one({
                 "server": guild.id,
