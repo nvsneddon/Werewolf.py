@@ -194,8 +194,7 @@ class Bot(commands.Cog):
         channel_id_dict["guild"] = guild.id
         for i in files.channels_config["channels"]:
             channel_message = '\n'.join(files.werewolfMessages["channel_messages"][i])
-            channel = await guild.create_text_channel(name=i, category=town_square_category,
-                                                      topic=channel_message)
+            channel = await guild.create_text_channel(name=i, category=town_square_category, topic=channel_message)
             msg = await channel.send(channel_message)
             await msg.pin()
             channel_id_dict[i] = channel.id
